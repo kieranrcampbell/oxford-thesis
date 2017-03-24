@@ -3,182 +3,320 @@
 %*****************************************
 %\setcounter{figure}{10}
 % \NoCaseChange{Homo Sapiens}
-Ei choro aeterno antiopam mea, labitur bonorum pri no 
-\citeauthor{taleb:2012} \citep{taleb:2012}. His no decore
-nemore graecis. In eos meis nominavi, liber soluta vim cu. Sea commune
-suavitate interpretaris eu, vix eu libris efficiantur.
+
+\section{Introduction}
+
+Practically, current methods for pseudotime inference proceed via a multi-step process which we describe throughout using gene expression data as the focus of our discussion. First, gene selection and dimensionality reduction techniques are applied to compress the information held in the high-dimensional gene expression profiles to a small number of dimensions (typically two or three for simplicity of visualisation). The identification of an appropriate dimensionality reduction technique is a \emph{subjective} choice and a number of methods have been adopted such as Principal and Independent Components Analysis (P/ICA) and highly non-linear techniques such as diffusion maps \cite{Haghverdi2015,haghverdi2016diffusion} or stochastic neighbourhood embedding (SNE) \cite{hinton2002stochastic,van2008visualizing,Amir2013}. This choice is guided by whether the dimensionality reduction procedure is able to identify a suitable low-dimensional embedding of the data that contains a relatively smooth trajectory that might plausibly correspond to the temporal process under investigation.
+Next, the pseudotime trajectory of the cells in this low-dimensional embedding is characterised. In Monocle \cite{Trapnell2014} this is achieved by the construction of a minimum spanning tree (MST) joining all cells. The diameter of the MST provides the main trajectory along which pseudotime is measured. Related graph-based techniques (Wanderlust) have also been used to characterise temporal processes from single cell mass cytometry data \cite{Bendall2014}. In SCUBA \cite{Marco2014} the trajectory itself is directly modelled using principal curves \cite{Hastie2012} and pseudotime is assigned to each cell by projecting its location in the low-dimensional embedding on to the principal curve. The estimated pseudotimes can then be used to order the cells and to assess differential expression of genes across pseudotime. Note that in the diffusion pseudotime framework \cite{haghverdi2016diffusion}, all the diffusion components are used in the random-walk pseudotime model and there is no strict dimensionality reduction step. However, the derivation of the diffusion maps does lead to the compression of information into the first few diffusion components which is what enables successful visualisation \cite{Haghverdi2015}.
+
+A limitation of these approaches is that they provide only a single \emph{point estimate} of pseudotimes concealing the full impact of variability and technical noise. As a consequence, the statistical uncertainty in the pseudotimes is not propagated to downstream analyses - such as differential expression of genes along pseudotime - precluding a thorough treatment of stability. Thus, the impact of this pseudotime uncertainty has not been explored and its implications are unknown as the methods applied typically do not possess a probabilistic interpretation. However, we can examine the stability of the pseudotime estimates by taking multiple random subsets of a dataset and re-estimating the pseudotimes for each subset. For example, we have found that the pseudotime assigned to the same cell can vary considerably across random subsets in Monocle (section \ref{sec:inherentuncert}).
+
+In order to address pseudotime uncertainty in a formal and coherent framework, probabilistic approaches using Gaussian Process Latent Variable Models (GPLVM) have been used recently as non-parametric models of pseudotime trajectories \cite{reid2015pseudotime,campbell2015bayesian,macaulay2016single}. These provide an explicit model of pseudotimes as latent embedded one-dimensional variables. These models can be fitted within a Bayesian statistical framework using priors on the pseudotimes \cite{reid2015pseudotime}, deterministic optimisation methods for approximate inference \cite{macaulay2016single} or Markov Chain Monte Carlo (MCMC) simulations allowing full posterior uncertainty in the pseudotimes to be determined \cite{campbell2015bayesian}.
 
 
-\section{A New Section}
-Illo principalmente su nos. Non message \emph{occidental} angloromanic
-da. Debitas effortio simplificate sia se, auxiliar summarios da que,
-se avantiate publicationes via. Pan in terra summarios, capital
-interlingua se que. Al via multo esser specimen, campo responder que
-da. Le usate medical addresses pro, europa origine sanctificate nos
-se.
-
-Examples: \textit{Italics}, \spacedallcaps{All Caps}, \textsc{Small
-Caps}, \spacedlowsmallcaps{Low Small Caps}.
-
-Acronym testing: \ac{UML} -- \acs{UML} -- \acf{UML} -- \acp{UML}
+In this chapter we adopt this framework to assess the impact of pseudotime uncertainty on downstream differential analyses. We first introduce a novel model for differential expression along pseudotime that may be more suited to single-cell data. We then develop a model for uncertainty in pseudotime based on GPLVM. We go on to show that pseudotime uncertainty can be non-negligible and when propagated to downstream analysis may considerably inflate false discovery rates. We demonstrate that there exists a limit to the degree of recoverable temporal resolution, due to intrinsic variability in the data, with which we can make statements such as ``this cell precedes another''. Overall, we outline a modelling and analytical strategy to produce more stable pseudotime based differential expression analysis.
 
 
-\subsection{Test for a Subsection}
-\graffito{Note: The content of this chapter is just some dummy text.
-It is not a real language.}
-Lorem ipsum at nusquam appellantur his, ut eos erant homero
-concludaturque. Albucius appellantur deterruisset id eam, vivendum
-partiendo dissentiet ei ius. Vis melius facilisis ea, sea id convenire
-referrentur, takimata adolescens ex duo. Ei harum argumentum per. Eam
-vidit exerci appetere ad, ut vel zzril intellegam interpretaris.
+\section{A switch-like model for pseudotime differential expression}
 
-Errem omnium ea per, pro \ac{UML} con populo ornatus cu, ex qui
-dicant nemore melius. No pri diam iriure euismod. Graecis eleifend
-appellantur quo id. Id corpora inimicus nam, facer nonummy ne pro,
-kasd repudiandae ei mei. Mea menandri mediocrem dissentiet cu, ex
-nominati imperdiet nec, sea odio duis vocent ei. Tempor everti
-appareat cu ius, ridens audiam an qui, aliquid admodum conceptam ne
-qui. Vis ea melius nostrum, mel alienum euripidis eu.
+\subsection{Existing pseudotime differential expression}
 
-Ei choro aeterno antiopam mea, labitur bonorum pri no. His no decore
-nemore graecis. In eos meis nominavi, liber soluta vim cu.
+Once a pseudotime has been assigned to each cell it is possible to identify genes that exhibit a strong pseudotemporal dependence through differential expression testing. An approach first introduced in \cite{trapnell2014dynamics} was to regress gene expression on pseudotime using cubic B-spline basis functions to model smooth expression profiles.
 
-\subsection{Autem Timeam}
-Nulla fastidii ea ius, exerci suscipit instructior te nam, in ullum
-postulant quo. Congue quaestio philosophia his at, sea odio autem
-vulputate ex. Cu usu mucius iisque voluptua. Sit maiorum propriae at,
-ea cum \ac{API} primis intellegat. Hinc cotidieque reprehendunt eu
-nec. Autem timeam deleniti usu id, in nec nibh altera.
+Single-cell RNA-seq data is also known to exhibit a large number of \emph{dropouts} which manifest as zero-inflated the data (see e.g. \cite{kharchenko2014bayesian}). This is due to a failure to reverse-transcript low abundance mRNAs, resulting in zero counts. To account for this, Trapnell introduces a \emph{Tobit} likelihood that models the observed expression $y$ in terms of the true expression $y^*$ and a limit of detection $\lambda$ % \graffito{Typically $\lambda = 0$}
+as
 
-%Equidem detraxit cu nam, vix eu delenit periculis. Eos ut vero
-%constituto, no vidit propriae complectitur sea. Diceret nonummy in
-%has, no qui eligendi recteque consetetur. Mel eu dictas suscipiantur,
-%et sed placerat oporteat. At ipsum electram mei, ad aeque atomorum
-%mea.
-%
-%Ei solet nemore consectetuer nam. Ad eam porro impetus, te choro omnes
-%evertitur mel. Molestie conclusionemque vel at.
+\begin{equation}
+	y =
+	\begin{cases}
+	    y^*, & \text{if $y^* > \lambda$},  \\
+	    \lambda, &  \text{otherwise}.
+	\end{cases}
+\end{equation}
+
+which essentially deals with zero-inflation by enforcing any expression less than the detection limit to be latent.
+
+However, the flexible nonparametric nature of the B-spline basis functions may lead to overfitting, biologically unrealistic shapes, and is also difficult to interpret without further post-hoc analysis. To our knowledge no other differential-expression-along-pseudotime models have been proposed.
 
 
-\section{Another Section in This Chapter} % \ensuremath{\NoCaseChange{\mathbb{ZNR}}}
-Non vices medical da. Se qui peano distinguer demonstrate, personas
-internet in nos. Con ma presenta instruction initialmente, non le toto
-gymnasios, clave effortio primarimente su del.\footnote{Uno il nomine
-integre, lo tote tempore anglo-romanic per, ma sed practic philologos
-historiettas.}
+\subsection{Statistical model}
 
-Sia ma sine svedese americas. Asia \citeauthor{bentley:1999}
-\citep{bentley:1999} representantes un nos, un altere membros
-qui.\footnote{De web nostre historia angloromanic.} Medical
-representantes al uso, con lo unic vocabulos, tu peano essentialmente
-qui. Lo malo laborava anteriormente uso.
-
-\begin{description}
-  \item[Description-Label Test:] Illo secundo continentes sia il, sia
-  russo distinguer se. Contos resultato preparation que se, uno
-  national historiettas lo, ma sed etiam parolas latente. Ma unic
-  quales sia. Pan in patre altere summario, le pro latino resultato.
-    \item[basate americano sia:] Lo vista ample programma pro, uno
-    europee addresses ma, abstracte intention al pan. Nos duce infra
-    publicava le. Es que historia encyclopedia, sed terra celos
-    avantiate in. Su pro effortio appellate, o.
-\end{description}
-
-Tu uno veni americano sanctificate. Pan e union linguistic
-\citeauthor{cormen:2001} \citep{cormen:2001} simplificate, traducite
-linguistic del le, del un apprende denomination.
-
-
-\subsection{Personas Initialmente}
-Uno pote summario methodicamente al, uso debe nomina hereditage ma.
-Iala rapide ha del, ma nos esser parlar. Maximo dictionario sed al.
-
-\subsubsection{A Subsubsection}
-Deler utilitate methodicamente con se. Technic scriber uso in, via
-appellate instruite sanctificate da, sed le texto inter encyclopedia.
-Ha iste americas que, qui ma tempore capital. \citeauthor{dueck:trio} \citep{dueck:trio}
-
-\begin{aenumerate}
-    \item Enumeration with small caps (alpha)
-    \item Second item
-\end{aenumerate}
-
-\paragraph{A Paragraph Example} Uno de membros summario preparation,
-es inter disuso qualcunque que. Del hodie philologos occidental al,
-como publicate litteratura in web. Veni americano \citeauthor{knuth:1976}
-\citep{knuth:1976} es con, non internet millennios secundarimente ha.
-Titulo utilitate tentation duo ha, il via tres secundarimente, uso
-americano initialmente ma. De duo deler personas initialmente. Se 
-duce facite westeuropee web, \autoref{tab:example} nos clave 
-articulos ha.
-
-
-
-Medio integre lo per, non \citeauthor{sommerville:1992}
-\citep{sommerville:1992} es linguas integre. Al web altere integre
-periodicos, in nos hodie basate. Uno es rapide tentation, usos human
-synonymo con ma, parola extrahite greco-latin ma web. Veni signo
-rapide nos da.
-
-%Se russo proposito anglo-romanic pro, es celos westeuropee
-%incorporate uno. Il web unic periodicos. Que usate scientia ma, sed
-%tres unidirectional al, asia personas duo de. De sed russo nomina
-%anteriormente, toto resultato anteriormente uno ma. Non se signo
-%romanic technologia, un medio millennios con.
-
-%Major facto sia es, con o titulo maximo international. Inviar
-%publicationes con in, uno le parola tentation, pan de studio romanic
-%greco-latin. Tu duo titulo debitas latente, que vista programma ma.
-%Non tote tres germano se, lo parola periodicos non.
-
-\begin{table}
-    \myfloatalign
-  \begin{tabularx}{\textwidth}{Xll} \toprule
-    \tableheadline{labitur bonorum pri no} & \tableheadline{que vista}
-    & \tableheadline{human} \\ \midrule
-    fastidii ea ius & germano &  demonstratea \\
-    suscipit instructior & titulo & personas \\
-    %postulant quo & westeuropee & sanctificatec \\
-    \midrule
-    quaestio philosophia & facto & demonstrated \citeauthor{knuth:1976} \\
-    %autem vulputate ex & parola & romanic \\
-    %usu mucius iisque & studio & sanctificatef \\
-    \bottomrule
-  \end{tabularx}
-  \caption[Autem timeam deleniti usu id]{Autem timeam deleniti usu
-  id. \citeauthor{knuth:1976}}  \label{tab:example}
-\end{table}
-
-\enlargethispage{2cm}
-\subsection{Linguistic Registrate}
-Veni introduction es pro, qui finalmente demonstrate il. E tamben
-anglese programma uno. Sed le debitas demonstrate. Non russo existe o,
-facite linguistic registrate se nos. Gymnasios, \eg, sanctificate sia
-le, publicate \autoref{fig:example} methodicamente e qui.
-
-Lo sed apprende instruite. Que altere responder su, pan ma, \ie, signo
-studio. \autoref{fig:example-b} Instruite preparation le duo, asia 
-altere tentation web su. Via unic facto rapide de, iste questiones 
-methodicamente o uno, nos al.
-
-\begin{figure}[bth]
-        \myfloatalign
-        \subfloat[Asia personas duo.]
-        {\includegraphics[width=.45\linewidth]{gfx/example_1}} \quad
-        \subfloat[Pan ma signo.]
-        {\label{fig:example-b}%
-         \includegraphics[width=.45\linewidth]{gfx/example_2}} \\
-        \subfloat[Methodicamente o uno.]
-        {\includegraphics[width=.45\linewidth]{gfx/example_3}} \quad
-        \subfloat[Titulo debitas.]
-        {\includegraphics[width=.45\linewidth]{gfx/example_4}}
-        \caption[Tu duo titulo debitas latente]{Tu duo titulo debitas
-        latente. \ac{DRY}}\label{fig:example}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.85\textwidth]{gfx/ch2/switchde/fig1}
+\caption{Sigmoidal expression across pseudotime.
+\textbf{(A)} The sigmoid curve as a model of gene expression along single-cell trajectories, parametrised by the average peak expression $\mu_0$, the activation strength $k$ and the activation time $t_0$.
+\textbf{(B)} An example using the \emph{NDC80} gene from the Trapnell dataset (\cite{trapnell2014dynamics}), which had the lowest $p$-value of all genes tested. Gene expression measurements are shown as the grey points with the maximum likelihood sigmoid fit denoted by the dark line. The maximum likelihood parameter estimates were $\muu = 2.73$, $k_g = -8.71$ and $\tou = 17.61$.
+\textbf{(C)} Zero-inflated differential expression for the transcription factor \emph{MYOG}. Solid line shows the MLE sigmoidal mean while  crosses show imputed gene expression measured as zeroes.
+\textbf{(D)} Posterior predictive density for the zero-inflated model with the solid line denoting MLE sigmoidal mean.
+}\label{fig:01}
 \end{figure}
 
 
-%*****************************************
-%*****************************************
-%*****************************************
-%*****************************************
-%*****************************************
+As a solution to these issues we present \texttt{switchde}, a statistical model and accompanying \texttt{R} package for identifying switch-like differential expression analysis along single-cell trajectories. We model sigmoidal expression changes along pseudotime that provides interpretable parameter estimates corresponding to gene regulation strength and timing along with hypothesis testing for differential expression.
+
+% Our model optionally incorporates zero-inflation for datasets that exhibit high numbers of missing measurements.
+
+%We detail the mathematical specification of the sigmoidal switch model below.
+
+Let $y_{cg}$ debotes the $\log_2$ gene expression of gene $g$ in cell $c$ at pseudotime $t_c$ then
+\begin{equation} \label{eq:nzi}
+y_{cg}(t_c) \sim \mathrm{Norm}(\mu_g(t_c), \; \sigma_g^2)
+\end{equation}
+where
+\begin{equation}
+    \mu_g(t_c) =
+\begin{cases}
+    \hfil  \mu^{(0)}_g, & \text{if } \text{gene $g$ not differentially expressed},  \\
+    \frac{2 \mu^{(0)}_g}{1 + \exp\left(-k_g(t_c - t^{(0)}_g)\right)}, &  \text{if gene $g$ differentially expressed}.
+\end{cases}
+\end{equation}
+
+Under this model the parameter $k_g$ can be thought of as an activation `strength' relating to how quickly a gene switches on or off along pseudotime, while $t^{(0)}_g$ represents the pseudotime at which the gene switches on or off (figure \ref{fig:01}A).
+
+We fit the model using gradient-based L-BFGS-B optimisation to find maximum likelihood estimates (MLEs) of the parameters (appendix \ref{app:switchdemle}). By setting $k_g = 0$ we identify a nested constant-expression model where $\by_g \sim \norm(\muu, \sigma^2_g)$ and so can perform a likelihood ratio test for differential expression, where twice the difference in the log-likelihood MLE between the constant and sigmoidal models asymptotically follows a $\chi^2$ distribution with two degrees of freedom.
+
+\subsubsection{Modelling zero-inflation}
+
+To account for the aforementioned zero-inflation in the data we propose a model that incorporates dropouts in a similar style to \cite{pierson2015zifa}.
+
+\begin{equation}
+\begin{aligned}
+\mu_g(t_c, \theta_g) & = \frac{2 \mu^{(0)}_g}{1 + \exp\left(-k_g(t_c - t^{(0)}_g)\right)} \\
+x_{cg} & \sim \mathcal{N}(\mu_g(t_c, \theta_g), \sigma_g^2) \\
+h_{cg} | x_{cg} & \sim \mathrm{Bernoulli}(\exp(-\lambda_g x_{cg}^2)) \\
+    y_{cg} &=
+\begin{cases}
+    x_{cg} ,& \text{if } h_{cg} = 0\\
+    0,  & \text{if } h_{cg} = 1
+\end{cases}
+\end{aligned}
+\end{equation}
+
+which can be fitted with an expectation-maximisation algorithm (appendix \ref{app:switchdeem}). One advantage of such a model is it allows us to effectively ``impute'' zero or dropout counts as can be seen in figure \ref{fig:01C}.
+
+
+\subsection{Properties}
+
+\subsubsection{Expression profiles of marker genes}
+
+In \cite{trapnell2014dynamics} the genes \emph{CDK1} and \emph{ID1} are identified as markers for the myoblast differentiation trajectory. Zero-inflated \texttt{switchde} fits for these two genes are shown in Figures \ref{fig:S1}A\& B respectively along with the imputed dropout expression (blue crosses). Using the zero-inflated likelihood ratio test these two genes have $p$-values of $2.371947 \times 10^{-73}$ and $1.550464 \times 10^{-8}$.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\textwidth]{gfx/ch2/switchde/S_CDK1_ID1}
+\caption{Expression profiles of \emph{CDK1} (A) and \emph{ID1} (B) along with MLE fits for the zero-inflated sigmoidal model (solid red line) with imputed dropout expression (blue crosses).}\label{fig:S1}
+\end{figure}
+
+\subsubsection{Examples of large and small $p$-values}
+
+\begin{figure}[h]%figure1
+\centering
+\includegraphics[width=0.9\textwidth]{gfx/ch2/switchde/S_pval_hl}
+\caption{(A) Expression of \emph{NUSAP1} with a $p$-value of $5.335782 \times 10^{-69}$ and (B) expression of \emph{GCLC} with a $p$-value of $0.9651487$.}\label{fig:S2}
+\end{figure}
+
+In Figure \ref{fig:S2} we provide example (non-zero-inflated) fits for two genes with drastically different $p$-values: \emph{NUSAP1} is shown in Figure \ref{fig:S2}A with a $p$-value of $5.335782 \times 10^{-69}$ and \emph{GCLC} with a $p$-value of $0.9651487$. It is clear from the expression plots and MLE sigmoidal fits that the gene with the very low $p$-value clearly follows the sigmoidal switch-like trend while the gene with the high $p$-value is well explained by a null (constant expression) model.
+
+\subsubsection{Tracing activation times along pseudotime}
+
+
+\begin{figure}[h]%figure1
+\centering
+\includegraphics[width=0.9\textwidth]{gfx/ch2/switchde/S_differing_t0}
+\caption{A `cascade' of gene regulation along pseudotime. Each red curve corresponds to the MLE sigmoidal fit while the vertical blue dashed line corresponds to the MLE of $t_0$.}\label{fig:S3}
+\end{figure}
+
+One advantage of our model is that one can identify genes up or down regulated at a particular part of the trajectory. To demonstrate this we found the genes with the closest $t_0$ values to 20\%, 32\%, 44\%, 56\%, 68\% and 80\% of the way through the trajectory, based on all genes significant at 1\% FDR.
+
+The results can be seen in Figure \ref{fig:S3}, showing a clear `cascade' of successive gene expression (in)-activations along the trajectory. This also sets the groundwork for identifying temporal gene networks along pseudotime as one can tell whether a given gene is regulated before another.
+
+
+\subsubsection{Comparison of zero-inflated and standard models}
+
+\begin{figure}[!h]%figure1
+\centering
+\includegraphics[width=0.9\textwidth]{gfx/ch2/switchde/S_zi_compare}
+\caption{Comparison of MLE parameter estimates for zero-inflated and standard models, for (A) comparison of $\mu_0$, (B) comparison of $k$, (C) comparison of $t_0$ and (D) comparison of $p$-values.}\label{fig:S4}
+\end{figure}
+
+
+We sought to demonstrate the differences in parameter estimation when considering zero-inflation or otherwise by subsampling 200 genes and fitting both models for each. Figure \ref{fig:S4}A shows the comparisons of $\mu_0$, demonstrating the zero-inflated estimate is typically higher which agrees with intuition. Figure \ref{fig:S4}B demonstrates that estimates of $k$ are well calibrated between models. Figure \ref{fig:S4}C shows the comparison of $t_0$ estimates which is most dissimilar, with a spike in the non-zero-inflated model corresponding to when $t_0$ values barely deviate from their initial estimates. Finally, Figure \ref{fig:S4}D compares the $p$-value estimates, which shows general concordance with no significant biases for either model.
+
+
+\section{Statistical model for probabilistic pseudotime}
+
+The hierarchical model specification for the Gaussian Process Latent Variable model is described as follows:
+\begin{equation} \label{eq:model}
+\begin{aligned}
+	\gamma & \sim \mathrm{Gamma}(\gamma_\alpha, \gamma_\beta), \\
+	\lambda_j & \sim  \mathrm{Exp(\gamma)}, ~j=1,\dots, P, \\
+	 \sigma_j^2 & \sim   \mathrm{InvGamma}(\alpha, \beta), ~j=1,\dots, P, \\
+	t_i & \sim
+			\mathrm{TruncNormal}_{[0, 1)}(\mu_t, \sigma_t^2), ~i=1,\dots,N,\\
+	\bSigma & =  \mathrm{diag}(\sigma_1^2, \dots, \sigma_P^2) \\
+	K^{(j)}(t, t') & = \exp( -\lambda_j (t-t')^2 ), ~j=1,\dots, P, \\
+	\mu_j &\sim  \mathrm{GP}(0, K^{(j)}), ~ j=1,\dots,P,  \\
+	\bx_{i} & \sim  \mathrm{MultiNorm}( \bmu(t_i), \bSigma ), ~i=1,\dots,N.
+\end{aligned}
+\end{equation}
+where $\bx_{i}$ is the $P$-dimensional input of cell $i$ (of $N$) found by performing dimensionality reduction on the entire gene set (for our experiments $P=2$ following previous studies). The observed data is distributed according to a multivariate normal distribution with mean function $\bmu$ and a diagonal noise covariance matrix $\bSigma$. The prior over the mean function $\bmu$ in each dimension is given by a Gaussian Process with zero mean and covariance function $K$ given by a standard double exponential kernel. The latent pseudotimes $t_1, \dots, t_N$ are drawn from a truncated Normal distribution on the range $[0, 1)$. Under this model $|\bl|$ can be thought of as the arc-length of the pseudotime trajectories, so applying larger levels of shrinkage to it will result in smoother trajectories passing through the point space. This shrinkage is ultimately controlled by the gamma hyperprior on $\gamma$, whose mean and variance are given by $\frac{\gamma_\alpha}{\gamma_\beta}$ and $\frac{\gamma_\alpha}{\gamma^2_\beta}$ respectively. Therefore, adjusting these parameters allows curves to match prior smoothness expectations provided by plotting marker genes.
+
+The hyperparameters $\gamma_\alpha$, $\gamma_\beta$, $\alpha$, $\beta$, $\mu_t$ and $\sigma_t^2$ are fixed and values for specific experiments for given in S1 Supplementary Text. Inference was performed using the Stan probabilistic programming language \cite{gelman2015stan} and our implementation is available as an \texttt{R} package at \url{http://www.github.com/kieranrcampbell/pseudogp}.
+
+
+
+
+% Results and Discussion can be combined.
+\section{Results}
+
+
+\subsection{Probabilistic pseudotime inference using Gaussian Process Latent Variable Models}
+
+We first provide a brief  of the Gaussian Process Latent Variable Model \cite{Titsias2010}. The GPLVM uses a Gaussian Process to define a stochastic mapping between a low-dimensional latent space to a (typically) higher dimensional observation space. A Gaussian Process is characterised by a mean function describing the expected mapping between the latent and observation spaces and a covariance function that describes the covariance between the mapping function evaluated at any two arbitrary latent positions. The covariance function therefore acts to control the second-order statistics of the Gaussian Process and suitable choices can be designed to encourage properties such as smoothness, periodicity or other second-order features.
+
+For this application, the latent space is one-dimensional, describing pseudotime progression whilst the observations are the reduced dimensionality representations of the single cell expression data. We will use Bayesian inference to characterise the joint posterior distribution $p(\bt|\bX)$ of the pseudotimes $\bt = \{ t_1, \dots, t_n \}$ given the expression data $\bX = \{\bx_1, \dots, \bx_n \}$ for $n$ single cells. As the integrals involved are mathematically intractable, we will use Markov Chain Monte Carlo simulations to obtain a numerical approximation to the posterior by drawing samples from the posterior distribution. Each sample corresponds to one possible trajectory \emph{and} ordering for the cells with the set of samples providing an approximate distribution of pseudotimes. The pseudotime values are between measured 0 and 1 where a value of 0 corresponds to one end state of the temporal process and a value 1 to the other. In this work we focus only on non-bifurcating processes. Fig. \ref{fig:workflow} gives a diagrammatic representation of our proposed workflow and a more detailed model descriptions is given in Methods.
+
+\begin{figure}[h]
+\centering
+  \includegraphics[width=\textwidth]{gfx/ch2/figure2.png}
+  \caption{{\bf Workflow for fitting Bayesian Gaussian Process Latent Variable Model pseudotime models.} Reduced-dimension representations of the gene expression data (from Laplacian eigenmaps, PCA and/or t-SNE) are created. The pseudotime can be fitted using one or more low dimensional representations of the data. Posterior samples of pseudotimes are drawn from a Bayesian GPLVM and these are used to obtain alternative pseudotime estimates. Downstream differential analyses can be performed on the posterior samples to characterise the robustness with respect to variation in pseudotime estimates.} \label{fig:workflow}
+\end{figure}
+
+\subsection{Sources of uncertainty in pseudotime inference}
+
+We applied our probabilistic pseudotime inference to three published single-cell RNA-seq datasets of differentiating cells: myoblasts in Trapnell et al. (2014) \cite{Trapnell2014}, hippocampal quiescent neural stem cells in Shin et al. (2015) \cite{Shin2015} and sensory epithelia from the inner ear in Burns et al. (2015) \cite{Burns2015}. For the Trapnell and Shin datasets we used Laplacian Eigenmaps \cite{Belkin2003} for dimensionality reduction prior to pseudotime inference, while for the Burns dataset we used the PCA representation of the cells from the original publication (for a detailed description of our analysis, see S1 Supplementary Text). These particular choices of reduced dimensionality representations gave visually plausible trajectory paths in two dimensions.
+
+An implicit assumption in pseudotime estimation is that proximity in pseudotime should reflect proximity in the observation or data space. That is, two cells with similar pseudotime assignments should have similar gene expression profiles but, in practice, cell-to-cell variability and technical noise means that the location of the cells in the observation space will be variable even if they truly do have the same pseudotime. We plotted posterior mean pseudotime trajectories for the three datasets learned using the GPLVM in Fig. \ref{fig:posmean}A-C and the posterior predictive data distribution $p(\bX^*|\bX)$. The posterior predictive data distribution gives an indication of where \emph{future} data points might occur given the existing data. Notice that for all three data sets, this distribution can be quite diffuse. This is due to a combination of actual cell-to-cell expression variability, manifesting as a spread of data points around the mean trajectory, but also model misspecification (the difference between what our ``assumed" model and the ``true" but unknown data generating mechanism).
+
+
+\begin{figure}[h]
+\centering
+	\includegraphics[width=\textwidth]{gfx/ch2/figure3.png}
+  	\caption{{\bf Posterior pseudotime trajectories for three single-cell RNA-seq datasets.} Posterior pseudotime trajectories shown in a two-dimensional reduced representation space for (left) a Laplacian eigenmaps representation of Trapnell et al. (2014) \cite{Trapnell2014}, (centre) Laplacian eigenmaps representation of Burns et al. (2015) \cite{Burns2015} and (right) PCA representation of Shin et al. (2015) \cite{Shin2015}. Each point represents a cell and the black line represents the mean pseudotime trajectory. Plots \textbf{(A-C)} shows the overall posterior predictive data density (red) whilst \textbf{(D-F)} shows the conditional posterior predictive data density for $t = 0.5$ (red) and $t = 0.7$ (blue). }
+  	\label{fig:posmean}
+\end{figure}
+
+It is interesting to discuss the latter point as it is an issue that is often not adequately addressed or fully acknowledged in the literature. The GPLVM applied assumes a homoscedastic noise distribution which is uniform along the pseudotime trajectory. However, it is clear that the variability of the data points can change along the trajectory and a heteroscedastic (non-uniform) noise model may be more appropriate in certain scenarios. Unfortunately, whilst models of heteroscedastic noise processes can be applied \cite{le2005heteroscedastic}, these typically severely complicate the statistical inference and require a model of how the variability changes over pseudotime which is likely to be unknown. The important point here is that the posterior probability calculations are always calibrated with respect to a given model. The better the model represents the true data generating mechanism, the better calibrated the probabilities. Model misspecification can also contribute to posterior uncertainty in inferred parameters.
+
+Returning to the intrinsic cell-to-cell variability, we next considered the conditional posterior predictive data distributions $p(\bX^*|t^*, \bX)$ which are shown in Fig. \ref{fig:posmean}D-F. These distributions show the possible distribution of future data points given the existing data \emph{and} a theoretical pseudotime $t^*$ and, in this example, we condition on pseudotimes $t^* = 0.5$ and $t^* = 0.7$. Although the two pseudotimes differ by a magnitude of 0.2, the conditional predictive distributions are very close or overlapping. This means that cells with pseudotimes of 0.5 or 0.7 could have given rise to data point occupying these overlapping regions. This variability is what ultimately limits the temporal resolution that can be obtained.
+
+It is important to note that the posterior mean trajectories correspond to certain \textit{a priori} or subjective smoothness assumptions (specified as hyperparameters in the model specification) which dedicate the curvature properties of the trajectory. Fig. \ref{fig:varygamma} shows three alternative posterior mean pseudotime trajectories for the Trapnell data based on different hyperparameters settings for the GPLVM. In a truly unsupervised scenario all three paths could be plausible as we would have little information to inform us about the true shape of the trajectory. This would become an additional source of uncertainty in the pseudotime estimates. However, we favoured hyperparameter settings that gave rise to well-defined (unimodal) posterior distributions that resulted in multiple independent Markov Chain Monte Carlo runs converging to the same mean trajectory rather than settings that give rise to a ``lumpy" posterior distribution with many local modes corresponding to different interpretations of the data (see Supplementary Figure S2). Later on, when we consider inference using multiple representations, the ability to specify a wider choice of trajectories is useful as we will demonstrate how the correspondence between pseudotime trajectories in different reduced dimension representations is not always obvious from a visual analysis.
+
+\begin{figure}[h]
+
+	\centering
+	\includegraphics[width=\textwidth]{gfx/ch2/figure4.png}
+  \caption{{\bf Effect of prior expectations on pseudotime trajectories.}
+      The prior probability distribution (defined in terms of hyperparameters $(\gamma_\alpha, \gamma_\beta)$ in our model) on the expected smoothness of pseudotime trajectories can fundamentally change the inferred progression path. Examples shown using the data of Trapnell et al. (2014) \cite{Trapnell2014}. Red - shows the density of the posterior predictive data distribution. Black - shows the mean pseudotime trajectory. Shrinkage hyperparameters $(\gamma_\alpha, \gamma_\beta)$ of (30, 5), (5,1) and (3,1) were used for \textbf{A}, \textbf{B} and \textbf{C} respectively.}
+	\label{fig:varygamma}
+\end{figure}
+
+We next examined the posterior distributions in pseudotime assignment for four cells from the Trapnell dataset in Fig. \ref{fig:posuncert}A. Uncertainty in the estimate of pseudotime is assessed using the highest probability density (HPD) credible interval (CI), the Bayesian equivalent of the confidence interval. The 95\% pseudotime CI typically covers around one quarter of the trajectory, suggesting that pseudotemporal orderings of single-cells can potentially only resolve a cell's place within a trajectory to a coarse estimate (e.g. `beginning', `middle' or `end') and do not necessarily dramatically increase the temporal resolution of the data. One immediate consequence of this is that it is unlikely that we can make definite statements such as whether one cell comes exactly before or after another. This is illustrated in Figures \ref{fig:posuncert}B-D which displays the estimated pseudotime uncertainty for all three datasets. In all the datasets, the general progression is apparent, but the precise ordering of the cells has a non-trivial degree of ambiguity.
+
+\begin{figure}[h]
+\centering
+	\includegraphics[width=\textwidth]{gfx/ch2/figure5.png}
+    \caption{ {\bf  Posterior uncertainty in pseudotime trajectories. } \textbf{(A)} Posterior uncertainty in pseudotimes for four randomly selected cells from the Trapnell et al. (2014) dataset. Horizontal bars represent the 95\% highest probability density (HPD) credible interval (CI), which typically covers around a quarter of the pseudotime trajectory. \textbf{(B-D)} Boxplots showing the posterior uncertainty for each cell from the Trapnell et al. (2014) datasets. The edges of the boxes and tails correspond to the 75\% and 95\% HPD-CIs respectively.} \label{fig:posuncert}
+\end{figure}
+
+
+\subsection{Failure to account for pseudotime uncertainty leads to increased false discovery rates}
+
+The previous section addressed the sources of statistical uncertainty in the pseudotimes. We next explored the impact of pseudotime uncertainty on downstream analysis. Specifically, we focused on the identification of genes that are differentially expressed across pseudotime. Typically, these analyses involve regression models that assume the input variables (the pseudotimes) are both fixed and certain but, with our probabilistic model, we can use the posterior samples from our Bayesian model to refit the regression model to each pseudotime estimate. In doing so we can examine which genes are called as significant in each of the posterior samples and assess the stability of the differential expression analysis to pseudotime uncertainty by recording how frequently genes are designated as significant across the posterior samples. This allowed us to re-estimate the false discovery rate (FDR)  fully accounting for the variability in pseudotime. As there are a multitude of sources of uncertainty on top of this (such as biological and technical variability) this allows us to put a lower bound on the FDR of such analyses in general.
+
+Precisely, we fitted the tobit regression model from \cite{Trapnell2014} for each gene for each sample from the posterior pseudotime distribution, giving us a per-gene set of false-discovery-rate-corrected $Q$-values. We then compared the proportion of times a gene is called as differentially expressed (5\% FDR) across all pseudotime samples to the $Q$-value using a point pseudotime estimate based on the maximum \textit{a posteriori} (or MAP) estimate. We reasoned that if a gene is truly differentially expressed then such expression will be robust to the underlying uncertainty in the ordering. Note for comparison, our MAP estimates with the GPLVM correlate strongly with Monocle derived pseudotime point estimates (see Supplementary Figure S3).
+
+Fig. \ref{fig:afdr}(A,B) shows two analyses for two illustrative genes  (ITGAE and ID2) in the Trapnell data set. Using the MAP pseudotime estimates, differential expression analysis of ITGAE over pseudotime attained a $q$-value of 0.02. However, the gene was only called significant in only 9\% of posterior pseudotime samples with a median $q$-value of 0.32. In contrast, ID1 - known to be involved in muscle differentiation - had a $q$-value of $6.6 \times 10^{-11}$ using the MAP pseudotime estimate, but was also called  significant in all the posterior pseudotime estimates having a median $q$-value of $4.4 \times 10^{-11}$. This indicates that the significance of the temporal expression variability of ID1 is highly robust whilst the significance ITGAE is much more dependent on the exact pseudotemporal ordering chosen.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{gfx/ch2/figure6.png}
+\caption{ {\bf Approximate FDR for differential expression across pseudotime.}
+\textbf{(A)} Gene expression plots across pseudotime, with black traces corresponding to models fitted to pseudotime samples while the red trace corresponds to the point (MAP) estimate for two exemplar genes and \textbf{(B)} corresponding gene expression heatmap for 20 randomly sampled posterior pseudotimes.
+\textbf{(C)} The number of genes identified as robust and unstable for all three datasets examined.}
+\label{fig:afdr}
+\end{figure}
+
+As a conservative rule of thumb, we designated two sets of putative temporal associations: (i) a \emph{robust} set comprising genes with a $q$-value less than 5\% at the MAP estimate of pseudotime but also identified as significant in 95+\% of the posterior pseudotime samples and (ii) an \emph{unstable} set of genes whose $q$-values are less than 5\% using the MAP estimate of pseudotime but is significant in less than 95\% of the posterior pseudotime samples. Looking across all genes in the the three datasets we found that approximately half of the associations in all three datasets were unstable and whose temporal association depended on the choice of pseudotime estimates (Fig. \ref{fig:afdr}C).
+
+We performed a Gene Ontology enrichment analysis of the differentially expressed genes using (i) the robust set only, (ii) all DE genes (robust and unstable) and (iii) the unstable set only, using the GOseq package \cite{young2010gene} with a 5\% FDR significance level, enriching for categories corresponding to biological processes (Figure \ref{fig:go_enrichment}). The set of unstable genes give no significant enriched GO categories on their own whilst the robust set gave a similar number of enriched GO categories as using all DE genes despite containing only half the number of genes. In all three datasets, there was a large overlap between the enriched GO categories identified and interestingly a high proportion of GO terms that are only significant from the robust gene set only. This suggests that the inclusion of the unstable gene set, potentially containing nuisance findings, may have reduced power to identify certain GO categories. Overall, our analysis suggests that the robust set of temporally differentially expressed genes identified by taking into account posterior uncertainty is a biologically meaningful gene set and not an arbitrary subset of the set of all DE genes.
+
+
+\begin{figure}
+\centering
+	\includegraphics[width=\textwidth]{gfx/ch2/figure7.png}
+\caption{ {\bf Gene Ontology Enrichment Analysis.}
+\textbf{(A)} Number of enriched GO categories for the three datasets studied. Genes used for enrichment were either those that exhibit \emph{robust} differential expression, \emph{unstable} differential expression or \emph{all}.
+\textbf{(B-D)} Venn diagrams showing the number of enriched GO terms based on the differential expression categories above.} \label{fig:go_enrichment}
+\end{figure}
+
+
+\subsection{A sigmoidal model of switch-like behaviour across pseudotime}
+
+In the previous section, we examined differential expression across pseudotime by fitting generalized additive models to the gene expression profiles \cite{Trapnell2014}. Their approach used a Tobit regression model with a cubic smoothing spline link function. Hypothesis testing using the likelihood ratio test is conducted against a null model of no pseudotime dependence. This model provides a highly flexible but non-specific model of pseudotime dependence that was not suited to the next question we wished to address.
+
+Specifically, we were interested in whether we could identify if two genes switched behaviours at the \emph{same} (or similar) times during the temporal process and therefore an estimate of the time resolution that can be gained from a pseudotime estimation approach. This requires estimation of a parameter that can be directly linked to a switch on(/off) time that is not present in the Tobit regression model. As a result, we propose a ``sigmoidal'' model of differential expression across pseudotime that better captures switch-like gene (in)activation and has easy to interpret parameters corresponding to activation time and strength. By combining such a parametric model with the Bayesian inference of pseudotime we can then infer the resolution to which we can say whether one gene switches on or off before another. Details of the sigmoidal gene activation model are given in Methods and in S1 Supplementary Text.
+
+We applied our sigmoidal model to learn patterns of switch-like behaviour of genes in the Trapnell dataset. For each gene we estimated the \emph{activation time} ($t_0$) as well as the \emph{activation strength} ($k$). We fitted these sigmoidal switching models to all posterior pseudotime samples to approximate the posterior distribution for the time and strength parameters. We uncovered a small set of genes whose median activation strength is distinctly larger than the rest and had low variability across posterior pseudotime samples implying a population of genes that exhibit highly switch-like behaviour (Fig. \ref{fig:switchres}A). Some genes showed high activation strength for certain pseudotime estimates but low overall median levels across all the posterior samples. We concluded that genes with large credible intervals on the estimates of activation strength do not show robust switch-like behaviour and demonstrate the necessity of using probabilistic methods to infer gene behaviour as opposed to point estimates that might give highly unstable results.
+
+\begin{figure}
+\centering
+	\includegraphics[width=\textwidth]{gfx/ch2/figure8.png}
+\caption{ {\bf Robust inference of switch-like behaviour in genes across pseudotime.}
+\textbf{(A)} The square-root of the median of the activation strength parameter $k$ across all pseudotime samples as a function of activation time $t_0$. The error bars show the 95\% credible interval, demonstrating that point estimates can severely skew the apparent behaviour of genes and a requirement for a robust Bayesian treatment of gene expression. A distinct population of genes whose median activation strength sits separate from the majority close to the x-axis implies a subset of genes show true switch-like behaviour. \textbf{(B)} Representative examples of genes whose median activation strength is large (top row) compared to small (bottom row). Each black point represents the gene expression of the cell with red lines corresponding to posterior traces of the sigmoidal gene expression model. Genes with a large activation strength show a distinct gene expression pattern compared to those with a small activation strength. \textbf{(C)} A posterior density plot of the activation time for the five genes showing strong activation strength in (B).} \label{fig:switchres}
+\end{figure}
+
+Representative examples of genes with large and small activation strengths showed marked differences in the gene expression patterns corresponding  to strong and weak switch-like behaviour as expected (Fig. \ref{fig:switchres}B). In addition, we examined the posterior density activation time $t_0$ for the five genes showing strong switching behaviour (Fig. \ref{fig:switchres}C). Under a point estimate of pseudotime each gene would give a distinct activation time with which these genes can be ordered. However, when pseudotime uncertainty is taken into account, a distribution over possible activation times emerges. In this case, the five genes all have activation times between 0.3 and 0.5 precluding a precise ordering (if one exists) of activation. Visually, this seems sensible since there is considerable cell-to-cell variability in the expression of these genes and not all cells express the genes during the ``on" phase. We are therefore unable to determine whether the ``on" phase begins when the first cell with high expression is first observed in pseudotime or, if it starts before, and the first few cells simply have null expression (for biological or technical reasons).
+
+We further explore this in Fig. \ref{fig:switchres2} which shows ten genes identified as having significant switch-like pseudotime dependence but with a range of mean activation times $t_0$. The switch-like behaviour is stable to the different posterior pseudotime estimates that were sampled from the GPLVM. It is clear that the two genes RARRES3 and C1S are activating at an earlier time compared to the genes IL20RA and APOL4. However, we cannot be confident of the ordering within the pairs RARRES3/C1S and IL20RA/APOL4 in pseudotime since the distributions over the activation times are not well-separated and it is impossible to make any definitive statements as to whether one of these genes (in)activates before another. If the probability of a sequence of activation events is required, instead of examining each gene in isolation, we can count the number of posterior samples in which one gene precedes another instead and evidence may emerge of a possible ordering. These observations suggests a finite temporal resolution limit that can be obtained using pseudotemporal ordering.
+
+\begin{figure}[h]
+\centering
+	\includegraphics[width=\textwidth]{gfx/ch2/figure9.png}
+\caption{ {\bf Identifying pseudotime dependent gene activation behaviour.} Ten selected genes from \cite{Trapnell2014} found using our  sigmoidal gene activation model exhibiting a range of activation times. For each gene, we show the expression levels of each cell (centre) where each row corresponds to an ordering according to a different posterior samples of pseudotime. The orange line corresponds to a point estimate of the activation time. The posterior density of the estimated activation time is also shown (right).
+} \label{fig:switchres2}
+\end{figure}
+
+We note that we have deliberately avoid directly linking the sigmoidal gene activation and GPLVM pseudotime models to derive a single, joint model. In a joint model, the inference would attempt to order the cells in such a way as to maximise the fit of the sigmoidal and GPLVM to the expression data. However, as the sigmoidal model is only intended to identify genes with switch-like behaviour, it cannot explain other types of pseudotime dependence that may and do exist. This model misspecification would potentially drive inference in ways that cannot be foreseen.
+
+\subsection{Contribution to pseudotime uncertainty from the reduced dimensional representation}
+
+Finally, we address the impact of the dimensionality reduction that is often applied to single cell gene expression data prior to pseudotime estimation. The choice of dimensionality reduction approach is based on whether the method gives rise to a putative pseudotime trajectory in the reduced dimensionality representation. This is typically conducted with visual inspection followed by confirmational analysis by examining known marker genes with established temporal association. This may lead to a number of possibilities since the same trajectory may exist in a number of reduced dimensionality representations.
+
+We sought to characterise the contribution of the dimensionality reduction process to pseudotime uncertainty. The wide variety of dimensionality reduction methods available and in use for pseudotime estimation precludes a complete investigation here and we choose to focus instead on principal components analysis - a standard technique - and used, for example, in Waterfall \cite{shin2015single} or TSCAN \cite{ji2016tscan} or as a preprocessing step used before applying non-linear methods such as t-SNE or GPLVMs.
+
+To do this, we used the differentiating myoblasts data set \cite{Trapnell2014} and performed PCA (using the \texttt{R} package \texttt{scater} \cite{scater}). We then applied GPLVM pseudotime estimation to the two-dimensional principal component representation and identified a set of 1,968 robustly differentially expressed genes from the posterior pseudotime samples. Next, we took 50 random subsets containing 80\% of the cells and repeated the above procedure on each subset. As the PCA projection depends on the data itself, the reduced dimensional representation derived from each subsample will be different, we wanted to compare the differentially expressed genes identified to those found using the full data to determine if the variation in the reduced dimensionality representation impacts on the downstream differential expression analyses. We examined all genes and PCA subsamples and found that over 90\% of differential expression tests showed a robust temporal association (Fig. \ref{fig:pca_compare}A). Over half of all genes were robustly differentially expressed in all PCA subsamples and over 80\% in at least 40 out of 50 PCA subsamples (Fig. \ref{fig:pca_compare}B). These results indicate that the vast majority of genes remained robustly differentially expressed despite the differences in the reduced dimensional space across the random subsets (and the potential loss of detection power due to there being fewer cells).
+
+\begin{figure}[h]
+\centering
+	\includegraphics[width=\textwidth]{gfx/ch2/figure10.png}
+\caption{ {\bf Pseudotime uncertainty arising from reduced dimensional representation.}
+\textbf{(A)} Proportion of all subsampled differential expression tests where the gene was found to be robustly differentially expressed using only those genes robustly differentially expressed when considering all cells. % This sentence is painful
+\textbf{(B)} Cumulative frequency of cell subsamples in which a given gene is robustly differentially expressed. Over half of all genes were robustly differentially expressed in all PCA subsamples.} \label{fig:pca_compare}
+\end{figure}
+
+Our results maybe further explained by the fact that principal components analysis uses a linear, orthogonal transformation that maximises variance in the principal directions. This will give reduced dimensional representations that are likely to be robust in many instances to variable cell inputs given sufficiently large sample sizes. Highly nonlinear techniques, such as t-SNE, Laplacian Eigenmaps or diffusion maps, maybe more sensitive to the input data and the resultant reduced dimensional representations more variable. A thorough characterisation of the relative contribution of the reduced dimensional representation and the curve fitting to the statistical uncertainty in the pseudotime estimates must be determined through simulations (like the ones detailed here) and conclusions may differ for different dimensionality reduction/curve fitting combinations.
+
+\subsection{Inherent uncertainty in point-estimation methods} \label{sec:inherentuncert}
+To demonstrate that there is inherent uncertainty in pseudotime (i.e. it's not just the consequence of using a probabilistic model) we subsampled cells, recomputed the pseudotime for each subsample and computed the variance across subsamples. In particular, we recomputed the pseudotime estimate using \texttt{Monocle}'s MST fitting and the Laplacian Eigenmaps embedding as above for 30 resamples to 80\% of the total number of cells (without replacement). For each subsample, the pseudotimes were standardized to lie in $[0,1)$. Since pseudotimes are equivalent up to a parity transformation, if the correlation between the pseudotimes assigned at each resample and using the entire cell set was less than 0 then the pseudotimes were rescaled to $\tilde{t} = 1-t$ to `orient' them in the right direction\footnote{Note that this transformation actually gives benefit of the doubt to each resample and will only bias the variance downwards.}. Supplementary Figure S2 shows the $2\sigma$ interval\footnote{Approximately equivalent to the 95\% CI} across all cells. It can be seen to vary to as much as 0.5, implying there is a large inherent uncertainty in pseudotimes even using point-estimate methods.
+
+\subsection{Consistency with \texttt{Monocle}}
+To ensure the GPLVM fit is consistent with other methods we compared the MAP pseudotime estimates with those assigned using \texttt{Monocle}. \texttt{Monocle} works by using Independent Component Analysis (ICA) for dimensionality reduction then fits a minimum spanning tree (MST) in the reduced space. The longest path through the minimum spanning tree is taken to be the trajectory and the pseudotime of each cell is the length along this trajectory.
+
+We performed two comparisons: firstly using the entire \texttt{Monocle} method (using the 500 most variable genes for dimensionality reduction), and secondly using just the MST fitting using the Laplacian Eigenmaps embedding as described above. The results can be seen in Supplementary Figures S3 with $R^2$ values of 0.83 and 0.96. Also plotted are the 95\% HPD credible intervals, and in general the \texttt{Monocle} value is captured within this interval.
+
+
+\section{Discussion}
+
+Pseudotime estimation from gene expression profiling of single cells provides the ability to extract temporal information about complex biological processes from which \emph{true} time series experimentation may be technically challenging or impossible. In our investigations we have sought to characterise the utility of a probabilistic approach to the single cell pseudotime estimation problem over approaches that only return a single point estimate of pseudotime. Our work is significant since it has so far not been possible to assess the impact of this statistical uncertainty in downstream analyses and to ascertain the level of temporal resolution that can be obtained.
+
+In order to address this we adopted a Gaussian Process Latent Variable modelling framework to perform probabilistic pseudotime estimation within a Bayesian inference setting. The GPLVM allows us to probabilistically explore a range of different pseudotime trajectories within the reduced dimensional space. We showed that in a truly unbiased and unsupervised analysis the properties of the pseudotime trajectory will never purely be a product of the data alone and can heavily depend on prior assumptions about the smoothness, length scales of the trajectory and noise properties. Using  samples drawn from the posterior distribution over pseudotime estimates under the GPLVM we were able to assess if genes that showed a significant pseudotime dependence under a point (MAP) pseudotime estimate would be robust to different possible pseudotime estimates. In two of the three datasets we examined we discovered that, when adjusted for pseudotime uncertainty, the false discovery rate may be significantly larger than the target 5\%. Our investigations show that reliance on a single estimate of pseudotime can lead to increased number of false discoveries but that it is possible to assess the impact of such assumptions within a probabilistic framework.
+
+A caveat of the specific methodology adopted in this study is that it is necessarily computationally intensive due to the use of full Markov chain Monte Carlo based Bayesian inference and is dominated by functions of the Gaussian Process covariance matrix that have complexity $O(n^3)$ where $n$ is the number of cells. Our STAN implementation is able to process 300 cells in around 15 minutes on a standard laptop computer but well-known variational approximations based on inducing point \cite{titsias2009variational} and recent stochastic variational algorithms \cite{hensman2013gaussian} can reduce the computational burden and improve scaling to $O(n) > 10^4$. However, this scalability comes at the expense of the reduced ability to fully characterise posterior uncertainty. In this study we have focused purely on best characterising the posterior uncertainty using MCMC algorithms that asymptotically converge to the true posterior distribution. In practice this purest approach may not be necessary but we argue that pseudotime uncertainty should be addressed.
+
+It is important to note that the GPLVM used in our investigations is not intended to be a single, all-encompassing solution for pseudotime modelling problems. For our purposes, it provided a simple and relevant device for tackling the single trajectory pseudotime problem in a probabilistic manner but clearly has limitations when the temporal process under investigation contains bifurcations or heteroscedastic noise processes (as discussed earlier). Improved and/or alternative probabilistic models are required to address more challenging modelling scenarios but the general procedures we describe are generic and should be applicable to any problem where statistical inference for a probabilistic model can give posterior simulation samples.
+
+We also developed a novel sigmoidal gene expression temporal association model that enabled us to identify genes exhibiting a strong switch-like (in)activation behaviour. For these genes we were then able to estimate the activation times and use these to assess the time resolution that can be attained using pseudotime estimates of single cells. Our investigations show that pseudotime uncertainty prevents precise characterisation of the gene activation time but a probabilistic model can provide a distribution over the possibilities. In application, this uncertainty means that it is challenging to make precise statements about when regulatory factors will turn on or off and if they act in unison. This places an upper limit on the accuracy of dynamic gene regulation models and causal relationships between genes that could be built from the single cell expression data.
+
+In conclusion, single cell genomics has provided a precision tool with which to interrogate complex temporal biological processes. However, as widely reported in recent studies, the properties of single cell gene expression data are complex and highly variable. We have shown that the many sources of  variability can contribute to significant uncertainty in statistical inference for pseudotemporal ordering problems. We argue therefore that strong statistical foundations are vital and that probabilistic methods for provide a platform for quantifying uncertainty in pseudotemporal ordering which can be used to more robustly identify genes that are differentially expressed over time. Robust statistical procedures can also temper potentially unrealistic expectations about the level of temporal resolution that can be obtained from computationally-based pseudotime estimation. Ultimately, as the raw input data is not true time series data, pseudotime estimation is only ever an attempt to solve a \emph{missing data} statistical inference problem that we should remind ourselves involves quantities (pseudotimes) that are \emph{unknown, never can be known}.

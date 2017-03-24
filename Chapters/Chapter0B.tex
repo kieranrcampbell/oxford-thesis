@@ -1,0 +1,32 @@
+%********************************************************************
+% Appendix
+%*******************************************************
+% If problems with the headers: get headings in appendix etc. right
+%\markboth{\spacedlowsmallcaps{Appendix}}{\spacedlowsmallcaps{Appendix}}
+\chapter{Data analysis}
+
+\section{Chapter 2}
+
+
+All analyses are available either as Rmarkdown notebooks or as \texttt{R} scripts at \url{http://github.com/kieranrcampbell/pseudogp-paper/}
+
+\subsection{Trapnell}
+The data was imported from the \texttt{HSMMSingleCell} package\footnote{\url{http://bioconductor.org/packages/release/data/experiment/html/HSMMSingleCell.html}} and $\log_{10}$ of the FPKM values with a pseudo-count of 1. Then, using genes with a transformed expression greater than 0.3 a generalized linear model was fit with $\mathrm{CV}^2 \sim a 10^{-k\mu}$ where $\mathrm{CV}^2$ is the square of the coefficient of variation and $\mu$ is the mean for a particular gene. Genes whose measured coefficient of variation was greater than four times that predicted by the model were then used for dimensionality reduction, with the reasoning that those that vary greatest will contribute most to pseudotemporal processes.
+
+The Laplacian Eigenmaps embedding was then found using the \texttt{R} package \texttt{embeddr}\footnote{\url{http://github.com/kieranrcampbell/embeddr/}} using the default parameters. The Trapnell dataset contains a differentiation trajectory of differentiating myoblasts as well as contaminating interstitial mesenchymal cells. These mesenchymal cells were discovered using Gaussian Mixture Model clustering in the reduced space (using $k=3$ components) and subseqently removed. A further four cells were removed as outliers on the manifold. This reduced the original 271 cell dataset to 155 cells. The PCA and t-SNE representations were found using the \texttt{R} package \texttt{scater}\footnote{\url{http://github.com/davismcc/scater}} using the default gene set (the 500 most variable genes) and the reduced set of 155 cells as discovered above. For the t-SNE representation a perplexity of 3 was used.
+
+The Bayesian GPLVM pseudotime trajectory was fitted on the Laplacian Eigenmaps embedding using the \texttt{R} package \texttt{pseudogp}\footnote{\url{http://kieranrcampbell.github.com/pseudogp}} using the default MCMC parameters and smoothing hyperparameters $\gamma_\alpha = 30$, $\gamma_\beta = 5$ which were chosen empirically based on the quality of the fit.
+
+\subsection{Burns}
+The data were downloaded from the Gene Expression Omnibus accession number 71982 (\url{http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE71982}) as the pre-processed TPM count matrix. The transformation applied to the TPM counts was performed identically to the original paper: genes with TPM expression less than 1 are set to 0 while those with TPM expression greater than 1 are set to $\log_2$ of that expression level. The original publication focussed pseudotime analyses on Utrichular cells rather than Cochlear ones. Using ``Ute\_P1'' in the column names of the cells in the data as designating Utrichular cells, we took only those forward for analysis.
+
+Then a PCA plot (similar to the original paper) was constructed once more using \texttt{scater}. The original publication states the ``top'' 195 genes were used for PCA analysis and we emailed the corresponding author asking the definition of ``top'', but received no reply so assumed it refers to ``most variable''. Using this definition we found a similarly-shaped PCA plot to that in the publication. The pseudotime trajectory identified in the paper involves only a subset of cells that represent a supporting cell to hair cell transition. We identified these cells in the PCA by plotting the intensity of the fluorescent markers measured as well as three marker genes (\emph{LFNG}, \emph{CDH4} and \emph{SOX2}) and computationally isolated these using $k$-means clustering.
+
+The Laplacian Eigenmaps embedding of just the trajectory cells was found using the \texttt{embeddr} \texttt{R} package with 35 nearest-neighbours and the entire gene-set. Two cells were removed from the analysis as outliers. A principal curve\footnote{Which can be thought of as representing the MAP of a 1D GPLVM} was fitted and the behaviour of several marker genes observed to be identical to that shown in the original publication, implying we had recovered the same cell ordering. For the PCA representation of the differentiation the \texttt{scater} defaults were used but with \texttt{scale\_features = FALSE}. For the t-SNE representation, a range of perplexities were examined to find one that most gave a trajectory like structure in the reduced embedding. A perplexity of 2 was subsequently chosen, with all other parameters those of the defaults in \texttt{scater} except \texttt{scale\_features = FALSE}.
+
+The GPLVM was fitted on the Laplacian Eigenmaps embedding using \texttt{pseudogp}. The curve was initialised from a principal curve and smoothing hyperparameters $\gamma_\alpha = 20$, $\gamma_\beta = 2$ were used.
+
+\subsection{Shin}
+The data were downloaded as supplementary data from \url{http://www.cell.com/cms/attachment/2038326541/2052521610/mmc7.xlsx}. This included the \texttt{Waterfall} pseudotime assignment, allowing us to compare as a sanity check. The PCA representation was found using the top 195 most variable genes and \texttt{scale\_features = FALSE} in the \texttt{scater} package. The shape closely resembled that from the original publication and colouring by the pseudotime assigned by \texttt{Waterfall} clearly showed this was the case. The t-SNE representation was found again using \texttt{scater} with 195 most variable genes, \texttt{scale\_features = FALSE} and a perplexity of 3. The Laplacian Eigenmaps embedding was found with \texttt{embeddr}, again using the top 195 most variable genes, a euclidean distance metric and 30 nearest neighbours.
+
+The GPLVM was fitted on the PCA embedding (as in original publication) using \texttt{pseudogp}. The MCMC chain was initialised from the first component of the PCA of the representation and smoothing hyperparameters of $\gamma_\alpha = 8$, $\gamma_\beta = 2$.

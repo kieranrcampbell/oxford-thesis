@@ -1,104 +1,211 @@
 %************************************************
-\chapter{Incorporating prior information using Bayesian latent variable models}\label{ch:ouijachap} % $\mathbb{ZNR}$
+\chapter{Incorporating prior information with switch-like models}\label{ch:ouijachap} % $\mathbb{ZNR}$
 %************************************************
-Ei choro aeterno antiopam mea, labitur bonorum pri no. His no decore
-nemore graecis. In eos meis nominavi, liber soluta vim cu. Sea commune
-suavitate interpretaris eu, vix eu libris efficiantur.
 
-\section{Some Formulas}
-Due to the statistical nature of ionisation energy loss, large
-fluctuations can occur in the amount of energy deposited by a particle
-traversing an absorber element\footnote{Examples taken from Walter
-Schmidt's great gallery: \\
-\url{http://home.vrweb.de/~was/mathfonts.html}}.  Continuous processes
-such as multiple
-scattering and energy loss play a relevant role in the longitudinal
-and lateral development of electromagnetic and hadronic
-showers, and in the case of sampling calorimeters the
-measured resolution can be significantly affected by such fluctuations
-in their active layers.  The description of ionisation fluctuations is
-characterised by the significance parameter $\kappa$, which is
-proportional to the ratio of mean energy loss to the maximum allowed
-energy transfer in a single collision with an atomic electron:
-\graffito{You might get unexpected results using math in chapter or
-section heads. Consider the \texttt{pdfspacing} option.}
+% \section{Incorporating prior information using nonlinear factor analysis}
+
+In this paper we present an orthogonal approach implemented in a latent variable model statistical framework called Ouija that can integrate prior expectations of gene behaviour along trajectories using Bayesian nonlinear factor analysis. Our approach uses known or putative marker genes directly for pseudotime estimation rather than as a device for retrospectively validating pseudotime estimates. In particular, our model focuses on switch-like expression behaviour and assumes that the marker gene expression follows a noisy switch pattern that corresponds to up- or down-regulation over time. Crucially, we explicitly model when a gene turns on or off as well as how quickly this behaviour occurs. We can then place Bayesian priors on this behaviour that allows us to learn temporal gene behaviours that are consistent with existing biological knowledge.
+
+Our hypothesis in developing Ouija was that using only small panels of marker gene expression profiles with a vague knowledge of their temporal behaviour we could learn pseudotimes equivalent to methods using whole transcriptome estimates. To test this we applied Ouija to a range of  previously published single-cell RNA-seq datasets. In the following, we demonstrate how Ouija can recover pseudotemporal orderings of cells using as low as five marker genes, providing estimates consistent with whole-transcriptome algorithms such as Monocle \cite{Trapnell2014} and Waterfall \cite{Shin2015}. Ouija is available as a \texttt{R} package at \url{www.github.com/kieranrcampbell/ouija}.
+
+\begin{figure}[!t]
+	\centering
+	\includegraphics[width=\textwidth]{gfx/ch3/main_fig}
+	\caption{{\bf Overview of Ouija.}
+	\textbf{A} A small panel of genes is chosen with \emph{a priori} knowledge about their expression dynamics, either as cell-type specific marker genes or from pathway interaction databases such as KEGG. The pseudotimes are subsequently inferred using Ouija followed by downstream analyses such as differential expression and clustering of additional genes  using standard methods such as those described in \cite{Trapnell2014}.
+	\textbf{B} Ouija infers pseudotimes using Bayesian nonlinear factor analysis by decomposing the input gene expression matrix through a sigmoidal mapping function. The latent variables become the pseudotimes of the cells while the factor loading matrix is informative of different types of gene behaviour. A heteroskedastic dispersed noise model with dropout is used to accurately model scRNA-seq data.
+	\textbf{C}  Examples of sigmoidal gene expression for three different sets of parameters. Points represent simulated gene expression, with the solid black line denoting the sigmoid curve and the red dashed line denoting the activation time.
+	The sigmoid function is parameterised by (i) $\mu_0$ - the average peak expression level, (ii) $k$ - the activation strength and (iii) $t_0$ - the activation time. \emph{Left} Fast `switch-on' behaviour with parameters $k= 30$, $\mu_0 = 1$, $t_0 = 0.5$, \emph{Centre} Slower `switch-off' behaviour with parameters $k= -10$, $\mu_0 = 2$, $t_0 = 0.5$ and \emph{Right} Decaying behaviour with parameters $k= -5$, $\mu_0 = 10$, $t_0 = 0$.
+	\textbf{D} The effect of prior expectations on the `activation time' $t_0$ parameter. A highly peaked prior (top) corresponds to confident knowledge of where in the trajectory a gene turns on or off, while a more diffuse prior (bottom) indicates more uncertainty as to where in the trajectory the gene behaviour occurs.
+	\textbf{E} Comparison of Ouija to alternative pseudotime inference algorithms. Ouija is the only algorithm that explicitly allows incorporation of prior knowledge of gene behaviour.}
+	\label{fig:main}
+\end{figure}
+
+
+
+\subsection{Results}
+
+\subsubsection{Pseudotime inference is possible from limited marker gene panels}
+
+In order to assess if limited marker gene panels could be used to infer pseudotime we created synthetic switch-like gene expression data with known pseudotimes and then re-inferred the pseudotimes using a number of  pseudotime algorithms (Fig. \ref{fig:benchmarking}A). Briefly, pseudotimes were generated from a uniform distribution from 0 to 1 and activation strengths and times randomly generated for each gene. Gene expression representing $\log_2(\text{TPM + 1})$ was then generated using a Gaussian likelihood censored from below at zero. Care was taken to ensure the mean-variance and dropout relations were comparable to real single-cell RNA-seq data. Full details can be found in Supplementary Methods.
+
+\begin{figure}[!t]
+	\centering
+	\includegraphics[width=\textwidth]{gfx/ch3/traj_comparison}
+	\caption{{\bf Comparison with alternative pseudotime algorithms using synthetic data.}
+	\textbf{A} Example plots of synthetic gene expression across pseudotime for four genes. The algorithm for generating synthetic pseudotemporally regulated gene expression data may be found in supplementary methods.
+	\textbf{B} We compared Ouija against three alternative pseudotemporal methods (principal component 1, Monocle 2 and DPT). We generated synthetic data as described in Supplementary Methods for gene expression matrices of different sizes with forty replicates in each and attempted to re-infer the pseudotimes. We used both Pearson correlation as measures of accuracy compared to the true values. Results show that PC1, Monocle 2, DPT and Ouija with non-informative priors perform comparably. Ouija with priors given by directional and true priors are significantly more accurate in all cases.}
+	\label{fig:benchmarking}
+\end{figure}
+
+We generated data for $100$ cells for simulated marker gene panels containing $6, 9, 12$ and $15$ genes respectively, with forty replicates of each dataset for varying values of activation strength and time. We applied Ouija along with principal component analysis (using the projection on to the first principal component as pseudotime) and two non-linear, non-parametric approaches, Diffusion Pseudotime (DPT) \cite{haghverdi2016diffusion} and Monocle 2 \cite{Trapnell2014}. For the Ouija analysis, we utilised three modes of operation. In the first, we used random, non-informative prior information where the direction of gene regulation is not pre-specified. In the second, \emph{directional priors} are used to indicate \emph{a priori} knowldege of whether genes are up or down-regulated. Finally, we considered a benchmark prior corresponding to the true values used in the synthetic data generation. In general it is of course unrealistic to know the true parameter values but we include this case merely for comparison purposes. Performance was assessed using Pearson correlation and Kendall's tau between the inferred and true pseudotimes as a measure of concordance of the ordering of two sets.
+
+Our investigations indicated that as the number of genes in the marker panel increases, the accuracy of the pseudotemporal inference also increases across all methods tested (Fig. \ref{fig:benchmarking}B). However, even with 6 marker genes, there was good concordance between the estimated and true pseudotimes. PCA, DPT, Monocle 2 and Ouija with random, non-informative priors were comparable in performance but, if the directionality of gene regulation is given in Ouija, the estimated pseudotimes are much improved and accuracy is similar to those obtained using the true parameter values.
+
+\subsubsection{Prior assumptions strongly influence inferred pseudotime trajectories}
+
+We next investigated the use of limited marker gene panels using real single cell expression data. We identified three previously published single-cell RNA-seq datasets of differentiating cells with reported marker genes and compared the expression profiles of the pseudotime ordered cells between Ouija, PCA and Monocle 2 (Fig. \ref{fig:panels}). Remarkably the (pseudo)temporal expression profiles inferred by all three methods differed considerably and was strongly influenced by the latent assumptions underlying the method.
+
+The assumption of Ouija's gene behaviour model is seen throughout its expression profiles with cells preferentially ordered so that they form a  switch-like pattern over pseudotime. In contrast, the linearity assumptions of principal components analysis means that expression changes linearly over pseudotime in its inferred profiles. Finally, Monocle 2 which employs a non-linear, non-parametric approach makes no strict assumptions about the form of the expression profiles. However, when applied to these limited marker gene panels, the expression behaviours of the marker genes is not always immediately obvious.
+
+\begin{figure}[!t]
+	\centering
+	\includegraphics[width=0.67\textwidth]{gfx/ch3/gex_plot.png}
+	\caption{{\bf Comparison of different pseudotemporal inference algorithms using small marker gene panels.}
+	Gene expression across pseudotime plotted using trajectories inferred from Ouija, PCA and Monocle 2 for
+	(A) For the dataset described in \cite{Trapnell2014} of differentiating myoblasts, using five cell cycle and differentiation markers (\emph{CDK1}, \emph{ID1}, \emph{MYOG}, \emph{MEF2C}, \emph{MYH3}).
+	(B) For the dataset described in \cite{Shin2015} of neurogenesis in mice, using six marker genes described in the publication (\emph{Sox11}, \emph{Eomes}, \emph{Stmn1}, \emph{Apoe}, \emph{Aldoc}, \emph{Gfap}).
+	(C) For the dataset described in \cite{molinaro2016silico} of neurogenesis in planarians with six marker genes (\emph{piwi.1}, \emph{vasa.1}, \emph{hdac.1}, \emph{pc.2}, \emph{chat} and \emph{ascl.1}).
+	}
+	\label{fig:panels}
+\end{figure}
+
+These observations are unsurprising. Pseudotime inference is a highly under-constrained problem since the only quantity which is measured is the single cell expression profiles but there is no direct measurement of the pseudotimes which are latent, unobserved quantities nor do we measure the way in which the one-dimensional pseudotimes are mapped to the multi-dimensional gene expression profiles. This under-constrained inference model is regularised by initial assumptions that strongly impact on the final outcome. In many pre-existing algorithms the assumptions are typically centred around proximity regularisation where cells said to be ``close" in expression behaviour (by some defined measure) are also assumed to be close in pseudotime. In Ouija, strong assumptions regarding gene-specific expression behaviour are made which if satisfied give a powerful alternative to a non-parametric approach.
+
+\subsubsection{Ouija clusters cell types based on pseudotime continuity}
+
+We then investigated a real single cell expression data from a study tracking the differentiation of embryonic precursor cells into haematopoietic stem cells (HSCs) \cite{zhou2016tracing}. The cells begin as haemogenic endothelial cells (ECs) before successively transforming  into pre-HSC and finally HSC cells. The authors identified six marker genes that would be down-regulated along the differentiation trajectory, with early down-regulation of \emph{Nrp2} and \emph{Nr2f2} as the cells transform from ECs into pre-HSCs, and late down-regulation of \emph{Nrp1}, \emph{Hey1}, \emph{Efnb2} and \emph{Ephb4} as the cells emerge from pre-HSCs to become HSCs. The study investigated a number of distinct cell types at different stages of differentiation: EC cells, T1 cells ($CDK45^-$ pre-HSCs), T2 cells ($CDK45^+$ pre-HSCs) and HSC cells at the E12 and E14 developmental stages.
+
+We conducted a pseudotime analysis using Ouija on the 105 cells featured in the original experiment to investigate whether the inferred pseudotime progression could recapitulate the known cell types in the study and their known relationships in an unsupervised analysis using just these six marker genes alone. As Ouija uses a probabilistic model and inference we were able to obtain a posterior ordering matrix (Fig. \ref{fig:hsc}A) that describes the probability of the ordering of any two cells. When cells are ordered by the expected pseudotime, this posterior matrix contained three metastable groups of cells corresponding to endothelial, pre-HSCs and HSCs respectively (Fig. \ref{fig:hsc}B). Misclassifications within cell types (T1/T2 and E12/E14 cells) could be explained by examining a principal components analysis of the global expression profiles (Fig. \ref{fig:hsc}C) which suggests that these cell types are not completely distinct in terms of expression.
+
+When examining the inferred pseudotime progression of each marker gene (Fig. \ref{fig:hsc}D), these three metastable states corresponded to the activation of all genes at the beginning of pseudotime time, the complete inactivation of all the marker genes at the end of the pseudotime and a intervening transitory period as each marker gene turns off. Each metastable state clearly associates with a particular cell type (Fig. \ref{fig:hsc}E). With, as expected \emph{Nrp2} and \emph{Nr2f2} exhibiting early down-regulation and \emph{Nrp1}, \emph{Hey1}, \emph{Efnb2} and \emph{Ephb4} all exhibiting late down-regulation. Using this HSC formation system as a proof-of-principle it is evident that, if a small number of switch-like marker genes are known, it is possible to recover signatures of temporal progression using Ouija and that these trajectories are compatible with real biology.
+
+\begin{figure}[!t]
+	\centering
+	\includegraphics[width=\textwidth]{gfx/ch3/hsc}
+	\caption{{\bf Pseudotime ordering and cell type identification of haematopoeietic stem cell differentiation}
+(A) Consistency matrix of pseudotime ordering. Entry in the $i^{th}$ row and $j^{th}$ column is the proportion of times cell $i$ was ordered before cell $j$ in the MCMC posterior traces. Gaussian mixture modelling on the first principal component of the matrix identified three clusters that are evident in the heatmap.
+(B) Confusion matrix for cell types identified in original study (rows) and Ouija inferred (columns). Ouija inferred cluster 1 largely corresponds to EC cells, cluster 2 corresponds to pre-HSC cells while cluster 3 corresponds to HSC cells.
+(C) PCA plot similar to the original publication \cite{zhou2016tracing} suggests supports the existence of three distinct cell types in the data.
+(D) HSC gene expression as a function of pseudotime ordering for six marker genes. Background colour denotes the maximum likelihood estimate for the Ouija inferred cell type in that region of pseudotime.
+(E) HSC gene expression as a function of pseudotime ordering for six marker genes with cells coloured by known cell type.
+}
+	\label{fig:hsc}
+\end{figure}
+
+
+\subsubsection{Cell cycle prediction as a pseudotime estimation problem}
+
+We wanted to consider a study composed of a large panel of marker genes and identified a single-cell RNA-seq study \cite{kowalczyk2015single} that examined variation between individual hematopoietic stem and progenitor cells from two mouse strains (C57BL/6 and DBA/2) as they age. Principal component analysis for each cell type and age showed a striking association of the top principal components with cell cycle-related genes (Fig. \ref{fig:regev}A), indicating that transcriptional heterogeneity was dominated by cell cycle status. They scored each cell for its likely cell cycle phase using signatures based on functional annotations \cite{reference2009gene} and profiles from synchronized HeLa cells\cite{whitfield2002identification} for the G1/S, S, G2, and G2/M phases.
+
+We investigated if Ouija could be used to identify cell cycle phase, treating the inferential problem as a continuous pseudotime process. We applied Ouija to 1,008 C57Bl/6 HSCs using 374 GO cell cycle genes that satisfied gene selection criteria used in the original study. The estimated pseudotime progression given by Ouija recapitulates the  trajectory observed in principal component space. The estimated pseudotime distribution correlates well with the cell cycle phase categorisation  given in the original study (Fig. \ref{fig:regev}C). Furthermore, we identified 88 genes with large (negative) activation strengths indicating strong switch (off) behaviour (Fig. \ref{fig:regev}D) ordering the cells according to pseudotime and then ordering by activation time shows a cascade of expression inactivation across these 88 genes over cell cycle progression with the quiescent ($G_0$) indicated by complete inactivation of all 88 genes (Fig. \ref{fig:regev}E,F). The explicit parametric model assumed by Ouija makes this gene selection and ordering process simple and \emph{quantitative} compared to a non-parametric approach that would require some retrospective analysis or visual inspection.
+
+This investigation indicates that although Ouija makes strong assumptions about gene-specific expression behaviour, its utility is not limited to small marker gene panels that strictly obey its switch-like behavioural assumptions.
+
+\begin{figure}[!t]
+	\includegraphics[width=\textwidth]{gfx/ch3/regev.png}
+	\caption{{\bf Cell cycle phase prediction.} Principal component representation of hematopoietic stem cells coloured according to (A) the original cell cycle progression score \cite{kowalczyk2015single} and (B) Ouija - cell cycle classes indicated are based on original study classifications. (C) Distribution of Ouija inferred pseudotime versus the original cell cycle classifications. (D) Estimated activation strengths for the 374 cell cycle gene panels. (E) Gene expression profile for 88 switch-like genes with cells ordered by pseudotime and (F) genes ordered by activation time.}
+	\label{fig:regev}
+\end{figure}
+
+
+\subsubsection{Robustness to transient gene behaviour}
+
+Finally, a potential limitation of our switch behaviour model is that it assumes that all selected marker genes follow a strict monotonically increasing (or decreasing) behaviour and there exists a smooth, non-transient transition from an initial cell expression state to a final resting state at the end of the pseudotemporal period. In selecting a marker gene panel the investigator may not always be fully certain of the quantitative behaviour of all genes and some may indeed exhibit a transient rather than switch behaviour. In order to test of the impact of such genes on Ouija we performed a simulation study to assess the effect of genes exhibiting transient behaviour on pseudotime estimation. We did this by simulating panels of single cell expression values that mimic the zero-inflated properties observed in real data for a variety of genes containing mixed numbers of switch-like and transient gene behaviours (Fig. \ref{fig:switch-transient-simulation}A). Specifically we considered two scenarios, the first in which the numbers of switch-like and transient genes are equal and the second in which three-quarters of the gene panels were switch-like genes and the reminder transient (Figure \ref{fig:switch-transient-simulation}B). Our simulation study showed that if the switch-like genes remained the dominant class of genes in the simulated marker gene panels, it remained possible to accurately infer pseudotime in the presence of transient genes (Fig. \ref{fig:switch-transient-simulation}C). Furthermore, as the size of the panel increases, the absolute number of switch genes was a greater determinant of pseudotime estimation accuracy than the proportion of the marker gene panel that was truly switch-like.
+
+\begin{figure}[!t]
+	\includegraphics[width=\textwidth]{gfx/ch3/switch-transient-simulation.png}
+	\caption{{\bf Impact of marker genes exhibiting transient rather than switch-like gene behaviours.} (A) Examples of simulated switch and transient expression genes. (B) Example 24-gene panel with 12 switch and 12 transient genes. (C) Correlation between true and estimated pseudotime as a function of the gene panel size and proportion of switch genes for ten replicates.}
+	\label{fig:switch-transient-simulation}
+\end{figure}
+
+\subsection{Conclusions}
+
+We have developed a novel approach for pseudotime estimation based on modelling switching expression behaviour over time for marker genes. Our strategy provides an orthogonal and complimentary approach to unsupervised, whole transcriptome methods that do not explicitly model any gene-specific behaviours and do not readily permit the inclusion of prior knowledge.
+
+We demonstrate that the selection of a few marker genes allows comparable pseudotime estimates to whole transcriptome methods on real single cell data sets. Furthermore, using a parametric gene behaviour model and full Bayesian inference we are able to recover posterior uncertainty information about key parameters, such as the gene activation time, that allows us to explicitly determine a potential ordering of gene (de)activation events over (pseudo)time. The posterior ordering uncertainty can also be used to identify homogeneous phases of transcriptional activity that might correspond to transient, but discrete, cell states.
+
+Although our focus was on switching expression behaviour, alternative parametric functions could be used to capture other gene behaviours. However, it is critical to recognise that in a latent variable modelling framework such as this, prior information has a strong influence over the final outcome. Therefore any constraints should match \emph{a priori} knowledge of the marker genes under investigation. Otherwise the pseudotime estimation could forcibly impose a pre-specified temporal form on the data. Furthermore, whilst we do not explicitly address branching processes in this work, our framework provides a natural and simple extension to allow for multiple lineages and cell fates using a sparse mixture of factor analyzers in which each lineage is denoted by a separate mixture component and the factors loadings are shrunk to common values to denote shared branches. This will be developed in future work.
+
+In summary, Ouija provides a novel contribution to the increasing plethora of pseudotime estimation methods available for single cell gene expression data.
+
+\subsection{Methods}
+
+\subsubsection{Overview}
+
+We give a high-level overview of our pseudotime inference framework here and provide more technical details in the following sub-sections. The aim of pseudotime ordering is to associate a $p$-dimensional expression measurement (the data) to a latent unobserved pseudotime. Mathematically we can express this as the following:
+\begin{align}
+	\underbrace{y_c}_{\mathclap{\text{Expression}}} = \underbrace{f}_{\text{Mapping}}(\underbrace{t_c}_{\text{Pseudotime}}) + \underbrace{e_c}_{\text{Noise}}
+	\label{eq:master_eq}
+\end{align}
+where the function $f$ maps the one-dimensional pseudotime to the $p$-dimensional observation space in which the data lies. The challenge lies in the fact that \emph{both} the mapping function $f$ and the pseudotimes are \emph{unknown}.
+
+Our objective here is to use parametric forms for the mapping function $f$ that will enable relatively fast computations whilst characterising certain gene expression temporal behaviours. Our premise is that prior knowledge might exist for a set of marker genes whose temporal behaviour is known to be approximately switch-like and therefore can be used to infer pseudo-time orderings. We use sigmoid mapping functions that can capture ``switch-like'' behaviour over time as shown in Figure \ref{fig:main}B and are parameterised by key quantities for which estimates (and associated uncertainty) might be useful: the activation strength and the activation time. These correspond to measures of how rapidly the gene expression level changes and when the (in)activation of the gene occurs.
+
+The approach we adopt is therefore a form of latent variable model implemented as \emph{non-linear parametric factor analysis} where the factors correspond to the pseudo-times and the factor loadings correspond to the parameters of the sigmoidal function which provides the non-linearity. In addition, we model dropouts and a strict empirically motivated mean-variance relationship (see Supplementary Information) which is required to provide constraints on the latent variable model since nothing on the right hand side of Equation \ref{eq:master_eq} is actually measured or observed.
+
+\subsubsection{Statistical Model}
+
+\paragraph{Model Specification}
+
+We index $C$ cells by $c \in 1, \ldots, C$ and $G$ genes by $g \in 1, \ldots, G$. Let $y_{cg} = [\bY]_{cg}$ denote the (log-transformed) observed cell-by-gene expression matrix. In order to make the strength parameters comparable between genes we normalise the gene expression so the approximate half-peak expression is 1 through the transformation
+
 \begin{equation}
-\kappa =\frac{\xi}{E_{\textrm{max}}} %\mathbb{ZNR}
+\by_g \rightarrow \by_g / s_g.
 \end{equation}
-$E_{\textrm{max}}$ is the maximum transferable energy in a single
-collision with an atomic electron.
-\[
-E_{\textrm{max}} =\frac{2 m_{\textrm{e}} \beta^2\gamma^2 }{1 +
-2\gamma m_{\textrm{e}}/m_{\textrm{x}} + \left ( m_{\textrm{e}}
-/m_{\textrm{x}}\right)^2}\ ,
-\]
-where $\gamma = E/m_{\textrm{x}}$, $E$ is energy and
-$m_{\textrm{x}}$ the mass of the incident particle,
-$\beta^2 = 1 - 1/\gamma^2$ and $m_{\textrm{e}}$ is the electron mass.
-$\xi$ comes from the Rutherford scattering cross section
-and is defined as:
-\begin{eqnarray*} \xi  = \frac{2\pi z^2 e^4 N_{\textrm{Av}} Z \rho
-\delta x}{m_{\textrm{e}} \beta^2 c^2 A} =  153.4 \frac{z^2}{\beta^2}
-\frac{Z}{A}
-  \rho \delta x \quad\textrm{keV},
-\end{eqnarray*}
-where
 
-\begin{tabular}{ll}
-$z$          & charge of the incident particle \\
-$N_{\textrm{Av}}$     & Avogadro's number \\
-$Z$          & atomic number of the material \\
-$A$          & atomic weight of the material \\
-$\rho$       & density \\
-$ \delta x$  & thickness of the material \\
-\end{tabular}
+Here, $s_g$ is a gene-specific size factor defined by
 
-$\kappa$ measures the contribution of the collisions with energy
-transfer close to $E_{\textrm{max}}$.  For a given absorber, $\kappa$
-tends
-towards large values if $\delta x$ is large and/or if $\beta$ is
-small.  Likewise, $\kappa$ tends towards zero if $\delta x $ is small
-and/or if $\beta$ approaches $1$.
+\begin{equation}
+s_g = \frac{1}{|\mathcal{Y}_g^*|} \sum_{y_{cg}^* \in \mathcal{Y}_g^*} y_{cg}^*
+\end{equation}
 
-The value of $\kappa$ distinguishes two regimes which occur in the
-description of ionisation fluctuations:
+and
 
-\begin{enumerate}
-\item A large number of collisions involving the loss of all or most
-  of the incident particle energy during the traversal of an absorber.
-
-  As the total energy transfer is composed of a multitude of small
-  energy losses, we can apply the central limit theorem and describe
-  the fluctuations by a Gaussian distribution.  This case is
-  applicable to non-relativistic particles and is described by the
-  inequality $\kappa > 10 $ (\ie, when the mean energy loss in the
-  absorber is greater than the maximum energy transfer in a single
-  collision).
-
-\item Particles traversing thin counters and incident electrons under
-  any conditions.
-
-  The relevant inequalities and distributions are $ 0.01 < \kappa < 10
-  $,
-  Vavilov distribution, and $\kappa < 0.01 $, Landau distribution.
-\end{enumerate}
+\begin{equation}
+\mathcal{Y}_g^* = \{ y_{cg} : y_{cg} > 0 \}.
+\end{equation}
 
 
-\section{Various Mathematical Examples}
-If $n > 2$, the identity
-\[
-  t[u_1,\dots,u_n] = t\bigl[t[u_1,\dots,u_{n_1}], t[u_2,\dots,u_n]
-  \bigr]
-\]
-defines $t[u_1,\dots,u_n]$ recursively, and it can be shown that the
-alternative definition
-\[
-  t[u_1,\dots,u_n] = t\bigl[t[u_1,u_2],\dots,t[u_{n-1},u_n]\bigr]
-\]
-gives the same result.  
+Our statistical model can be specified as a Bayesian hierarchical model where the likelihood is given by a bimodal distribution formed from a mixture of zero-component (dropout) and an non-zero expressing cell population. Let $\bt$ be an $C$-length pseudotime vector (one for each cell), then:
+\begin{align}
+		y_{cg} & \sim \begin{cases}
+		\theta_{cg} + (1 - \theta_{cg}) \mathrm{Student}(\mu_{cg}, \sigma^2_{cg}) & \mbox{if } y_{cg} = 0 \\
+		 (1 - \theta_{cg}) \mathrm{Student}(\mu_{cg}, \sigma^2_{cg}) & \mbox{if } y_{cg} > 0
+		\end{cases}, \\
+		\theta_{cg} & \sim \mathrm{Bernoulli}(\mathrm{logit}^{-1} (\beta_0 + \beta_1 \mu_{cg})), \\
+		\bm \beta & \sim \norm(0, 0.1) .
+\end{align}
+The relationship between dropout rate and expression level is expressed as a logistic regression model \cite{Kharchenko2014}. Furthermore, we impose a mean-variance relationship of the form:
+\begin{equation}
+\sigma^2_{cg}  = (1 + \phi) \mu_{cg} + \epsilon
+\end{equation}
 
-%*****************************************
-%*****************************************
-%*****************************************
-%*****************************************
-%*****************************************
+with the hierarchical prior structure
+
+\begin{align}
+	t_c &\sim \norm(0.5, 1), \\
+	\mu_{cg} & =  \mO_g f(t_c, k_g, \tO), \\
+	\phi & \sim \mathrm{Gamma}(\alpha_\phi, \beta_\phi)
+\end{align}
+where $\phi$ is a dispersion parameter. This model is motivated by empirical observations of marker gene behaviour (see Supplementary Information).
+
+We define the sigmoid function as
+\begin{align}
+	f(t_c;k_g,t^{(0)}_g) &= \frac{2}{1 + \exp\left(-k_g(t_c - t^{(0)}_g)\right)},
+\end{align}
+where $k_g$ and $\tO_g$ denote the activation strength and activation time parameters for each gene and $\mO_g$ the average peak expression
+with default priors
+\begin{align}
+		\mO_g & \sim \mathrm{Gamma}(\delta / 2, 1 / 2), \\
+		k_g & \sim \norm(\mu^{(k)}_g, 1 / \tau^{(k)}_g), \\
+		\tO_g & \sim \norm(\mu^{(t)}_g, 1 / \tau^{(t)}_g),
+\end{align}
+If available, user-supplied prior beliefs can be encoded in these priors by specifying the parameters $\mu^{(k)}_g, \tau^{(k)}_g, \mu^{(t)}_g, \tau^{(t)}_g$. Otherwise, inference can be performed using uninformative hyperpriors on these parameters. Specifying $\mu^{(k)}_g$ encodes a prior belief in the strength and direction of the activation of gene $g$ along the trajectory with $\tau^{(k)}_g$ (inversely-) representing the strength of this belief. Similarly, specifying $\mu^{(t)}_g$ encodes a prior belief of where in the trajectory gene $g$ exhibits behaviour (either turning on or off) with $\tau^{(t)}_g$ encoding the strength of this belief.
+
+\paragraph{Inference}
+
+We performed posterior inference using Markov Chain Monte Carlo (MCMC) stochastic simulation algorithms, specifically the No U-Turn Hamiltonian Monte Carlo approach \cite{homan2014no} implemented in the STAN probabilistic programming language \cite{carpenter2015stan} which we use to implement our model. The parameter $\epsilon = 0.01$ is used to avoid numerical issues in MCMC computation. For larger marker gene panels, such as in the cell cycle analysis section, we used the Stochastic Variational Inference methods implemented in STAN to perform approximate Bayesian inference.
+
+\subsubsection{Principal Component Analysis assumes linear gene activations}
+
+If the mapping functions $f$ are restricted to a linear form then the model becomes:
+\begin{equation}
+	\begin{aligned}
+		k_g & \sim \norm(\mu^{(k)}_g, 1 / \tau^{(k)}) \\
+		y_{cg} & \sim \norm(k_g t_c, 1 / \tau_g)
+	\end{aligned}
+\end{equation}
+
+Note that the data can always be centred making it redundant to model an intercept. If we set $\mu^{(k)}_g = 0$ and $\tau^{(k)} = 1$ then this model reduces to Factor Analysis. In other words, performing factor analysis on single-cell RNA-seq data is entirely equivalent to finding a trajectory where gene expression is linear over time with no prior expectations on how the genes behave. If we model a common precision across all genes so $\tau_g = \tau$ then then model reduces further to
+(probabilistic) principal components analysis \cite{tipping1999probabilistic}, providing an explicit interpretation for the results of principal component analysis on single-cell data.

@@ -4,9 +4,9 @@
 %
 % Copyright (C) 2015 André Miede http://www.miede.de
 %
-% If you like the style then I would appreciate a postcard. My address 
-% can be found in the file ClassicThesis.pdf. A collection of the 
-% postcards I received so far is available online at 
+% If you like the style then I would appreciate a postcard. My address
+% can be found in the file ClassicThesis.pdf. A collection of the
+% postcards I received so far is available online at
 % http://postcards.miede.de
 %
 % License:
@@ -29,7 +29,7 @@
 \RequirePackage{fix-cm} % fix some latex issues see: http://texdoc.net/texmf-dist/doc/latex/base/fixltx2e.pdf
 \documentclass[ twoside,openright,titlepage,numbers=noenddot,headinclude,%1headlines,% letterpaper a4paper
                 footinclude=true,cleardoublepage=empty,abstractoff, % <--- obsolete, remove (todo)
-                BCOR=5mm,paper=a4,fontsize=11pt,%11pt,a4paper,%
+                BCOR=5mm,paper=a4,fontsize=12pt,%11pt,a4paper,%
                 ngerman,american,%
                 ]{scrreprt}
 
@@ -42,7 +42,10 @@
 % Bibliographies
 %*******************************************************
 \addbibresource{Bibliography.bib}
-\addbibresource[label=ownpubs]{AMiede_Publications.bib}
+\addbibresource{pseudogp.bib}
+\addbibresource{switchde.bib}
+\addbibresource{ouija.bib}
+% \addbibresource[label=ownpubs]{AMiede_Publications.bib}
 
 %********************************************************************
 % Hyphenation
@@ -81,24 +84,35 @@
 % use \cleardoublepage here to avoid problems with pdfbookmark
 \cleardoublepage
 % \part{Some Kind of Manual}
-\include{Chapters/Chapter01} 
-\cleardoublepage
-\ctparttext{You can put some informational part preamble text here. 
-Illo principalmente su nos. Non message \emph{occidental} angloromanic
-da. Debitas effortio simplificate sia se, auxiliar summarios da que,
-se avantiate publicationes via. Pan in terra summarios, capital
-interlingua se que. Al via multo esser specimen, campo responder que
-da. Le usate medical addresses pro, europa origine sanctificate nos se.}
-% \part{The Showcase}
+
+
+% \cleardoublepage
+
+% \ctparttext{You can put some informational part preamble text here.
+% Illo principalmente su nos. Non message \emph{occidental} angloromanic
+% da. Debitas effortio simplificate sia se, auxiliar summarios da que,
+% se avantiate publicationes via. Pan in terra summarios, capital
+% interlingua se que. Al via multo esser specimen, campo responder que
+% da. Le usate medical addresses pro, europa origine sanctificate nos se.}
+
+% Introduction
+\include{Chapters/Chapter01}
+
+% Pseudogp
 \include{Chapters/Chapter02}
 %\addtocontents{toc}{\protect\clearpage} % <--- just debug stuff, ignore
-\include{Chapters/Chapter03}
 
-\include{Chapters/Chapter04}
+% Ouija
+% \include{Chapters/Chapter03}
 
-\include{Chapters/Chapter05}
+% MFA
+% \include{Chapters/Chapter04}
 
-\include{Chapters/Chapter06}
+% CLVM
+% \include{Chapters/Chapter05}
+
+% Conclusion
+% \include{Chapters/Chapter06}
 
 
 %\include{multiToC} % <--- just debug stuff, ignore for your documents
@@ -108,8 +122,9 @@ da. Le usate medical addresses pro, europa origine sanctificate nos se.}
 \appendix
 %\renewcommand{\thechapter}{\alph{chapter}}
 \cleardoublepage
-\part{Appendix}
+% \part{Appendix}
 \include{Chapters/Chapter0A}
+\include{Chapters/Chapter0B}
 %********************************************************************
 % Other Stuff in the Back
 %*******************************************************
