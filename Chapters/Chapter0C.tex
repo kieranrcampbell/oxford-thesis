@@ -1,0 +1,183 @@
+%********************************************************************
+% Appendix
+%*******************************************************
+% If problems with the headers: get headings in appendix etc. right
+%\markboth{\spacedlowsmallcaps{Appendix}}{\spacedlowsmallcaps{Appendix}}
+\chapter{Gibbs updates for MFA}
+
+% Lorem ipsum at nusquam appellantur his, ut eos erant homero
+% concludaturque. Albucius appellantur deterruisset id eam, vivendum
+% partiendo dissentiet ei ius. Vis melius facilisis ea, sea id convenire
+% referrentur, takimata adolescens ex duo. Ei harum argumentum per. Eam
+% vidit exerci appetere ad, ut vel zzril intellegam interpretaris.
+% \graffito{More dummy text.}
+
+%Errem omnium ea per, pro congue populo ornatus cu, ex qui dicant
+%nemore melius. No pri diam iriure euismod. Graecis eleifend
+%appellantur quo id. Id corpora inimicus nam, facer nonummy ne pro,
+%kasd repudiandae ei mei. Mea menandri mediocrem dissentiet cu, ex
+%nominati imperdiet nec, sea odio duis vocent ei. Tempor everti
+%appareat cu ius, ridens audiam an qui, aliquid admodum conceptam ne
+%qui. Vis ea melius nostrum, mel alienum euripidis eu.
+
+
+% Test: \autoref{tab:moreexample} (This reference should have a
+% lowercase, small caps \spacedlowsmallcaps{A} if the option
+% \texttt{floatperchapter} is activated, just as in the table itself
+%  $\rightarrow$ however, this does not work at the moment.)
+
+\section{Gibbs updates}
+
+The full model is specified by
+
+
+\begin{equation} \label{eq:mfamodel}
+\begin{aligned}
+\bm \omega & \sim \text{Dirichlet}(1 / B, \ldots, 1 / B) \\
+\gamma_i & \sim \text{Categorical}(\bm \omega) \\
+\eta & \sim \norm(\tilde{\eta}, \tau_\eta^{-1}) \\
+\theta_g & \sim \norm(\tilde{\theta}, \tau_\theta^{-1}) \\
+\chi_g & \sim \mathrm{Gamma}(\alpha_\chi, \beta_\chi) \\
+\cgi & \sim \norm(\eta_{\gamma_i}, \tau_c^{-1}) \\
+\kgi & \sim \norm(\bm \theta, \bm \chi^{-1} \mathbb{1}_G) \\
+t_i & \sim \norm(0, 1) \\
+\btau & \sim \mathrm{Gamma}(\alpha, \beta) \\
+\by_i & \sim \norm(\cgi + \kgi t_i, \btau^{-1} \mathbbm{1}_G)
+\end{aligned}
+\end{equation}
+
+where $\by_i$ is a $G$-length vector of expression in cell $i$, $B$ is the number of branches modelled and we define $\Lambda_\gamma = [ \bc_\gamma \; \bk_\gamma], \; \gamma \in 1, \ldots, B$.
+
+\paragraph{Update for $\gamma$}
+
+Defining $\pi_{i,b} = p(\gamma_i = b)$ (the probability that cell $i$ is on branch $b$) then
+
+\begin{equation}
+  p(\gamma_i | \by_i, t_i, \{ \Lambda_b \}_{b=1}^B, \bm \omega, \btau) = \text{Categorical}(\bm \pi_{i})
+\end{equation}
+
+where
+
+\begin{equation}
+  \pi_{i,b} = \frac{\omega_b \norm(\by_i | \bc_b + \bk_b t_i, \tauinv)}
+  {\sum_{b'=1}^B \omega_{b'} \norm(\by_i | \bc_{b'} + \bk_{b'} t_i, \tauinv) }
+\end{equation}
+
+\paragraph{Update for $k$}
+
+\begin{equation}
+  k_{gb} | \bgamma, c_{gb}, \bY, \btau, \bt \sim \norm(\nu^k_{gb}, 1 / \lambda^k_{gb})
+\end{equation}
+
+where
+
+\begin{equation}
+\begin{aligned}
+\nu^k_{gb} & = \frac{\tau_g \sum_{i:\gamma_i = b}  t_i (y_{ig} - c_{gb})}{\tau_k +  \tau_g \sum_{i:\gamma_i = b}  t_i^2}\\
+\lambda^k_{gb} & = \tau_k +  \tau_g \sum_{i:\gamma_i = b}  t_i^2
+\end{aligned}
+\end{equation}
+
+\paragraph{Update for $c$}
+
+\begin{equation}
+  c_{gb} | \bgamma, k_{gb}, \bY, \btau, \bt \sim \norm(\nu^c_{gb}, 1 / \lambda^c_{gb})
+\end{equation}
+
+where
+
+\begin{equation}
+\begin{aligned}
+\nu^c_{gb} & = \frac{\tau_g \sum_{i:\gamma_i = b} (y_{ig} - k_{gb} t_i)}{\tau_c + N_b \tau_g}\\
+\lambda^c_{gb} & = \tau_c + N_b \tau_g
+\end{aligned}
+\end{equation}
+
+and $N_b$ is the number of cells assigned to branch $b$ at that iteration.
+
+\paragraph{Update for $\omega$}
+
+\begin{equation}
+  \bm \omega | \{N_b\}_{b=1}^B, B \sim \text{Dirichlet}(1/B + N_1, \ldots, 1/B + N_B)
+\end{equation}
+
+\paragraph{Update for $t$}
+
+\begin{equation}
+  t_i | \bgamma, \{ \Lambda_b \}_{b=1}^B, \btau \sim \norm(\nu^t_i, 1 / \lambda^t_i)
+\end{equation}
+
+where
+
+\begin{equation}
+\begin{aligned}
+\nu^t_{i} & = \frac{\sum_g \tau_g k_{g\gamma_i} (y_{ig} - c_{g\gamma_i})}
+{1 + \sum_g \tau_g k_{g\gamma_i}^2} \\
+\lambda^t_{i} & = 1 + \sum_g \tau_g k_{g\gamma_i}^2
+\end{aligned}
+\end{equation}
+
+\paragraph{Update for $\btau$}
+
+\begin{equation}
+\tau_g |  \{ \Lambda_b \}_{b=1}^B, \bt, \bgamma \sim \text{Gamma}\left( \alpha + N / 2,
+\beta + \sum_{i=1}^N \frac{(y_{ig} - \mu_{ig})^2}{2}
+\right)
+\end{equation}
+
+where $\mu_{ig} = c_{g\gamma_i} + k_{g\gamma_i} t_i$.
+
+\paragraph{Update for $\eta$}
+
+\begin{equation}
+  \eta | \tau_c, \{\bc_b\}_{b=1}^B, \tau_\eta, \tilde{\eta}
+  \sim \norm(\nu^\eta, 1 / \lambda^\eta)
+\end{equation}
+
+where
+
+\begin{equation}
+  \begin{aligned}
+    \nu^\eta & = \frac{\tau_c \sum_{b,g} c_{gb}  + \tau_\eta \tilde{\eta}}
+    {BG\tau_c + \tau_\eta} \\
+    \lambda^\eta & = BG\tau_c + \tau_\eta
+  \end{aligned}
+\end{equation}
+
+\paragraph{Update for $\theta$}
+
+\begin{equation}
+  \theta_g | \bm \chi, \{\bk_b\}_{b=1}^B, \tau_\theta, \tilde{\theta}
+  \sim \norm(\nu^\theta_g, 1 / \lambda^\eta_g)
+\end{equation}
+
+where
+
+\begin{equation}
+  \begin{aligned}
+    \nu^\theta_g & = \frac{\chi_g \sum_{b} k_{gb}  + \tau_\theta \tilde{\theta}}
+    {B \chi_g + \tau_\theta} \\
+    \lambda^\theta_g & = B \chi_g + \tau_\theta
+  \end{aligned}
+\end{equation}
+
+\paragraph{Update for $\chi$}
+
+\begin{equation}
+  \chi_g | \{\bk_b\}_{b=1}^B, \theta_g, \alpha_\chi, \beta_\chi
+  \sim \text{Gamma} \left(
+  \alpha_\chi + \frac{B}{2}, \beta_\chi + \frac{\sum_b (k_{gb} - \theta_g)^2}{2}
+  \right)
+\end{equation}
+
+
+\section{Validation of updates}
+
+All Gibbs updates were checked numerically using the Gwecke test (see e.g. \cite{grosse2014testing}). This exploits the identity
+
+\begin{equation}
+  \frac{p(\theta = x | \Theta, \mathcal{D})}{p(\theta = x' | \Theta, \mathcal{D})} =
+  \frac{p(\theta = x, \Theta | \mathcal{D})}{p(\theta = x', \Theta | \mathcal{D})}
+\end{equation}
+
+which should hold up to the numerical precision of the computer used. We can therefore use the function that computes the likelihood (which we have implemented to monitor convergence) to ensure the conditional updates are correct, and vice versa.

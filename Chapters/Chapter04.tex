@@ -1,35 +1,31 @@
 %************************************************
-\chapter{Modelling bifurcations with Bayesian mixtures of factor analysres}\label{ch:mfachap} % $\mathbb{ZNR}$
+\chapter{Modelling bifurcations with Bayesian mixtures of factor analysers}\label{ch:mfachap} % $\mathbb{ZNR}$
 %************************************************
 
 
+\section{Introduction}
 
-\section*{Introduction}
+%
+% Trajectory analysis of single-cell RNA-seq (scRNA-seq) data has become a popular method that attempts to re-infer lost temporal information such as a cell's differentiation state \cite{wagner2016revealing,bacher2016design}. Such analyses reconstruct a measure of a cell's progression through some biological process, known as a \emph{pseudotime}. Recently, attention has turned to modelling bifurcations where part-way along such trajectories cells undergo some fate decision and branch into two or more distinct cell types.
 
+So far we have focussed on the \emph{single-trajectory} case, where cells have a single fate and progress uniformly towards it. Chapter 2 considered probabilistic inference of trajectories in reduced-dimension space, while chapter 3 extended such ideas to generatively model the expression of a small set of marker genes.
 
-Trajectory analysis of single-cell RNA-seq (scRNA-seq) data has become a popular method that attempts to re-infer lost temporal information such as a cell's differentiation state \cite{wagner2016revealing,bacher2016design}. Such analyses reconstruct a measure of a cell's progression through some biological process, known as a \emph{pseudotime}. Recently, attention has turned to modelling bifurcations where part-way along such trajectories cells undergo some fate decision and branch into two or more distinct cell types.
+However, often cells undergo some fate decision and their expression programmes bifurcate into two or more end points. Examples include progenitor cells that differentiate into distinct cell types or stressed cells that may either recover or trigger apoptosis.
 
 Several methods have been proposed to infer bifurcation structure from single-cell data. Wishbone \cite{setty2016wishbone} constructs a $k$-nearest neighbour graph and uses shortest paths from a \emph{root} cell to define pseudotimes, using inconsistencies over multiple paths to detect bifurcations.  Diffusion Pseudotime (DPT) \cite{haghverdi2016diffusion} similarly constructs a transition matrix where each entry may be interpreted as a diffusion distance between two cells. Bifurcations are inferred by identifying the anticorrelation structure of random walks from both a root cell and its maximally distant cell. While DPT arguably has a probabilistic interpretation, neither method specifies a fully generative model that incorporates measurement noise, while both infer bifurcations after constructing pseudotimes. A further algorithm Monocle  \cite{qiu2017single} learns pseudotimes based on dimensionality reduction using the DDRTree algorithm \cite{mao2015novel} and provides post-hoc inference of genes involved in the bifurcation process using generalised linear models.
 
-Here we propose a Bayesian hierarchical mixture of factor analysers for inferring bifurcations from single-cell data. Factor analysis and its close relative principal component analysis (PCA) are frequently used in the context of single-cell gene expression modelling, both for visualisation and trajectory inference (see e.g. \cite{pierson2015zifa,campbell2016ouija}). Since developmental bifurcations involve two related processes it is therefore natural to extend such models to involve a mixture of two factor analysers in a Bayesian hierarchical setting that relates expression patterns between branches.
+Consequently, we we propose a Bayesian hierarchical mixture of factor analysers for inferring bifurcations from single-cell data.
+%Factor analysis and its close relative principal component analysis (PCA) are frequently used in the context of single-cell gene expression modelling, both for visualisation and trajectory inference (see e.g. \cite{pierson2015zifa,campbell2016ouija}).
+Since developmental bifurcations involve two related processes it is therefore natural to extend such models to involve a mixture of two factor analysers in a Bayesian hierarchical setting that relates expression patterns between branches.
 
 The model we propose is unique compared to existing bifurcation inference methods methods in the following: (1) by specifying a fully generative probabilistic model we incorporate measurement noise into inference and provide full uncertainty estimates for all parameters, (2) we simultaneously infer cell ``pseudotimes'' and branching structure as opposed to post-hoc branching inference as is typically performed, and (3) our hierarchical shrinkage prior structure automatically detects which features are involved in the bifurcation, providing statistical support for detecting which genes drive fate decisions.
 
-In the following, we introduce our model and apply it to both a synthetic datasets and demonstrate its consistency with existing algorithms on real single-cell data. We further propose a zero-inflated variant that takes into account zero-inflation and quantify the levels of dropout at which such models are beneficial.  We highlight the multiple natural solutions to bifurcation inference when using gene expression data alone and finally discuss both the merits and drawbacks of using such a unified probabilistic model.
+In this chapter, we introduce our model and apply it to both a synthetic datasets and demonstrate its consistency with existing algorithms on real single-cell data. We further propose a zero-inflated Empirical-Bayes-like variant that takes into account zero-inflation and quantify the levels of dropout at which such models are beneficial.  We highlight the multiple natural solutions to bifurcation inference when using gene expression data alone and finally discuss both the merits and drawbacks of using such a unified probabilistic model.
 
 
+\section{Methods}
 
-%\begin{figure}
-%\centering
-% \includegraphics[width=0.4\textwidth]{frog.jpg}
-%\caption{\label{fig:your-figure}Your figure legend goes here; it should be succinct, while still explaining all symbols and abbreviations. }
-%\end{figure}
-
-
-
-\section*{Methods}
-
-\subsection*{Statistical model}
+\subsection{Statistical model}
 
 We begin with an $N \times G$ matrix of suitably normalised gene expression measurements for $N$ cells and $G$ genes, where $\by_i$ denotes the $i^{th}$ row vector corresponding to the expression measurement of cell $i$. We assign a pseudotime $t_i$ to each cell along with a binary variable $\gamma_i$ indicating to which of $B$ branches cell $i$ belongs:
 
@@ -80,37 +76,62 @@ where $\tilde{\eta}$, $\tilde{\theta}$, $\tau_\eta$, $\tau_\theta$, $\tau_c$, $\
 
 As the model exhibits complete conditional conjugacy, inference was performed using Gibbs sampling. This is implemented in the \texttt{R} package \texttt{mfa} available at \url{http://www.github.com/kieranrcampbell/mfa}.
 
-\subsection*{Modelling zero-inflation}
+\subsection{Modelling zero-inflation}
 
-Single-cell data is known to exhibit \emph{dropout} where the failure to reverse-transcribe lowly expressed mRNA results in zero counts in the expression matrix. The issue has been extensively studied in the context of scRNA-seq, resulting in algorithms that take into account the resulting zero inflation such as ZIFA \cite{pierson2015zifa} or SCDE \cite{kharchenko2014bayesian}.
+Single-cell RNA-seq data is known to exhibit \emph{dropout}, where lowly expressed genes register as zero counts. Several computational methods attempt to correct for this by modelling the observed expression as a mixture of a point-mass at zero representing dropout and an \emph{amplified} component representing true expression. However, the probability of measuring a zero is not constant but is inversely proportional to the latent expression, as the smaller the input quantity of mRNA the higher the probability of a failure of reverse-transcription.
 
-We can incorporate tractable zero-inflation into our model by considering a per-gene dropout probability given by
+As a solution to this, several methods model a dropout probability dependent on the latent expression. For example, SCDE \cite{kharchenko2014bayesian} is a statistical model for single-cell differential expression which models the dropout probability of a gene as a logistic regression on the latent expression as part of a mixture-of-experts model.
+In a further example, ZIFA \cite{pierson2015zifa} proposes a double-exponential dropout model where $p(\text{dropout}) \propto \exp(-\lambda x^2)$ and $x$ is the latent expression and $\lambda$ is a constant dropout parameter.
+
+Therefore, accounting for zero-inflation in our mixture-of-factor analysers model is equivalent ot modifying the likelihood to a mixture of an amplified component and dropout component depending on the latent expression. However, the difficulty here is that we must sample from the conditional distribution $p(\lambda | \cdot)$ (where $\cdot$ is all parameters and data other than $\lambda$), which to the best of our knowledge does not exist analytically.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.9\textwidth]{gfx/ch4/s1_dropout}
+	\caption{Dropout relationships in single-cell RNA-seq data for two scRNA-seq datasets. An exponential dropout model (blue) empirically fits the data better than double exponential (red).} \label{fig:dropout}
+\end{figure}
+
+As a solution to this we propose an Empirical-Bayes like procedure to estimate $\lambda$ globally then infer the latent expression $x$ through further Gibbs updates. First we note that a single exponential dropout empirically fits the dropout relations in single-cell RNA-seq datasets better than the double exponential dropout (figure \ref{fig:dropout} and noted in KCTODO).
+
+We subsequently modify the likelihood to give a per-gene dropout probability of
 
 \begin{equation}
-p(\text{dropout in gene $g$}) = \exp\left( -\frac{\lambda}{N} \sum_{i=1}^N x_{ig} \right)
+p(\text{dropout in gene $g$}) = \exp(-\lambda \sum_{i=1}^N x_{ig})
 \end{equation}
 
-where $x_{ig}$ is the unobserved true expression of gene $g$ in cell $i$ and $\lambda$ is a global dropout parameter estimated in an Empirical-Bayes manner. This exponential model empirically fits multiple scRNA-seq datasets well (supplementary figure). Incorporating this zero-inflated likelihood modifies the model in \ref{eq:mfamodel} to
+ which depends on the mean latent expression level of the gene. While this is of course an approximation and we expect the probability of a dropout to be specific to each gene in each cell depending on the latent expression, this allows us to estimate $\lambda$ by fitting the maximimum likelihood exponential curve of the proportion of cells a gene is expressed in against the mean expression level (similar to figure \ref{fig:dropout}) using the \texttt{R} function \texttt{nls}. Thus the modified likelihood becomes
 
 \begin{equation}
 \begin{aligned}
-\bx_i & \sim \norm(\cgi + \kgi t_i, \btau^{-1} \mathbb{1}_G) \\
-h_{ig} & \sim \mathrm{Bernoulli}(\exp\left(-\frac{\lambda}{N} \sum_i x_{ig} \right)) \\
+\bx_i & \sim \norm(\cgi + \kgi t_i, \btau^{-1} \mathbbm{1}_G) \\
+h_{ig} & \sim \mathrm{Bernoulli}(\exp\left(-\frac{\lambda}{N} \sum_{i'} x_{i'g} \right)) \\
 y_{ig} & = \begin{cases} x_{ig} &\mbox{if $h_{ig} = 0$}  \\
 0 & \mbox{if $h_{ig} = 1$} \end{cases}
 \end{aligned}
 \end{equation}
 
+Note that since $h_{ig}$ is effectively observed we only need to Gibbs sample $x_{ig}$ for which $h_{ig} = 1$. The conditional distribution for $x_{ig}$ is then given by
+
+\begin{equation}
+x_{ig} | \cdot \sim \norm\left( \mu_{ig} - \frac{\lambda}{N \tau_g}, \tau_g^{-1} \right)
+\end{equation}
+
+where $\mu_{ig}$ is defined as above.
+
+
+
+% Single-cell data is known to exhibit \emph{dropout} where the failure to reverse-transcribe lowly expressed mRNA results in zero counts in the expression matrix. The issue has been extensively studied in the context of scRNA-seq, resulting in algorithms that take into account the resulting zero inflation such as ZIFA \cite{pierson2015zifa} or .
+
 While incorporating zero-inflation in the likelihood leads to a less-mispecified model we must perform inference on an additional $N_0$ parameters, where $N_0$ is the number of zero measurements in the expression matrix. For single cell RNA-seq data this can be as high as 90\% of all measurements leading to a significant additional computational burden.
 
-Furthermore, such a dropout model assumes a per-gene dropout probability dependent on the mean latent expression though in reality the dropout probability would depend on the latent expression itself. This compromise allows us to estimate the parameter $\lambda$ by fitting for each gene the proportion of cells expressed versus the mean expression.
+% Furthermore, such a dropout model assumes a per-gene dropout probability dependent on the mean latent expression though in reality the dropout probability would depend on the latent expression itself. This compromise allows us to estimate the parameter $\lambda$ by fitting for each gene the proportion of cells expressed versus the mean expression.
 
 
-\subsection*{Multiple solutions to bifurcation inference}
+\section{Multiple solutions to bifurcation inference}
 
 \begin{figure}[!t]
 	\centering
-	\includegraphics[width=0.7\textwidth]{gfx/ch4/bifurcation_solutions}
+	\includegraphics[width=0.9\textwidth]{gfx/ch4/bifurcation_solutions}
 	\caption{Multiple solutions to bifurcation inference.
 {\normalfont
 Starting with three cell states we would like to infer a bifurcation process from one to the other two. If a single gene is upregulated in one of the states yet downregulated in the other two then clearly any state may act as the beginning of the trajectory. For example, if we start in state 1 then the gene is upregulated along state 2 and stays constant in state 3; if we start in state 2 then the gene is downregulated in states 1 \& 3; if we start in state 3 then the gene is upregulated in state 2 and remains downregulated in state 1.  However, due to the nonidentifiability this is true if we add additional genes that are upregulated in one or two of the cell states. The equivalent geometric argument is that we can build the transcriptomic profiles across all genes by spinning the figure about \textbf{B} (with possible inversion) and ``adding'' that gene. No matter how many additional genes we add, any one of the three states can act as the root state or beginning of pseudotime. Therefore, in the absence of any additional information there are always three equally valid solutions to bifurcation inference from gene expression data alone.
@@ -130,15 +151,50 @@ The above reasons that in a single-gene case the initial state is indistinguisha
 While in algorithms such as Wishbone and DPT this non-identifiability is solved by setting an initial cell or state, the equivalent in our model is the correct initialisation of the pseudotimes. Principal component analysis is applied to the data before inference and the principal component that best corresponds to the trajectory based on the expression of known genes is used to initialise the pseudotimes. Such trajectories correspond to local modes in the posterior space that are sufficiently narrow the probability of the Gibbs sampler moving to another is negligible. A future extension that would solve this non-identifiability would involve placing priors on the behaviour of certain genes across the branches, which combined with more efficient inference would pick out the `true' trajectory.
 
 
+\section{Results}
 
-\section*{Results}
+
+\subsection{Synthetic datasets}
+
+\subsubsection{Generating of synthetic datasets}
+
+Synthetic datasets were generated for various simulations throughout the analysis. Rather than simply generating data from the model we attempted to create synthetic data that was as close to real single-cell data as feasible, meaning \emph{the synthetic data is severely misspecified with respect to our model}. The full details can be found in algorithm \ref{alg:synth} but summarise the procedure below.
+
+The first consideration is the functional form of gene expression along pseudotime. A linear assumption is fundamentally unrealistic as the gene expression cannot go to $\pm \infty$ as pseudotime progresses. Consequently we adopt sigmoidal expression across pseudotime (previously suggested in \cite{campbell2016order,campbell2016switchde} and discussed in chapters 2-3), parameterised\footnote{We depart from the previous notation here to avoid index hell when referencing multiple branches} by the half-peak expression $\phi$, the \emph{switch-time} $\delta$ and the switch-strength $k$:
+\begin{equation}\label{eq:sigmoid}
+      \text{Sigmoid}(t, k, \phi, \delta)  = \frac{2 \phi}{1 + \exp(-k(t - \delta))}
+\end{equation}
+
+%Examples of sigmoidal expression can be seen in figure \ref{fig:branch_expression}.
+
+For half of the $G$ genes we assume the expression along the two branches is the same, thus we model common $k$, $\phi$ and $\delta$ parameters. For the second half we assume the expression diverges, and in particular for each gene $k = 0$ for one of the branches, which we can call $b_0$, and $b_1$ for the branch for which $k \neq 0$. If $k$ on the other branch is positive (ie $k_{gb_1} > 0$) then we set the half-peak expression on $b_0$ to zero, as the genes must both start at 0, and if one turns on the other must remain off (figure \ref{fig:synthetic}A). Alternatively, if $k_{gb_1} < 0$ then the genes must begin in an \emph{on} state and switch off for cells on $b_1$ (figure \ref{fig:synthetic}B). Thus we set $\phi_{gb_0}$ to twice its original value. For any gene that shows divergent behaviour across branches we set $\delta$ to be in the second half of the trajectory. We then construct the mean, using the sigmoid function, and generate the data from a Gaussian noise model ensuring any negative values are set to zero. This gives the characteristic bifurcation pattern in PCA space as seen in figures \ref{fig:mfa_synthetic}E\&F.
 
 
-\subsection*{Synthetic datasets}
-
-\begin{figure}[!t]
+\begin{figure}
 	\centering
-	\includegraphics[width=0.9\textwidth]{gfx/ch4/fig1_toy}
+	\includegraphics[width=0.9\textwidth]{gfx/ch4/s2_synthetic}
+	\caption{Generation of synthetic data} \label{fig:mfa_synthetic}
+\end{figure}
+
+We may also wish to generate transiently expressed genes to test the limits of the monotonicity assumptions in our model. Transient behaviour can either be across both branches or exhibit divergent behaviour (transient on one branch only). To simulate transient genes we swap out the sigmoidal mean function for a Gaussian function centred around the mid-point of the trajectory:
+
+\begin{equation}
+    \text{Transient}(t, l, s)  = \exp( - \frac{1}{2s} (t - l)^2 )
+\end{equation}
+
+We additionally ensure the behaviour is constrained to be identical on each branch at the beginning and end of the trajectory. Examples of such behaviour may be seen in figures \ref{fig:synthetic}C\&D.
+
+If we would like to incorporate zero-inflation, we calculate a dropout probability for each measurement via $p_{ig} = \exp(-\lambda x_{ig})$, where $\lambda$ is set to a reasonable value based on observations of real datasets. Note that our model is mis-specified with respect to this as it models a per-gene dropout probability $p_g$.
+
+\subsubsection{Performance on toy dataset}
+
+We first demonstrate our method on a synthetic `toy' dataset of 300 bifurcating cells and 60 genes, half of which exhibit differential behaviour across the bifurcation and half of which show similar behaviour.
+%A natural benefit of using a generative probabilistic model is that it can be used to generate data for testing and calibration purposes.
+Our synthetically generated data is mildly mis-specified with respect to our model to demonstrate robustness when using real genomic data. For example, the generated gene behaviour across pseudotime is sigmoidal, which we have previously successfully used to model real single-cell datasets \cite{campbell2016order,campbell2016switchde}.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.85\textwidth]{gfx/ch4/fig1_toy}
 	\caption{Probabilistic inference of bifurcations in synthetic data. { \normalfont
 \textbf{A} PCA representation of a toy dataset for 300 cells and 60 genes, coloured by the maximum aposteriori (MAP) pseudotime estimates.
 \textbf{B} Equivalent representation as \textbf{(A)} colour by the MAP branch estimate.
@@ -149,15 +205,11 @@ While in algorithms such as Wishbone and DPT this non-identifiability is solved 
 	}} \label{fig:toy}
 \end{figure}
 
-
-We first demonstrate our method on a synthetic `toy' dataset of 300 bifurcating cells and 60 genes, half of which exhibit differential behaviour across the bifurcation and half of which show similar behaviour.
-%A natural benefit of using a generative probabilistic model is that it can be used to generate data for testing and calibration purposes.
-Our synthetically generated data is mildly mis-specified with respect to our model to demonstrate robustness when using real genomic data. For example, the generated gene behaviour across pseudotime is sigmoidal, which we have previously successfully used to model real single-cell datasets \cite{campbell2016order,campbell2016switchde}.
-
 % PCA plots, comparison to true values and chi
 Pseudotimes were inferred using Gibbs sampling (supplementary text) for $10^5$ iterations. PCA representations of the synthetic data can be seen in figures \ref{fig:toy}A\&B showing the characteristic \emph{Y} shape associated with bifurcating data, coloured by both maximum aposteriori (MAP) pseudotime and branch assignment estimates respectively. We compared the Pearson correlation of the estimated pseudotimes to the true pseudotimes (figure \ref{fig:toy}C) for both MFA, PC1 (the first principal component of the data), Monocle and Diffusion Pseudotime, giving values of 0.98, 0.98, 0.98 and 0.99 (to 2 s.f.) respectively. Broad benchmarking of pseudotime algorithms to ``ground-truth'' data is difficult due to the inherent assumptions that are neccessary about how genes expression evolves along trajectories. However, such toy examples demonstrates the consistency of multiple algorithms on our toy dataset.
 
-% Transient genes
+\subsubsection{Impact of transient expression}
+
 One weakness of our model is that it assumes gene expression changes as a linear function of time. This allows us to perform fast conjugate Gibbs sampling but is highly unrealistic for real data.
 The synthetic data generated is based on sigmoidal changes across pseudotime, which being nonlinear is already mildly mis-specified with respect to our model.
 However, genes may also exhibit transient behaviour, in which they are briefly down- or up-regulated before returning to their initial state. We sought to quantify the robustness of MFA to transient gene expression by performing extensive simulations. Specifically, we generated synthetic datasets with 0\%, 20\%, \ldots, 80\% of genes exhibiting transient expression, and inferred the pseudotimes using DPT, MFA and Monocle 2. This was repeated 20 times for each percentage of transient genes. The results can be seen in figure \ref{fig:toy}F. The performance of MFA remains competitive up to around 40\% of genes exhibiting transient expression, after which DPT and Monocle 2 perform significantly better. However, MFA is highly consistent with DPT and Monocle 2 on the two real datasets examined (figures \ref{fig:scrnaseq} \& \ref{fig:masscyto}) implying the occurrence of transient expression is limited enough in practice for the linearity assumption to be feasible.
@@ -165,11 +217,11 @@ However, genes may also exhibit transient behaviour, in which they are briefly d
 % Hard assignment at beginning
 One notable difference between MFA and existing bifurcation inference algorithms is in the pre-bifurcation branch assignment. Algorithms such as Wishbone and DPT will assign a separate branch to cells preceding the bifurcation. However, MFA will typically assign pre-prebifurcation cells to one of the two branches modelled, with the other branch beginning at the bifurcation. A bifurcation process consists of two temporal processes that have a common origin but differing end points. Thus, due to non-indentifiability, cells pre-bifurcation can equally be said to be on one branch with the second beginning at the bifurcation point. Importantly, no matter how we assign the branches under this regime the observed behaviour of genes as a function of both pseudotime and branch assignment will be consistent, which is necessary for biological insight.
 
-\subsection*{Benefits of modelling zero-inflation}
+\subsection{Benefits of modelling zero-inflation}
 
-\begin{figure}[!t]
+\begin{figure}
 	\centering
-	\includegraphics[width=.7\textwidth]{gfx/ch4/dropout}
+	\includegraphics[width=.9\textwidth]{gfx/ch4/dropout}
 	\caption{The effects of modelling zero-inflation. {\normalfont
 \textbf{A} Zero counts observed in single-cell RNA-seq data may be attributed to either \emph{true zeros} where no mRNA of a given gene is produced in a cell, or \emph{dropout} where there is a failure to reverse-transcribe the low levels of starting material. Alternatively, a count is registered and the gene is \emph{amplified}. In theory not accounting for dropouts will reduce the accuracy of pseudotime inference - the two red counts at pseudotimes of 4 and 6 would be ordered with the blue counts. However, in practice it is impossible to distinguish between \emph{dropouts} and \emph{true zeros}.
 \textbf{B} The percentage of counts with zero expression across 50 replicates for each value of $\lambda$ used in dropout simulations.
@@ -187,9 +239,9 @@ We sought to quantify the benefits of modelling zero inflation against the drawb
 
 The resulting correlations with the true pseudotimes across the range of $\lambda$ and MFA variants can be seen in figure \ref{fig:dropout}C. At very high levels of dropout ($\lambda = 0.02$, where $>80\%$ of counts are zeros) the zero-inflated variant performs considerably worse than the non-zero-inflated variant, with virtually no correspondance to the true pseudotimes compared to $\rho \approx 0.75$. We suggest this is due to the inference procedure effectively imputing such a large proportion of the data that there are too many degrees of freedom to effectively infer the trajectory. For the remaining values of $\lambda$ the zero-inflated variant infers pseudotimes largely comparable to those of the non-zero inflated version, with marginal improvements in accuracy when there is moderate dropout ($\lambda = 1, 10$). We conclude that incorporating zero-inflation into such pseudotime inference is possible, but the variable quality across the (unknown in practice) dropout range along with considerable additional computational cost render it unneccesary for practical purposes.
 
-\subsection*{Application to single-cell RNA-seq data}
+\subsection{Application to single-cell RNA-seq data}
 
-\begin{figure}[!t]
+\begin{figure}
 	\centering
 	\includegraphics[width=.9\textwidth]{gfx/ch4/scrnaseq_fig}
 	\caption{Inference of bifurcations in scRNA-seq data of 4,423 Hematopoietic progenitor/stem cells (HSPCs) differentiating into myeloid and erythroid precursors.
@@ -220,7 +272,7 @@ The root cell for DPT was selected as the cell with the minimum value for the se
 
 The comparison of the inferred pseudotimes with that my MFA can be seen in figure \ref{fig:scrnaseq}E. There is high correlations with PC2 ($\rho = 0.54$), Wishbone ($\rho = 0.83$), and DPT ($\rho = 0.78$). However, there is virtually no correlation with Monocle ($\rho = 0.01$), though as this low correlation only occurs with Monocle we assume it is not an issue with MFA. We also sought to compare branch allocations across the algorithms across the algorithms which is difficult due to the non-identifiability of the statistcal models involved. Figure \ref{fig:scrnaseq}F shows a tSNE representation of the cells coloured by branch allocation for each of Wishbone, Monocle and DPT. We see that MFA is largely consistent with Wishbone and DPT, detecting a bifurcation at the ``pinch'' in the tSNE plot, but as with the pseudotimes there is barely any correspondance in branch allocations with Monocle (which, as of version 2, does not allow prespecification of the number of branches to model).
 
-\subsection*{Application to single-cell mass-cytometry data}
+\subsection{Application to single-cell mass-cytometry data}
 
 We next applied MFA to single-cell mass cytometry data tracking the differentiation of 22,850 monocytes and erythrocytes from hematopoietic stem and progenitor cells across 12 markers as published in \cite{bendall2011single} and previously analysed in \cite{setty2016wishbone}. For computational convenience with all algorithms we subsampled the data down to 2,000 randomly chosen cells, with the exception of Monocle which we subsequently subsampled further down to 1,000 cells. We found that due to the small number of proteins measured there was too much freedom for the MFA model to infer mixtures using the default parameter settings. We therefore had to encourage large levels of similarity across the two branches by setting $\alpha_\chi = 5 \times 10^3$ and $\beta_\chi = 1$.
 
@@ -228,7 +280,7 @@ The results can be seen in figure \ref{fig:masscyto}. Figure \ref{fig:masscyto}A
 
 We subsequently compared the inferred pseudotimes and branching to those found using the alternative algorithms. We found good correspondance to all other methods (figure \ref{fig:masscyto}C), with pearson correlations of 0.84, 0.86, 0.80 and 0.69 for PC2, Wishbone, Monocle, and DPT respectively. We further compared the branch assignment of MFA to those of the alternative algorithms (figure \ref{fig:masscyto}D). As of version 2, Monocle does not allow for the number of branches to be selected \emph{a priori} and typically returns a large number. For the convenience of visualisation we therefore only display the 30\% most frequent states and group the remaining infrequent ones into ``Other''. We find good agreement between MFA and Monocle and DPT, and similarities with the Monocle assignments (MFA branch 2 loosely corresponds to Monocle branch 17).
 
-\begin{figure}[!t]
+\begin{figure}
 	\centering
 	\includegraphics[width=.9\textwidth]{gfx/ch4/masscyto_fig}
 	\caption{Inference of bifurcations in single-cell mass cytometry data of a subsample of 2,000 HPSCs differentiating into monocyte and erythrocyte progenitors.
@@ -240,88 +292,29 @@ We subsequently compared the inferred pseudotimes and branching to those found u
 	}} \label{fig:masscyto}
 \end{figure}
 
-\section*{Discussion}
+
+
+\section{Discussion}
 
 % What we did
 In this paper we have presented a Bayesian hierarchical mixture of factor analysers for inference of bifurcating trajectories in single-cell data. Our model is unique compared to existing efforts in that it (a) is fully generative, incorporating measurement noise into inference, (b) jointly infers both the pseudotimes and branches compared to post-hoc inference of branch detection, and (c) jointly infers which genes are differentially regulated across the branches. We also proposed an extension that accounts for the high levels of zero-inflation present in single-cell RNA-seq data. We applied our model to a range of synthetic and real datasets and demonstrated it  performs competitively with existing methods.
 
 % Some comparisons
-There is a natural trade-off in designing such models between flexibility and practicality. The implicit assumption of MFA that gene expression develops linearly across pseudotime allows for fast MCMC sampling and joint inference of branch structure. However, it is highly mis-specified: the predicted expression can easily become negative leading to erronous inference (see supplementary text). A solution to this would be to not explicitly assume a strongly parametric form of gene expression and consider nonparametric methods. However, such methods are often overly flexible, requiring either additional capture information to correctly infer pseudotimes \cite{reid2016pseudotime} or hard-setting the pseudotimes prior to inferring the branching structure \cite{lonnberg2016temporal}. As such there is a natural trade-off between the expressivity of such models and being able to perform valid statistical inference that fully incorporates parameter variation without additional constraints or ``tweaking''.
+There is a natural trade-off in designing such models between flexibility and practicality. The implicit assumption of MFA that gene expression develops linearly across pseudotime allows for fast MCMC sampling and joint inference of branch structure. However, it is highly mis-specified: the predicted expression can easily become negative leading to erronous inference (see supplementary text). A solution to this would be to not explicitly assume a strongly parametric form of gene expression and consider nonparametric methods. However, such methods are often overly flexible, requiring either additional capture information to correctly infer pseudotimes \cite{reid2016pseudotime} or hard-setting the pseudotimes prior to inferring the branching structure \cite{lonnberg2016temporal}. As such there is a natural trade-off between the expressivity of such models and being able to perform valid statistical inference that fully incorporates parameter variation without additional constraints or
+ \emph{tweaking}.
 
 % Future extensions
+
 There are several extensions that can be applied to our model. While the model performs well on large single cell RNA-seq datasets it could be scaled up further using Stochastic Variational Inference \cite{hoffman2013stochastic}, which due to the model's conditionally conjugate structure could be implemented without resorting to approximations. As mentioned previously, one main weakness of the model is the unrealistic assumption of linear changes in expression over pseudotime leading to severe model specification. One could therefore consider alternative nonlinear functions such as sigmoids (previously used in \cite{campbell2016ouija}) or nonparametric models such as Gaussian Process Latent Variable Models (previously used in \cite{reid2016pseudotime,campbell2015bayesian}) with appropriate structural constraints.
 
 
-\section{Modelling zero inflation}
-
-Single-cell RNA-seq data is known to exhibit \emph{dropout}, where lowly expressed genes register as zero counts. Several computational methods attempt to correct for this. For example, ZIFA \cite{pierson2015zifa} proposes a double-exponential dropout model where $p(\text{dropout}) \propto \exp(-\lambda x^2)$ and $x$ is the latent expression. However, the difficulty here is that we must sample from the conditional distribution $p(\lambda | \cdot)$, which to the best of our knowledge does not exist analytically.
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.7\textwidth]{gfx/ch4/s1_dropout}
-	\caption{Dropout relationships in single-cell RNA-seq data.} \label{fig:dropout}
-\end{figure}
-
-As a solution to this we propose an Empirical-Bayes like procedure to estimate $\lambda$ globally then infer the latent expression $x$ through further Gibbs updates. First we note that a single exponential dropout empirically fits the dropout relations in single-cell RNA-seq datasets better than the double exponential dropout (figure \ref{fig:dropout}). We subsequently modify the likelihood to give a per-gene dropout probability of $p(\text{dropout in gene $g$}) = \exp(-\lambda \sum_{i=1}^N x_{ig})$ which depends on the mean latent expression level of the gene. While this is of course an approximation and we expect the probability of a dropout to be specific to each gene in each cell depending on the latent expression, this allows us to estimate $\lambda$ by fitting the maximimum likelihood exponential curve of the proportion of cells a gene is expressed in against the mean expression level (similar to figure \ref{fig:dropout}) using the \texttt{R} function \texttt{nls}. Thus the modified likelihood becomes
-
-\begin{equation}
-\begin{aligned}
-\bx_i & \sim \norm(\cgi + \kgi t_i, \btau^{-1} \mathbbm{1}_G) \\
-h_{ig} & \sim \mathrm{Bernoulli}(\exp\left(-\frac{\lambda}{N} \sum_{i'} x_{i'g} \right)) \\
-y_{ig} & = \begin{cases} x_{ig} &\mbox{if $h_{ig} = 0$}  \\
-0 & \mbox{if $h_{ig} = 1$} \end{cases}
-\end{aligned}
-\end{equation}
-
-Note that since $h_{ig}$ is effectively observed we only need to Gibbs sample $x_{ig}$ for which $h_{ig} = 1$. The conditional distribution for $x_{ig}$ is then given by
-
-\begin{equation}
-x_{ig} | \cdot \sim \norm\left( \mu_{ig} - \frac{\lambda}{N \tau_g}, \tau_g^{-1} \right)
-\end{equation}
-
-where $\mu_{ig}$ is defined as above.
-
-
-
-\section{Generation of synthetic datasets}
-
-Synthetic datasets were generated for various simulations throughout the analysis. Rather than simply generating data from the model to reinfer, we attempted to create synthetic data that was as close to real single-cell data as feasible, meaning \emph{the synthetic data is severely misspecified with respect to our model}. The full details can be found in algorithm \ref{alg:synth}; we describe various design choices below.
-
-
-The first consideration is the functional form of gene expression along pseudotime. A linear assumption is fundamentally unrealistic as the gene expression cannot go to $\pm \infty$ as pseudotime progresses. Consequently we adopt sigmoidal expression across pseudotime (previously suggested in \cite{campbell2016order,campbell2016switchde}), parameterised by the half-peak expression $\phi$, the \emph{switch-time} $\delta$ and the switch-strength $k$:
-\begin{equation}\label{eq:sigmoid}
-      \text{Sigmoid}(t, k, \phi, \delta)  = \frac{2 \phi}{1 + \exp(-k(t - \delta))}
-\end{equation}
-
-%Examples of sigmoidal expression can be seen in figure \ref{fig:branch_expression}.
-
-For half of the $G$ genes we assume the expression along the two branches is the same, thus we model common $k$, $\phi$ and $\delta$ parameters. For the second half we assume the expression diverges, and in particular for each gene $k = 0$ for one of the branches, which we can call $b_0$, and $b_1$ for the branch for which $k \neq 0$. If $k$ on the other branch is positive (ie $k_{gb_1} > 0$) then we set the half-peak expression on $b_0$ to zero, as the genes must both start at 0, and if one turns on the other must remain off (figure \ref{fig:synthetic}A). Alternatively, if $k_{gb_1} < 0$ then the genes must begin in an \emph{on} state and switch off for cells on $b_1$ (figure \ref{fig:synthetic}B). Thus we set $\phi_{gb_0}$ to twice its original value. For any gene that shows divergent behaviour across branches we set $\delta$ to be in the second half of the trajectory. We then construct the mean, using the sigmoid function, and generate the data from a Gaussian noise model ensuring any negative values are set to zero. This gives the characteristic bifurcation pattern in PCA space as seen in figures \ref{fig:synthetic}E\&F.
-
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.9\textwidth]{gfx/ch4/s2_synthetic}
-	\caption{Generation of synthetic data} \label{fig:synthetic}
-\end{figure}
-
-We may also wish to generate transiently expressed genes to test the limits of the monotonicity assumptions in our model. Transient behaviour can either be across both branches or exhibit divergent behaviour (transient on one branch only). To simulate transient genes we swap out the sigmoidal mean function for a Gaussian function centred around the mid-point of the trajectory:
-
-\begin{equation}
-    \text{Transient}(t, l, s)  = \exp( - \frac{1}{2s} (t - l)^2 )
-\end{equation}
-
-We additionally ensure the behaviour is constrained to be identical on each branch at the beginning and end of the trajectory. Examples of such behaviour may be seen in figures \ref{fig:synthetic}C\&D.
-
-If we would like to incorporate zero-inflation, we calculate a dropout probability for each measurement via $p_{ig} = \exp(-\lambda x_{ig})$, where $\lambda$ is set to a reasonable value based on observations of real datasets. Note that our model is mis-specified with respect to this as it models a per-gene dropout probability $p_g$.
-
-
-\section{Limits of linear latent variable models}
+\subsection{Limits of linear latent variable models}
 
 In general we expect linear latent variables to be highly mis-specificed with respect to real gene expression data - gene expression will rarely evolve linearly as a function of time, nor even necessarily monotonically. A surprising result is that such an assumption is in practice sufficient to recapitulate the results on real data of algorithms that specifically account for nonlinearities in the data. We can therefore assume that the majority of genes in real datasets behave approximately linearly.
 
-\begin{figure}[h]
+\begin{figure}
 	\centering
-	\includegraphics[width=0.8\textwidth]{gfx/ch4/limits_of_chi}
+	\includegraphics[width=0.9\textwidth]{gfx/ch4/limits_of_chi}
 	\caption{.} \label{fig:chi}
 \end{figure}
 

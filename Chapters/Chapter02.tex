@@ -146,6 +146,67 @@ We sought to demonstrate the differences in parameter estimation when considerin
 
 \section{Statistical model for probabilistic pseudotime}
 
+As mentioned in the introduction, most pseudotime methods to date proceed by a two step procedure involving dimensionality reduction followed by inference of a one dimensional trajectory using techniques such as minimum spanning trees \cite{Trapnell2014,ji2016tscan} or principal curves \cite{Marco2014,campbell2015laplacian,cannoodt2016scorpius}. This secondary step is analogous to curve fitting in the reduced-dimension space. While it is possible to create fully generative probabilistic models of pseudotime (ideas we explore in chapters 3 \& 4), such models introduce additional assumptions and constraints. Therefore, in order to assess the uncertainty inherent in existing pseudotime inference algorithms we replace the second ``curve-fitting'' step with a model of probabilistic curves, in particular GPLVM.
+
+\subsection{Gaussian Processes and Gaussian Process Latent Variable Models}
+
+A Gaussian Process (GP) is formally defined as \emph{a collection of random variables, any finite number of which have a joint Gaussian distribution} \cite{rasmussen2006gaussian}. They are completely characterised by their mean and covariance functions $m(\bx)$ and $k(\bx, \bx')$, typically denoted as
+
+\begin{equation}
+	f(\bx) \sim \mathcal{GP}(m(\bx), k(\bx, \bx'))
+\end{equation}
+
+where the mean function $m(\bx)$ is typically taken to be zero.
+
+In ``real-world'' applications we rarely observe samples from $f$ itelf but from some noisy realisation
+
+\begin{equation}
+	y = f(\bx) + \epsilon
+\end{equation}
+
+where $\epsilon \sim \norm(0, \sigma^2)$. In this case the covariance function of the observed samples becomes
+
+\begin{equation}
+	\text{cov}(y_i, y_j) = \text{cov}(f(\bx_i) + \epsilon, f(\bx_j) + \epsilon) = k(\bx_i, \bx_j) + \delta_{ij} \sigma^2.
+\end{equation}
+
+Many covariance or \emph{kernel} functions have been studied in the context of GPs, though by far the most commonly used is the \emph{squared exponential kernel} given by
+
+ \begin{equation}
+ 	k_{\text{SE}}(\bx, \bx') = \sigma_f^2 \exp(-\frac{1}{2l^2}|\bx - \bx'|^2)
+ \end{equation}
+
+ where $\sigma_f^2$ is the \emph{signal variance} and $l$ the \emph{length scale} \cite{rasmussen2006gaussian}. An interpretation of the squared exponential kernel is that we maximise the covariance between observations when $\bx$ is close to $\bx'$ and minimise it when they are far apart. Variants of this kernel exist, such as that incorporating an automatic relevance dermination (ARD) structure by allowing different length scales for each input dimension.
+
+ We can think of the GPs described so far as analogous to non-parametric regression where we observe some (possibly noisy) one-dimensional output $y$ at a collection of $Q$-dimensional input points $\bx_1, \ldots, \bx_N$. However, provided the output dimensionality $D > 1$ and $Q < D$, GPs can also be used to infer the input points in a latent variable formulation termed Gaussian Process Latent Variable Models (GPLVM) \cite{lawrence2005probabilistic}.
+
+ To understand this, we begin with a factor analysis model. Let $\bY$ be an $N \times D$ matrix of observations, $\bW$ be a $D \times Q$ weight matrix and $\bX$ be a $N \times Q$ latent matrix. Let $\by_i$ by the $i^{th}$ row vector of $\bY$, $\by_d$ by the $d^{th}$ column vector, and $\bx_i$ be the $i^{th}$ row vector of $\bX$. The factor analysis model generates a single observation $\by_i$ via
+
+ \begin{equation}
+ 	\by_i = \bW \bx_i + {\bm\epsilon}
+ \end{equation}
+
+ where ${\bm \epsilon} \sim \norm({\bm 0}, {\bm I} \bs^2)$ and $\bs^2$ is a $D$-dimensional vector of output variances. Introducing a prior over the weights of the form $p(\bW) = \prod_{d=1}^D \norm(\bw_d| {\bm 0}, {\bm I})$ induces a marginal distribution of the form
+
+ \begin{equation}
+ 	p(\by_d | \bX, \bs^2) = \norm({\bm 0}, \bX \bX^T + \bs^2 {\bm I}).
+ \end{equation}
+
+The key insight from \cite{lawrence2005probabilistic} is that the marginal distribution for a single output dimension is equal to $N$ draws from a GP with kernel $\bK = \bX \bX^T + \bs^2 {\bm I}$, the sum of an inner product kernel and an independent noise process. We can therefore replace the inner product kernel with any positive-definite kernel that represents similarity such as the RBF kernel from before, and infer the latent variables through techniques such as maximum-likelihood \cite{lawrence2005probabilistic} or Variational Bayes \cite{titsias2009variational}.
+
+In the case of $D = 2$ and $Q = 1$, we have two output dimensions controlled by a single degree of freedom, thus representing a probabilistic curve where the latent variable is a probabilistic representation of pseudotime and we have defined a stochastic mapping between the pseudotime and the reduced dimensionality representation. If we apply Bayesian inference we can then approximate the marginal posterior distribution $p(\bX | \bY)$ allowing us to fully quantify uncertainty in the trajectory inference part of most pseudotime methods.
+
+
+\subsection{Probabilistic pseudotime inference using Gaussian Process Latent Variable Models}
+
+For this application, the latent space is one-dimensional, describing pseudotime progression whilst the observations are the reduced dimensionality representations of the single cell expression data. We will use Bayesian inference to characterise the joint posterior distribution $p(\bt|\bX)$ of the pseudotimes $\bt = \{ t_1, \dots, t_n \}$ given the expression data $\bX = \{\bx_1, \dots, \bx_n \}$ for $n$ single cells. As the integrals involved are mathematically intractable, we will use Markov Chain Monte Carlo simulations to obtain a numerical approximation to the posterior by drawing samples from the posterior distribution. Each sample corresponds to one possible trajectory \emph{and} ordering for the cells with the set of samples providing an approximate distribution of pseudotimes. The pseudotime values are between measured 0 and 1 where a value of 0 corresponds to one end state of the temporal process and a value 1 to the other. In this work we focus only on non-bifurcating processes. Fig. \ref{fig:workflow} gives a diagrammatic representation of our proposed workflow and a more detailed model descriptions is given in Methods.
+
+\begin{figure}[h]
+\centering
+  \includegraphics[width=\textwidth]{gfx/ch2/figure2.png}
+  \caption{{\bf Workflow for fitting Bayesian Gaussian Process Latent Variable Model pseudotime models.} Reduced-dimension representations of the gene expression data (from Laplacian eigenmaps, PCA and/or t-SNE) are created. The pseudotime can be fitted using one or more low dimensional representations of the data. Posterior samples of pseudotimes are drawn from a Bayesian GPLVM and these are used to obtain alternative pseudotime estimates. Downstream differential analyses can be performed on the posterior samples to characterise the robustness with respect to variation in pseudotime estimates.} \label{fig:workflow}
+\end{figure}
+
 The hierarchical model specification for the Gaussian Process Latent Variable model is described as follows:
 \begin{equation} \label{eq:model}
 \begin{aligned}
@@ -167,21 +228,12 @@ The hyperparameters $\gamma_\alpha$, $\gamma_\beta$, $\alpha$, $\beta$, $\mu_t$ 
 
 
 
+
+
 % Results and Discussion can be combined.
 \section{Results}
 
 
-\subsection{Probabilistic pseudotime inference using Gaussian Process Latent Variable Models}
-
-We first provide a brief  of the Gaussian Process Latent Variable Model \cite{Titsias2010}. The GPLVM uses a Gaussian Process to define a stochastic mapping between a low-dimensional latent space to a (typically) higher dimensional observation space. A Gaussian Process is characterised by a mean function describing the expected mapping between the latent and observation spaces and a covariance function that describes the covariance between the mapping function evaluated at any two arbitrary latent positions. The covariance function therefore acts to control the second-order statistics of the Gaussian Process and suitable choices can be designed to encourage properties such as smoothness, periodicity or other second-order features.
-
-For this application, the latent space is one-dimensional, describing pseudotime progression whilst the observations are the reduced dimensionality representations of the single cell expression data. We will use Bayesian inference to characterise the joint posterior distribution $p(\bt|\bX)$ of the pseudotimes $\bt = \{ t_1, \dots, t_n \}$ given the expression data $\bX = \{\bx_1, \dots, \bx_n \}$ for $n$ single cells. As the integrals involved are mathematically intractable, we will use Markov Chain Monte Carlo simulations to obtain a numerical approximation to the posterior by drawing samples from the posterior distribution. Each sample corresponds to one possible trajectory \emph{and} ordering for the cells with the set of samples providing an approximate distribution of pseudotimes. The pseudotime values are between measured 0 and 1 where a value of 0 corresponds to one end state of the temporal process and a value 1 to the other. In this work we focus only on non-bifurcating processes. Fig. \ref{fig:workflow} gives a diagrammatic representation of our proposed workflow and a more detailed model descriptions is given in Methods.
-
-\begin{figure}[h]
-\centering
-  \includegraphics[width=\textwidth]{gfx/ch2/figure2.png}
-  \caption{{\bf Workflow for fitting Bayesian Gaussian Process Latent Variable Model pseudotime models.} Reduced-dimension representations of the gene expression data (from Laplacian eigenmaps, PCA and/or t-SNE) are created. The pseudotime can be fitted using one or more low dimensional representations of the data. Posterior samples of pseudotimes are drawn from a Bayesian GPLVM and these are used to obtain alternative pseudotime estimates. Downstream differential analyses can be performed on the posterior samples to characterise the robustness with respect to variation in pseudotime estimates.} \label{fig:workflow}
-\end{figure}
 
 \subsection{Sources of uncertainty in pseudotime inference}
 
@@ -252,7 +304,7 @@ We performed a Gene Ontology enrichment analysis of the differentially expressed
 \end{figure}
 
 
-\subsection{A sigmoidal model of switch-like behaviour across pseudotime}
+\subsection{Applications of \texttt{switchde} with probabilistic pseudotime}
 
 In the previous section, we examined differential expression across pseudotime by fitting generalized additive models to the gene expression profiles \cite{Trapnell2014}. Their approach used a Tobit regression model with a cubic smoothing spline link function. Hypothesis testing using the likelihood ratio test is conducted against a null model of no pseudotime dependence. This model provides a highly flexible but non-specific model of pseudotime dependence that was not suited to the next question we wished to address.
 
