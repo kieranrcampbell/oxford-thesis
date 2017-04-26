@@ -1,5 +1,5 @@
 %************************************************
-\chapter{Modelling bifurcations with Bayesian mixtures of factor analysers}\label{ch:mfachap} % $\mathbb{ZNR}$
+\chapter{Modelling bifurcations with a Bayesian mixture of factor analysers}\label{ch:mfachap} % $\mathbb{ZNR}$
 %************************************************
 
 
@@ -27,25 +27,27 @@ In this chapter, we introduce our model and apply it to both a synthetic dataset
 
 \subsection{Statistical model}
 
-We begin with an $N \times G$ matrix of suitably normalised gene expression measurements for $N$ cells and $G$ genes, where $\by_i$ denotes the $i^{th}$ row vector corresponding to the expression measurement of cell $i$. We assign a pseudotime $t_i$ to each cell along with a binary variable $\gamma_i$ indicating to which of $B$ branches cell $i$ belongs:
+We begin with an $N \times G$ matrix of suitably normalised\footnote{Such as $\log(\text{TPM} + 1)$ or $\log(\text{FPKM} + 1)$.} gene expression measurements for $N$ cells and $G$ genes, where $\by_n$ denotes the $n^{th}$ row vector corresponding to the expression measurement of cell $n$. We assign a pseudotime $t_n$ to each cell along with a binary variable $\gamma_n$ indicating to which of $B$ branches cell $n$ belongs:
 
 \begin{equation}
-\gamma_i = b \; \mbox{if cell $i$ on branch $b$}
+\gamma_n = b \; \mbox{if cell $n$ on branch $b$}
 \end{equation}
 
 with $b \in 1,\ldots,B$.
 
-The pseudotime $t_i$ is a surrogate measure of a cell's progression along a trajectory while it is the behaviour of the genes - given by the factor loading matrix - that changes between the branches. We therefore introduce $B$ factor loading matrices $\Lambda_b = [ \bc_b \; \bk_b], \; b \in 1, \ldots, B$ for each branch modelled. % We subsequently only reference the factor loading intercept $\bc$ and factor loading gradient $\bk$ due to their differing prior structures.
+The pseudotime $t_n$ is a surrogate measure of a cell's progression along a trajectory while it is the behaviour of the genes - given by the factor loading matrix - that changes between the branches. We therefore introduce $B$ factor loading matrices $\Lambda_b = [ \bc_b \; \bk_b], \; b \in 1, \ldots, B$ for each branch modelled. Here, $\bc_b$ represents the gene-specific intercepts of expression while $\bk_b$ can be thought of as the gene-specific gradient along pseudotime.
+
+% We subsequently only reference the factor loading intercept $\bc$ and factor loading gradient $\bk$ due to their differing prior structures.
 
 The likelihood of a given cell's gene expression measurement conditional on all the parameters is then given by % a normal with a mean formed of the product of the pseudotime with the factor loading gradient summed with the factor loading intercept specific to the cell's branch:
 
 \begin{equation}
-\by_i | \gamma_i, \Lambda_{\gamma_i}, t_i, \btau  \sim \norm(\cgi + \kgi t_i, \btau^{-1} \mathbb{1}_G)
+\by_n | \gamma_n, \Lambda_{\gamma_n}, t_n, \btau  \sim \norm(\cgi + \kgi t_n, \btau^{-1} \mathbb{1}_G)
 \end{equation}
 
-where $\mathbb{1}_G$ is the $G \times G$ identity matrix.
+where $\mathbb{1}_G$ is the $G \times G$ identity matrix and $\btau$ is a $G$-length vector of measurement precisions\footnote{We denote $\btau^{-1}$ as the element-wise inverse of $\btau$.}.
 
-We motivate the prior structure as follows: if the bifurcation processes share some common elements then the behaviour of a non-negligible subset of the genes will be (near) identical across branches. It is therefore reasonable that the factor loading gradients $\bk_\gamma$ should be similar to each other unless the data suggests otherwise. We therefore place a prior of the form
+We seek a prior structure on the loading matrix that (a) encourages the behaviour of genes to be identical across branches while (b) identifying the subset of genes that deviate from this and are differentially regulated across the branches. It is therefore reasonable that the factor loading gradients $\bk_\gamma$ should be similar to each other unless the data suggests otherwise. We therefore place a prior of the form
 
 \begin{equation}
 \kgi \sim \norm(\bm \theta, \bm \chi^{-1} \mathbb{1}_G)
@@ -53,28 +55,42 @@ We motivate the prior structure as follows: if the bifurcation processes share s
 
 where $\bm \theta$ denotes a common factor gradient across branches. This has similar elements to Automatic Relevance Determination (ARD) models % (also known as Sparse Bayesian Learning)
 with the difference that rather than shrinking regression coefficients to zero to induce sparsity we shrink factor loading gradients towards a common value to induce similar behaviour between mixture components. We can then inspect the posterior precision %similar to ARD
-to identify genes involved in the bifurcation: if $\chi_g$ is very large then the model is sure that $k_{0g} \approx k_{1g}$ and gene $g$ is not involved in the bifurcation; however, if $\chi_g$ is relatively small then $|k_{0g} - k_{1g}| \gg 0$ and the model indicates that $g$ is involved in the bifurcation.
+to identify genes involved in the bifurcation: if $\chi_g$ is very large then the model is sure that $k_{0g} \approx k_{1g}$ and gene $g$ is not involved in the bifurcation; however, if $\chi_g$ is relatively small then $|k_{0g} - k_{1g}| \gg 0$ and the model indicates that $g$ is involved in the bifurcation\footnote{Note that we only place this prior structure on $k$ as the intercepts $c$ can be identical but the genes still exhibit differential regulation through different $k$s.}.
 
 With these considerations the overall model becomes
 
 \begin{equation} \label{eq:mfamodel}
 \begin{aligned}
 \bm \omega & \sim \text{Dirichlet}(1 / B, \ldots, 1 / B) \\
-\gamma_i & \sim \text{Categorical}(\bm \omega) \\
+\gamma_n & \sim \text{Categorical}(\bm \omega) \\
 \eta & \sim \norm(\tilde{\eta}, \tau_\eta^{-1}) \\
 \theta_g & \sim \norm(\tilde{\theta}, \tau_\theta^{-1}) \\
 \chi_g & \sim \mathrm{Gamma}(\alpha_\chi, \beta_\chi) \\
 \cgi & \sim \norm(\eta, \tau_c^{-1}) \\
 \kgi & \sim \norm(\bm \theta, \bm \chi^{-1} \mathbb{1}_G) \\
-t_i & \sim \norm(0, 1) \\
+t_n & \sim \norm(0, 1) \\
 \btau & \sim \mathrm{Gamma}(\alpha, \beta) \\
-\by_i & \sim \norm(\cgi + \kgi t_i, \btau^{-1} \mathbb{1}_G)
+\by_n & \sim \norm(\cgi + \kgi t_n, \btau^{-1} \mathbb{1}_G)
 \end{aligned}
 \end{equation}
 
 where $\tilde{\eta}$, $\tilde{\theta}$, $\tau_\eta$, $\tau_\theta$, $\tau_c$, $\alpha_\chi$, $\beta_\chi$, $\alpha$ and $\beta$ are hyperparameters fixed by the user. By default we set the noninformative prior $\alpha_\chi = \beta_\chi = 10^{-2}$ to maximise how informative the posterior of $\bm \chi$ is in identifying genes that show differential expression across the branches.
 
-As the model exhibits complete conditional conjugacy, inference was performed using Gibbs sampling. This is implemented in the \texttt{R} package \texttt{mfa} available at \url{http://www.github.com/kieranrcampbell/mfa}.
+\subsection{Inference}
+
+As the model exhibits complete conditional conjugacy, inference was performed using Gibbs sampling.
+
+Briefly, Gibbs sampling is a Markov Chain Monte-Carlo (MCMC) algorithm for drawing a sequence of samples $\btheta^1, \ldots, \bm \theta^T$ that approximate some target distribution $p(\btheta | x)$ that is analytically intractable, i.e. for which we cannot write down an exact expression. Given the parameter vector $\btheta = (\theta_1, \ldots, \theta_P)$, Gibbs sampling requires analytical expressions (or at least the ability to quickly generate samples from) the conditional distributions $p(\theta_p | \btheta_{-p}, x)$ where $\btheta_{-p}$ is the set of parameters other than $p$. Gibbs sampling then proceeds by consecutively drawing
+
+\begin{equation}
+	%\begin{aligned}
+		\theta_p^{t+1}  \sim p(\theta_p | \btheta^t_{-p}, x)
+	%\end{aligned}
+\end{equation}
+
+consecutively for all variables $p = 1, \ldots, P$ up to some predefined number of iterations $T$. The resulting samples $\btheta^1, \ldots, \bm \theta^T$ asymptotically converge in the limit $T \rightarrow \infty$ to the target distribution $p(\btheta | x)$.
+
+Analytical expression for the conditional Gibbs updates for our \texttt{mfa} model are given in appendix \ref{app:mfa_updates}. This is implemented in the \texttt{R} package \texttt{mfa} available at \url{http://www.github.com/kieranrcampbell/mfa}. \texttt{R} is particularly slow for calculating such Gibbs updates as frequent subsetting of assignment vectors occurs. Therefore, computation of the updates was implemented in \texttt{C++} and linked to the \texttt{R} package using \texttt{Rcpp}, leading to orders of magnitude speed up in the calculation of some quantities.
 
 \subsection{Modelling zero-inflation}
 
@@ -96,27 +112,27 @@ As a solution to this we propose an Empirical-Bayes like procedure to estimate $
 We subsequently modify the likelihood to give a per-gene dropout probability of
 
 \begin{equation}
-p(\text{dropout in gene $g$}) = \exp(-\lambda \sum_{i=1}^N x_{ig})
+p(\text{dropout in gene $g$}) = \exp(-\lambda \sum_{n=1}^N x_{ng})
 \end{equation}
 
  which depends on the mean latent expression level of the gene. While this is of course an approximation and we expect the probability of a dropout to be specific to each gene in each cell depending on the latent expression, this allows us to estimate $\lambda$ by fitting the maximimum likelihood exponential curve of the proportion of cells a gene is expressed in against the mean expression level (similar to figure \ref{fig:dropout}) using the \texttt{R} function \texttt{nls}. Thus the modified likelihood becomes
 
 \begin{equation}
 \begin{aligned}
-\bx_i & \sim \norm(\cgi + \kgi t_i, \btau^{-1} \mathbbm{1}_G) \\
-h_{ig} & \sim \mathrm{Bernoulli}(\exp\left(-\frac{\lambda}{N} \sum_{i'} x_{i'g} \right)) \\
-y_{ig} & = \begin{cases} x_{ig} &\mbox{if $h_{ig} = 0$}  \\
-0 & \mbox{if $h_{ig} = 1$} \end{cases}
+\bx_n & \sim \norm(\cgi + \kgi t_n, \btau^{-1} \mathbbm{1}_G) \\
+h_{ng} & \sim \mathrm{Bernoulli}(\exp\left(-\frac{\lambda}{N} \sum_{n'} x_{n'g} \right)) \\
+y_{ng} & = \begin{cases} x_{ng} &\mbox{if $h_{ng} = 0$}  \\
+0 & \mbox{if $h_{ng} = 1$} \end{cases}
 \end{aligned}
 \end{equation}
 
-Note that since $h_{ig}$ is effectively observed we only need to Gibbs sample $x_{ig}$ for which $h_{ig} = 1$. The conditional distribution for $x_{ig}$ is then given by
+Note that since $h_{ng}$ is effectively observed we only need to Gibbs sample $x_{ng}$ for which $h_{ng} = 1$. The conditional distribution for $x_{ng}$ is then given by
 
 \begin{equation}
-x_{ig} | \cdot \sim \norm\left( \mu_{ig} - \frac{\lambda}{N \tau_g}, \tau_g^{-1} \right)
+x_{ng} | \cdot \sim \norm\left( \mu_{ng} - \frac{\lambda}{N \tau_g}, \tau_g^{-1} \right)
 \end{equation}
 
-where $\mu_{ig}$ is defined as above.
+where $\mu_{ng}$ is defined as above.
 
 
 
@@ -167,13 +183,14 @@ The first consideration is the functional form of gene expression along pseudoti
 
 %Examples of sigmoidal expression can be seen in figure \ref{fig:branch_expression}.
 
-For half of the $G$ genes we assume the expression along the two branches is the same, thus we model common $k$, $\phi$ and $\delta$ parameters. For the second half we assume the expression diverges, and in particular for each gene $k = 0$ for one of the branches, which we can call $b_0$, and $b_1$ for the branch for which $k \neq 0$. If $k$ on the other branch is positive (ie $k_{gb_1} > 0$) then we set the half-peak expression on $b_0$ to zero, as the genes must both start at 0, and if one turns on the other must remain off (figure \ref{fig:synthetic}A). Alternatively, if $k_{gb_1} < 0$ then the genes must begin in an \emph{on} state and switch off for cells on $b_1$ (figure \ref{fig:synthetic}B). Thus we set $\phi_{gb_0}$ to twice its original value. For any gene that shows divergent behaviour across branches we set $\delta$ to be in the second half of the trajectory. We then construct the mean, using the sigmoid function, and generate the data from a Gaussian noise model ensuring any negative values are set to zero. This gives the characteristic bifurcation pattern in PCA space as seen in figures \ref{fig:mfa_synthetic}E\&F.
+For half of the $G$ genes we assume the expression along the two branches is the same, thus we model common $k$, $\phi$ and $\delta$ parameters. For the second half we assume the expression diverges, and in particular for each gene $k = 0$ for one of the branches, which we can call $b_0$, and $b_1$ for the branch for which $k \neq 0$. If $k$ on the other branch is positive (ie $k_{gb_1} > 0$) then we set the half-peak expression on $b_0$ to zero, as the genes must both start at 0, and if one turns on the other must remain off (figure \ref{fig:mfa_synthetic}A).
+Alternatively, if $k_{gb_1} < 0$ then the genes must begin in an \emph{on} state and switch off for cells on $b_1$ (figure \ref{fig:mfa_synthetic}B). Thus we set $\phi_{gb_0}$ to twice its original value. For any gene that shows divergent behaviour across branches we set $\delta$ to be in the second half of the trajectory. We then construct the mean, using the sigmoid function, and generate the data from a Gaussian noise model ensuring any negative values are set to zero. This gives the characteristic bifurcation pattern in PCA space as seen in figures \ref{fig:mfa_synthetic}E\&F.
 
 
 \begin{figure}
 	\centering
 	\includegraphics[width=0.9\textwidth]{gfx/ch4/s2_synthetic}
-	\caption{Generation of synthetic data} \label{fig:mfa_synthetic}
+	\caption{Generation of synthetic data to test \texttt{mfa}. Examples of diverging monotonic behaviour across branches (\textbf{A} - \textbf{B}) and diverging transient behaviour (\textbf{C} - \textbf{D}), with resulting PCA representations coloured by both pseudotime (\textbf{E}) and branch allocation (\textbf{F}).} \label{fig:mfa_synthetic}
 \end{figure}
 
 We may also wish to generate transiently expressed genes to test the limits of the monotonicity assumptions in our model. Transient behaviour can either be across both branches or exhibit divergent behaviour (transient on one branch only). To simulate transient genes we swap out the sigmoidal mean function for a Gaussian function centred around the mid-point of the trajectory:
@@ -182,9 +199,9 @@ We may also wish to generate transiently expressed genes to test the limits of t
     \text{Transient}(t, l, s)  = \exp( - \frac{1}{2s} (t - l)^2 )
 \end{equation}
 
-We additionally ensure the behaviour is constrained to be identical on each branch at the beginning and end of the trajectory. Examples of such behaviour may be seen in figures \ref{fig:synthetic}C\&D.
+We additionally ensure the behaviour is constrained to be identical on each branch at the beginning and end of the trajectory. Examples of such behaviour may be seen in figures \ref{fig:mfa_synthetic}C\&D.
 
-If we would like to incorporate zero-inflation, we calculate a dropout probability for each measurement via $p_{ig} = \exp(-\lambda x_{ig})$, where $\lambda$ is set to a reasonable value based on observations of real datasets. Note that our model is mis-specified with respect to this as it models a per-gene dropout probability $p_g$.
+If we would like to incorporate zero-inflation, we calculate a dropout probability for each measurement via $p_{ng} = \exp(-\lambda x_{ng})$, where $\lambda$ is set to a reasonable value based on observations of real datasets. Note that our model is mis-specified with respect to this as it models a per-gene dropout probability $p_g$.
 
 \subsubsection{Performance on toy dataset}
 
@@ -261,7 +278,7 @@ We next applied our method to previously published single-cell RNA-seq data of 4
 % to emphasise a less supervised approach % oh the irony
 To reduce the dataset to a computationally feasible size we used only genes expressed in at least 20\% of cells with a variance in normalised expression greater than 5.
 We perormed Gibbs sampling for $4 \times 10^4$ iterations using default hyperparameter values except for $\tau_\theta = \tau_\eta = 1$ and initialised the pseudotimes to the second principal component of the data.
-The results can be seen in figure \ref{fig:scrnaseq}(A-B). The MAP pseudotime estimates  clearly recapitulates the trajectory in the data as shown using a tSNE representation from \cite{setty2016wishbone}, while the MAP estimates of $\gamma_i$ detects the branching structure in the data, consistent with previous methods.
+The results can be seen in figure \ref{fig:scrnaseq}(A-B). The MAP pseudotime estimates  clearly recapitulates the trajectory in the data as shown using a tSNE representation from \cite{setty2016wishbone}, while the MAP estimates of $\gamma_n$ detects the branching structure in the data, consistent with previous methods.
 
 
 We went on to analyse the genes suggested by the model to be involved in the bifurcation process. Figure \ref{fig:scrnaseq}C shows the inverse posterior mean of $\chi_g$, with larger values indicating more evidence that gene $g$ is involved in the bifurcation process. For illustration purposes, we plot the expression of \emph{ELANE} and \emph{CAR2}, which the model suggests will show differential behaviour across the bifurcation, along with \emph{RPL26}, which the model suggests will show common behaviour (figure \ref{fig:scrnaseq}D).
@@ -270,7 +287,7 @@ We next sought to compare the performance of MFA to existing bifurcation inferen
 We subsampled down to 1000 cells for Monocle comparisons for computational convenience and used the previously published results for Wishbone  (from \cite{setty2016wishbone}).
 The root cell for DPT was selected as the cell with the minimum value for the second principal component and similarly the root state for Monocle was chosen such that it contained that cell. Otherwise, algorithms were run with default parameters.
 
-The comparison of the inferred pseudotimes with that my MFA can be seen in figure \ref{fig:scrnaseq}E. There is high correlations with PC2 ($\rho = 0.54$), Wishbone ($\rho = 0.83$), and DPT ($\rho = 0.78$). However, there is virtually no correlation with Monocle ($\rho = 0.01$), though as this low correlation only occurs with Monocle we assume it is not an issue with MFA. We also sought to compare branch allocations across the algorithms across the algorithms which is difficult due to the non-identifiability of the statistcal models involved. Figure \ref{fig:scrnaseq}F shows a tSNE representation of the cells coloured by branch allocation for each of Wishbone, Monocle and DPT. We see that MFA is largely consistent with Wishbone and DPT, detecting a bifurcation at the ``pinch'' in the tSNE plot, but as with the pseudotimes there is barely any correspondance in branch allocations with Monocle (which, as of version 2, does not allow prespecification of the number of branches to model).
+The comparison of the inferred pseudotimes with that of MFA can be seen in figure \ref{fig:scrnaseq}E. There is high correlations with PC2 ($\rho = 0.54$), Wishbone ($\rho = 0.83$), and DPT ($\rho = 0.78$). However, there is virtually no correlation with Monocle ($\rho = 0.01$), though as this low correlation only occurs with Monocle we assume it is not an issue with MFA. We also sought to compare branch allocations across the algorithms across the algorithms which is difficult due to the non-identifiability of the statistcal models involved. Figure \ref{fig:scrnaseq}F shows a tSNE representation of the cells coloured by branch allocation for each of Wishbone, Monocle and DPT. We see that MFA is largely consistent with Wishbone and DPT, detecting a bifurcation at the ``pinch'' in the tSNE plot, but as with the pseudotimes there is barely any correspondance in branch allocations with Monocle (which, as of version 2, does not allow prespecification of the number of branches to model).
 
 \subsection{Application to single-cell mass-cytometry data}
 
@@ -300,12 +317,21 @@ We subsequently compared the inferred pseudotimes and branching to those found u
 In this paper we have presented a Bayesian hierarchical mixture of factor analysers for inference of bifurcating trajectories in single-cell data. Our model is unique compared to existing efforts in that it (a) is fully generative, incorporating measurement noise into inference, (b) jointly infers both the pseudotimes and branches compared to post-hoc inference of branch detection, and (c) jointly infers which genes are differentially regulated across the branches. We also proposed an extension that accounts for the high levels of zero-inflation present in single-cell RNA-seq data. We applied our model to a range of synthetic and real datasets and demonstrated it  performs competitively with existing methods.
 
 % Some comparisons
+\subsection{Trade off between model expressivity and practicality}
+
 There is a natural trade-off in designing such models between flexibility and practicality. The implicit assumption of MFA that gene expression develops linearly across pseudotime allows for fast MCMC sampling and joint inference of branch structure. However, it is highly mis-specified: the predicted expression can easily become negative leading to erronous inference (see supplementary text). A solution to this would be to not explicitly assume a strongly parametric form of gene expression and consider nonparametric methods. However, such methods are often overly flexible, requiring either additional capture information to correctly infer pseudotimes \cite{reid2016pseudotime} or hard-setting the pseudotimes prior to inferring the branching structure \cite{lonnberg2016temporal}. As such there is a natural trade-off between the expressivity of such models and being able to perform valid statistical inference that fully incorporates parameter variation without additional constraints or
  \emph{tweaking}.
 
+
+ % As mentioned previously, one main weakness of the model is the unrealistic assumption of linear changes in expression over pseudotime leading to severe model specification. One could therefore consider alternative nonlinear functions such as sigmoids (previously used in \cite{campbell2016ouija}) or nonparametric models such as Gaussian Process Latent Variable Models (previously used in \cite{reid2016pseudotime,campbell2015bayesian}) with appropriate structural constraints.
+
 % Future extensions
 
-There are several extensions that can be applied to our model. While the model performs well on large single cell RNA-seq datasets it could be scaled up further using Stochastic Variational Inference \cite{hoffman2013stochastic}, which due to the model's conditionally conjugate structure could be implemented without resorting to approximations. As mentioned previously, one main weakness of the model is the unrealistic assumption of linear changes in expression over pseudotime leading to severe model specification. One could therefore consider alternative nonlinear functions such as sigmoids (previously used in \cite{campbell2016ouija}) or nonparametric models such as Gaussian Process Latent Variable Models (previously used in \cite{reid2016pseudotime,campbell2015bayesian}) with appropriate structural constraints.
+\subsection{Scalable inference}
+
+%There are several extensions that can be applied to our model.
+While our current inference procedure performs well on large single cell RNA-seq datasets there are scalable extensions that help as the number of single cells sequenced increases. The conditionally conjugate nature of the model makes it amenable to co-ordinate ascent variational inference (CAVI)\footnote{Ideas we explore further in chapter 5.}, where a variational approximation transforms inference into an optimisation procedure. Once CAVI updates have been derived, an easy next step is   stochastic variational inference (SVI, \cite{hoffman2013stochastic}), which subsamples data points for highly scalable inference. Such procedures will become more and more prominent in single-cell statistical analysis as technologies such as DropSeq (TODO CITE) produces expression profiles for $\mathcal{O}(10^6)+$ cells.
+
 
 
 \subsection{Limits of linear latent variable models}
@@ -321,3 +347,29 @@ In general we expect linear latent variables to be highly mis-specificed with re
 Such mis-specification - though conduisive to fast full MCMC inference - does come at a cost. An example is given in figure \ref{fig:chi} of the mass cytometry data presented in the main text (we have reversed the pseudotimes so time runs from left to right). The gene \emph{CD11b} displays differential regulation across the branches - up-regulation on branch 1 and constant expression on branch 2. The model fits two values of $k$ for this as can be seen by the black line fits, and this the value of $\chi$ is sufficiently small that we correctly designate it as a gene that bifurcates.
 
 However, the gene \emph{CD34} is incorrectly designated as one that should bifurcate when in fact it doesn't. Due to model mis-specification the cells with non-zero expression at the beginning are ``hard-assigned'' to branch 2, when in fact they should be equally assigned to both branches 1 \& 2. Consequently, $|k_2| \gg |k_1|$ and the value of $\chi$ indicates that the gene is involved in the bifurcation, when in fact it isn't. Such incorrect inferences can easily be checked visually on a reduced-dimension representation.
+
+\subsection{Choosing the number of branches}
+
+A further limitation of our model is the requirement to specifcy the number of branches $B$ \emph{a priori}. While at time of writing no single-cell datasets are known to have more than a single bifurcation point, the increasing resolution of single-cell technologies make such situations likely in the future. Here we propose two extensions for selecting the number of branches, by viewing it as a model selection problem or by modifying the model to be a nonparametric (\ie infinite) mixture of factor analysers.
+
+\subsubsection{As a model selection problem}
+
+One method to choose the number of branches is to construct a finite set of (non-zero) integers and choose the number that best explains the data by some measure. We can view this as the classic Bayesian model selection problem where we wish to compute the marginal likelihood of the data given a pre-specified number of branches.
+
+Without loss of generality consider two numbers of branches, $B_1$ and $B_2$. We can compute the marginal likelihood of the data $\bY$ given the number of branches $B$ via
+
+\begin{equation}
+	p(\bY | B) = \int_{\bm \Theta} p(\bY | \bm \Theta, B) p (\bm \Theta | B) d \bm\Theta
+\end{equation}
+
+where $\bm \Theta$ is the entire set of model parameters. We then compute the \emph{Bayes factor} comparing the two branches $B_1$ and $B_2$ as
+
+\begin{equation}
+	\text{Bayes factor} = \frac{p(\bY | B_1)}{p(\bY | B_2)}
+\end{equation}
+
+which provides the relative evidence for $B_1$ over $B_2$.
+
+\subsubsection{Nonparametric mixture of factor analysers}
+
+Discuss stick breaking priors referenced in \cite{lonnberg2016temporal}.

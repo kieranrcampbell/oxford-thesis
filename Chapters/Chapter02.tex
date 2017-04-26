@@ -59,16 +59,16 @@ As a solution to these issues we present \texttt{switchde}, a statistical model 
 
 %We detail the mathematical specification of the sigmoidal switch model below.
 
-Let $y_{cg}$ debotes the $\log_2$ gene expression of gene $g$ in cell $c$ at pseudotime $t_c$ then
+Let $y_{ng}$ denote the $\log_2$ gene expression of gene $g$ in cell $n$ at pseudotime $t_n$ then
 \begin{equation} \label{eq:nzi}
-y_{cg}(t_c) \sim \mathrm{Norm}(\mu_g(t_c), \; \sigma_g^2)
+y_{ng}(t_n) \sim \mathrm{Norm}(\mu_g(t_n), \; \sigma_g^2)
 \end{equation}
 where
 \begin{equation}
-    \mu_g(t_c) =
+    \mu_g(t_n) =
 \begin{cases}
     \hfil  \mu^{(0)}_g, & \text{if } \text{gene $g$ not differentially expressed},  \\
-    \frac{2 \mu^{(0)}_g}{1 + \exp\left(-k_g(t_c - t^{(0)}_g)\right)}, &  \text{if gene $g$ differentially expressed}.
+    \frac{2 \mu^{(0)}_g}{1 + \exp\left(-k_g(t_n - t^{(0)}_g)\right)}, &  \text{if gene $g$ differentially expressed}.
 \end{cases}
 \end{equation}
 
@@ -82,13 +82,13 @@ To account for the aforementioned zero-inflation in the data we propose a model 
 
 \begin{equation}
 \begin{aligned}
-\mu_g(t_c, \theta_g) & = \frac{2 \mu^{(0)}_g}{1 + \exp\left(-k_g(t_c - t^{(0)}_g)\right)} \\
-x_{cg} & \sim \mathcal{N}(\mu_g(t_c, \theta_g), \sigma_g^2) \\
-h_{cg} | x_{cg} & \sim \mathrm{Bernoulli}(\exp(-\lambda_g x_{cg}^2)) \\
-    y_{cg} &=
+\mu_g(t_n, \theta_g) & = \frac{2 \mu^{(0)}_g}{1 + \exp\left(-k_g(t_n - t^{(0)}_g)\right)} \\
+x_{ng} & \sim \mathcal{N}(\mu_g(t_n, \theta_g), \sigma_g^2) \\
+h_{ng} | x_{ng} & \sim \mathrm{Bernoulli}(\exp(-\lambda_g x_{ng}^2)) \\
+    y_{ng} &=
 \begin{cases}
-    x_{cg} ,& \text{if } h_{cg} = 0\\
-    0,  & \text{if } h_{cg} = 1
+    x_{ng} ,& \text{if } h_{ng} = 0\\
+    0,  & \text{if } h_{ng} = 1
 \end{cases}
 \end{aligned}
 \end{equation}
@@ -180,10 +180,10 @@ Many covariance or \emph{kernel} functions have been studied in the context of G
 
  We can think of the GPs described so far as analogous to non-parametric regression where we observe some (possibly noisy) one-dimensional output $y$ at a collection of $Q$-dimensional input points $\bx_1, \ldots, \bx_N$. However, provided the output dimensionality $D > 1$ and $Q < D$, GPs can also be used to infer the input points in a latent variable formulation termed Gaussian Process Latent Variable Models (GPLVM) \cite{lawrence2005probabilistic}.
 
- To understand this, we begin with a factor analysis model. Let $\bY$ be an $N \times D$ matrix of observations, $\bW$ be a $D \times Q$ weight matrix and $\bX$ be a $N \times Q$ latent matrix. Let $\by_i$ by the $i^{th}$ row vector of $\bY$, $\by_d$ by the $d^{th}$ column vector, and $\bx_i$ be the $i^{th}$ row vector of $\bX$. The factor analysis model generates a single observation $\by_i$ via
+ To understand this, we begin with a factor analysis model. Let $\bY$ be an $N \times D$ matrix of observations, $\bW$ be a $D \times Q$ weight matrix and $\bX$ be a $N \times Q$ latent matrix. Let $\by_n$ by the $n^{th}$ row vector of $\bY$, $\by_d$ by the $d^{th}$ column vector, and $\bx_i$ be the $n^{th}$ row vector of $\bX$. The factor analysis model generates a single observation $\by_i$ via
 
  \begin{equation}
- 	\by_i = \bW \bx_i + {\bm\epsilon}
+ 	\by_n = \bW \bx_n + {\bm\epsilon}
  \end{equation}
 
  where ${\bm \epsilon} \sim \norm({\bm 0}, {\bm I} \bs^2)$ and $\bs^2$ is a $D$-dimensional vector of output variances. Introducing a prior over the weights of the form $p(\bW) = \prod_{d=1}^D \norm(\bw_d| {\bm 0}, {\bm I})$ induces a marginal distribution of the form
@@ -201,7 +201,7 @@ In the case of $D = 2$ and $Q = 1$, we have two output dimensions controlled by 
 
 For this application, the latent space is one-dimensional, describing pseudotime progression whilst the observations are the reduced dimensionality representations of the single cell expression data. We will use Bayesian inference to characterise the joint posterior distribution $p(\bt|\bX)$ of the pseudotimes $\bt = \{ t_1, \dots, t_n \}$ given the expression data $\bX = \{\bx_1, \dots, \bx_n \}$ for $n$ single cells. As the integrals involved are mathematically intractable, we will use Markov Chain Monte Carlo simulations to obtain a numerical approximation to the posterior by drawing samples from the posterior distribution. Each sample corresponds to one possible trajectory \emph{and} ordering for the cells with the set of samples providing an approximate distribution of pseudotimes. The pseudotime values are between measured 0 and 1 where a value of 0 corresponds to one end state of the temporal process and a value 1 to the other. In this work we focus only on non-bifurcating processes. Fig. \ref{fig:workflow} gives a diagrammatic representation of our proposed workflow and a more detailed model descriptions is given in Methods.
 
-\begin{figure}[h]
+\begin{figure}
 \centering
   \includegraphics[width=\textwidth]{gfx/ch2/figure2.png}
   \caption{{\bf Workflow for fitting Bayesian Gaussian Process Latent Variable Model pseudotime models.} Reduced-dimension representations of the gene expression data (from Laplacian eigenmaps, PCA and/or t-SNE) are created. The pseudotime can be fitted using one or more low dimensional representations of the data. Posterior samples of pseudotimes are drawn from a Bayesian GPLVM and these are used to obtain alternative pseudotime estimates. Downstream differential analyses can be performed on the posterior samples to characterise the robustness with respect to variation in pseudotime estimates.} \label{fig:workflow}
@@ -242,7 +242,7 @@ We applied our probabilistic pseudotime inference to three published single-cell
 An implicit assumption in pseudotime estimation is that proximity in pseudotime should reflect proximity in the observation or data space. That is, two cells with similar pseudotime assignments should have similar gene expression profiles but, in practice, cell-to-cell variability and technical noise means that the location of the cells in the observation space will be variable even if they truly do have the same pseudotime. We plotted posterior mean pseudotime trajectories for the three datasets learned using the GPLVM in Fig. \ref{fig:posmean}A-C and the posterior predictive data distribution $p(\bX^*|\bX)$. The posterior predictive data distribution gives an indication of where \emph{future} data points might occur given the existing data. Notice that for all three data sets, this distribution can be quite diffuse. This is due to a combination of actual cell-to-cell expression variability, manifesting as a spread of data points around the mean trajectory, but also model misspecification (the difference between what our ``assumed" model and the ``true" but unknown data generating mechanism).
 
 
-\begin{figure}[h]
+\begin{figure}
 \centering
 	\includegraphics[width=\textwidth]{gfx/ch2/figure3.png}
   	\caption{{\bf Posterior pseudotime trajectories for three single-cell RNA-seq datasets.} Posterior pseudotime trajectories shown in a two-dimensional reduced representation space for (left) a Laplacian eigenmaps representation of Trapnell et al. (2014) \cite{Trapnell2014}, (centre) Laplacian eigenmaps representation of Burns et al. (2015) \cite{Burns2015} and (right) PCA representation of Shin et al. (2015) \cite{Shin2015}. Each point represents a cell and the black line represents the mean pseudotime trajectory. Plots \textbf{(A-C)} shows the overall posterior predictive data density (red) whilst \textbf{(D-F)} shows the conditional posterior predictive data density for $t = 0.5$ (red) and $t = 0.7$ (blue). }
@@ -255,7 +255,7 @@ Returning to the intrinsic cell-to-cell variability, we next considered the cond
 
 It is important to note that the posterior mean trajectories correspond to certain \textit{a priori} or subjective smoothness assumptions (specified as hyperparameters in the model specification) which dedicate the curvature properties of the trajectory. Fig. \ref{fig:varygamma} shows three alternative posterior mean pseudotime trajectories for the Trapnell data based on different hyperparameters settings for the GPLVM. In a truly unsupervised scenario all three paths could be plausible as we would have little information to inform us about the true shape of the trajectory. This would become an additional source of uncertainty in the pseudotime estimates. However, we favoured hyperparameter settings that gave rise to well-defined (unimodal) posterior distributions that resulted in multiple independent Markov Chain Monte Carlo runs converging to the same mean trajectory rather than settings that give rise to a ``lumpy" posterior distribution with many local modes corresponding to different interpretations of the data (see Supplementary Figure S2). Later on, when we consider inference using multiple representations, the ability to specify a wider choice of trajectories is useful as we will demonstrate how the correspondence between pseudotime trajectories in different reduced dimension representations is not always obvious from a visual analysis.
 
-\begin{figure}[h]
+\begin{figure}
 
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch2/figure4.png}
@@ -266,7 +266,7 @@ It is important to note that the posterior mean trajectories correspond to certa
 
 We next examined the posterior distributions in pseudotime assignment for four cells from the Trapnell dataset in Fig. \ref{fig:posuncert}A. Uncertainty in the estimate of pseudotime is assessed using the highest probability density (HPD) credible interval (CI), the Bayesian equivalent of the confidence interval. The 95\% pseudotime CI typically covers around one quarter of the trajectory, suggesting that pseudotemporal orderings of single-cells can potentially only resolve a cell's place within a trajectory to a coarse estimate (e.g. `beginning', `middle' or `end') and do not necessarily dramatically increase the temporal resolution of the data. One immediate consequence of this is that it is unlikely that we can make definite statements such as whether one cell comes exactly before or after another. This is illustrated in Figures \ref{fig:posuncert}B-D which displays the estimated pseudotime uncertainty for all three datasets. In all the datasets, the general progression is apparent, but the precise ordering of the cells has a non-trivial degree of ambiguity.
 
-\begin{figure}[h]
+\begin{figure}
 \centering
 	\includegraphics[width=\textwidth]{gfx/ch2/figure5.png}
     \caption{ {\bf  Posterior uncertainty in pseudotime trajectories. } \textbf{(A)} Posterior uncertainty in pseudotimes for four randomly selected cells from the Trapnell et al. (2014) dataset. Horizontal bars represent the 95\% highest probability density (HPD) credible interval (CI), which typically covers around a quarter of the pseudotime trajectory. \textbf{(B-D)} Boxplots showing the posterior uncertainty for each cell from the Trapnell et al. (2014) datasets. The edges of the boxes and tails correspond to the 75\% and 95\% HPD-CIs respectively.} \label{fig:posuncert}
@@ -281,7 +281,7 @@ Precisely, we fitted the tobit regression model from \cite{Trapnell2014} for eac
 
 Fig. \ref{fig:afdr}(A,B) shows two analyses for two illustrative genes  (ITGAE and ID2) in the Trapnell data set. Using the MAP pseudotime estimates, differential expression analysis of ITGAE over pseudotime attained a $q$-value of 0.02. However, the gene was only called significant in only 9\% of posterior pseudotime samples with a median $q$-value of 0.32. In contrast, ID1 - known to be involved in muscle differentiation - had a $q$-value of $6.6 \times 10^{-11}$ using the MAP pseudotime estimate, but was also called  significant in all the posterior pseudotime estimates having a median $q$-value of $4.4 \times 10^{-11}$. This indicates that the significance of the temporal expression variability of ID1 is highly robust whilst the significance ITGAE is much more dependent on the exact pseudotemporal ordering chosen.
 
-\begin{figure}[h]
+\begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch2/figure6.png}
 \caption{ {\bf Approximate FDR for differential expression across pseudotime.}
@@ -340,7 +340,7 @@ We sought to characterise the contribution of the dimensionality reduction proce
 
 To do this, we used the differentiating myoblasts data set \cite{Trapnell2014} and performed PCA (using the \texttt{R} package \texttt{scater} \cite{scater}). We then applied GPLVM pseudotime estimation to the two-dimensional principal component representation and identified a set of 1,968 robustly differentially expressed genes from the posterior pseudotime samples. Next, we took 50 random subsets containing 80\% of the cells and repeated the above procedure on each subset. As the PCA projection depends on the data itself, the reduced dimensional representation derived from each subsample will be different, we wanted to compare the differentially expressed genes identified to those found using the full data to determine if the variation in the reduced dimensionality representation impacts on the downstream differential expression analyses. We examined all genes and PCA subsamples and found that over 90\% of differential expression tests showed a robust temporal association (Fig. \ref{fig:pca_compare}A). Over half of all genes were robustly differentially expressed in all PCA subsamples and over 80\% in at least 40 out of 50 PCA subsamples (Fig. \ref{fig:pca_compare}B). These results indicate that the vast majority of genes remained robustly differentially expressed despite the differences in the reduced dimensional space across the random subsets (and the potential loss of detection power due to there being fewer cells).
 
-\begin{figure}[h]
+\begin{figure}
 \centering
 	\includegraphics[width=\textwidth]{gfx/ch2/figure10.png}
 \caption{ {\bf Pseudotime uncertainty arising from reduced dimensional representation.}

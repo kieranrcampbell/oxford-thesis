@@ -28,29 +28,29 @@
 
 \section{Maximum likelihood model fitting} \label{app:switchdemle}
 
-We begin with a $C \times G$ expression matrix $\bY$ for $G$ genes and $C$ cells with column vector $\by_g, g \in 1, \ldots, G$, that is non-negative and represents gene expression in a form comparable to $\log(\text{TPM} + 1)$. If the sigmoid function is defined as
+We begin with a $N \times G$ expression matrix $\bY$ for $G$ genes and $N$ cells with column vector $\by_g, g \in 1, \ldots, G$, that is non-negative and represents gene expression in a form comparable to $\log(\text{TPM} + 1)$. If the sigmoid function is defined as
 \begin{equation}
-	f(t_c; \muu, k_g, \tou) =
-\frac{2 \muu}{1 + \exp\left( -k_g(t_c - \tou) \right)}
+	f(t_n; \muu, k_g, \tou) =
+\frac{2 \muu}{1 + \exp\left( -k_g(t_n - \tou) \right)}
 \end{equation}
 then the likelihood of the data given the parameters is
 \begin{equation}
-	L(\by_g, \bm t; \muu, k_g, \tou) = \prod_{c = 1}^C \norm\left(y_{cg} | f(t_c; \muu, k_g, \tou), \sigma^2_g\right)
+	L(\by_g, \bm t; \muu, k_g, \tou) = \prod_{n = 1}^N \norm\left(y_{ng} | f(t_n; \muu, k_g, \tou), \sigma^2_g\right)
 \end{equation}
 
-We infer maximum likelihood estimates of the parameters using L-BFGS-B optimisation \cite{byrd1995limited} using the \texttt{R} function \texttt{optim}. This allows fast inference by passing analytical gradients as well as handling constraints on bounded variables. All parameters are defined on $\mathbb{R}$ except for $\mu_0$ and $\sigma^2$ which are optimised on $\mathbb{R}^+$. The parameters are initialised as follows: $\mu_0$ is set to $\frac{1}{C} \sum_c y_c$, $t_0 = \text{median}_c \;[ t_c]$, $\sigma^2 = \text{Var}_c [y_c]$. We initialise $k$ by using the gradient of the regression of $\by$ off $\bt$ to ensure the sign is correct.
+We infer maximum likelihood estimates of the parameters using L-BFGS-B optimisation \cite{byrd1995limited} using the \texttt{R} function \texttt{optim}. This allows fast inference by passing analytical gradients as well as handling constraints on bounded variables. All parameters are defined on $\mathbb{R}$ except for $\mu_0$ and $\sigma^2$ which are optimised on $\mathbb{R}^+$. The parameters are initialised as follows: $\mu_0$ is set to $\frac{1}{N} \sum_n y_n$, $t_0 = \text{median}_n \;[ t_n]$, $\sigma^2 = \text{Var}_n [y_n]$. We initialise $k$ by using the gradient of the regression of $\by$ off $\bt$ to ensure the sign is correct.
 
 We next need to compute the gradients for all parameters. If we consider the function (dropping $g$ subscripts)
 \begin{equation}
-	f(t_c; k, \mu_0, t_0) = \frac{2 \mu_0}{1 + \exp\left(-k(t_c - t^{(0)})\right)}
+	f(t_n; k, \mu_0, t_0) = \frac{2 \mu_0}{1 + \exp\left(-k(t_n - t^{(0)})\right)}
 \end{equation}
-(which we may write succinctly as $f(t_c; \Theta)$ where $\Theta = \{ \mu_0, k, t^{(0)} \}$) then the partial derivatives are given by
+(which we may write succinctly as $f(t_n; \Theta)$ where $\Theta = \{ \mu_0, k, t^{(0)} \}$) then the partial derivatives are given by
 
 \begin{equation} \label{eq:derivatives}
 \begin{aligned}
-\frac{\partial f}{\partial \mu_0} & = \frac{2}{1 + \exp\left(-k(t_c - t^{(0)})\right)} \\
-\frac{\partial f}{\partial k} & = \frac{ f(t_c; \Theta) (t_c - t^{(0)})}{1 + e^{k(t_c - t^{(0)})}} \\
-\frac{\partial f}{\partial t^{(0)}} & = \frac{-k f(t_c; \Theta)}{1 + e^{k(t_c - t^{(0)})}}
+\frac{\partial f}{\partial \mu_0} & = \frac{2}{1 + \exp\left(-k(t_n - t^{(0)})\right)} \\
+\frac{\partial f}{\partial k} & = \frac{ f(t_n; \Theta) (t_n - t^{(0)})}{1 + e^{k(t_n - t^{(0)})}} \\
+\frac{\partial f}{\partial t^{(0)}} & = \frac{-k f(t_n; \Theta)}{1 + e^{k(t_n - t^{(0)})}}
 \end{aligned}
 \end{equation}
 
@@ -58,9 +58,9 @@ To find the maximum likelihood estimate of $\Theta \equiv (\mu_0, k, t^{(0)})$ w
 
 \begin{equation}
 \begin{aligned}
-\mathcal{L}  = - \log L(\by, \bt; \Theta) & = -\sum_{c=1}^C \log \mathcal{N}\left(y_c | f(t_c; \Theta), \sigma^2 \right) \\
-& = -\sum_c \left[ \log \frac{1}{\sqrt{2 \pi \sigma^2}} - \frac{1}{2 \sigma^2} \left( y_c - f(t_c; \Theta) \right)^2\right] \\
-& = C \log \sqrt{2 \pi \sigma^2} + \frac{1}{2 \sigma^2} \sum_c \left( y_c - f(t_c; \Theta) \right)^2
+\mathcal{L}  = - \log L(\by, \bt; \Theta) & = -\sum_{n=1}^N \log \mathcal{N}\left(y_n | f(t_n; \Theta), \sigma^2 \right) \\
+& = -\sum_n \left[ \log \frac{1}{\sqrt{2 \pi \sigma^2}} - \frac{1}{2 \sigma^2} \left( y_n - f(t_n; \Theta) \right)^2\right] \\
+& = N \log \sqrt{2 \pi \sigma^2} + \frac{1}{2 \sigma^2} \sum_n \left( y_n - f(t_n; \Theta) \right)^2
 \end{aligned}
 \end{equation}
 
@@ -68,8 +68,8 @@ Then to compute the gradient of $\mathcal{L}$ with respect to a given parameter 
 
 
 \begin{equation}
-\frac{d\mathcal{L}}{d \theta} = \frac{1}{2 \sigma^2} \sum_c
-\left[ -2 \left( y_c - f(t_c; \Theta) \right) \frac{\partial f(t_c; \Theta)}{\partial \theta} \right]
+\frac{d\mathcal{L}}{d \theta} = \frac{1}{2 \sigma^2} \sum_n
+\left[ -2 \left( y_n - f(t_n; \Theta) \right) \frac{\partial f(t_n; \Theta)}{\partial \theta} \right]
 \end{equation}
 
 
@@ -77,13 +77,13 @@ Note that this is general to any iid Gaussian measurements with a parametric mea
 
 Further, since we have
 \begin{equation}
-\mathcal{L} \propto \frac{C}{2} \log \sigma^2 + \frac{1}{2 \sigma^2}
-\sum_c \left( y_c - f(t_c; \Theta) \right)^2
+\mathcal{L} \propto \frac{N}{2} \log \sigma^2 + \frac{1}{2 \sigma^2}
+\sum_n \left( y_n - f(t_n; \Theta) \right)^2
 \end{equation}
 
 it follows that
 \begin{equation}
-\frac{d\mathcal{L}}{d \sigma^2} = \frac{C}{2 \sigma^2} - \frac{1}{2 \sigma^4} \sum_c \left( y_c - f(t_c; \Theta) \right)^2.
+\frac{d\mathcal{L}}{d \sigma^2} = \frac{N}{2 \sigma^2} - \frac{1}{2 \sigma^4} \sum_n \left( y_n - f(t_n; \Theta) \right)^2.
 \end{equation}
 
 \section{Expectation-Maximisation for zero inflation} \label{app:switchdeem}
@@ -92,45 +92,46 @@ Single-cell RNA-seq data is known to exhibit an over-representation of zeros kno
 
 \begin{equation}
 \begin{aligned}
-\mu(t_c, \theta) & = \frac{2 \mu_0}{1 + \exp\left(-k(t_c - t^{(0)})\right)} \\
-x_{c} & \sim \mathcal{N}(\mu(t_c, \theta), \sigma^2) \\
-h_{c} | x_{c} & \sim \mathrm{Bernoulli}(\exp(-\lambda x_{c}^2)) \\
-    y_{c} &=
+\mu(t_n, \theta) & = \frac{2 \mu_0}{1 + \exp\left(-k(t_n - t^{(0)})\right)} \\
+x_{n} & \sim \mathcal{N}(\mu(t_n, \theta), \sigma^2) \\
+h_{n} | x_{n} & \sim \mathrm{Bernoulli}(\exp(-\lambda x_{n}^2)) \\
+    y_{n} &=
 \begin{cases}
-    x_{c} ,& \text{if } h_{c} = 0\\
-    0,  & \text{if } h_{c} = 1
+    x_{n} ,& \text{if } h_{n} = 0\\
+    0,  & \text{if } h_{n} = 1
 \end{cases}
 \end{aligned}
 \end{equation}
 
-Where we have replaced $f \rightarrow \mu$ to avoid cluttering notation later. We essentially introduce a latent variable $x_c$ for each gene expression measurement but must now perform inference using the Expectation-Maximisation (EM) algorithm due to the intractability of directly maximising the log-likelihood. The secondary latent variable $h_c$ is a binary indicator for whether the expression measurement in cell $c$ is dropout or not. In the following we derive the EM algorithm which follows a similar derivation to \cite{pierson2015zifa} but with some differences, so it is provided in full below.
+Where we have replaced $f \rightarrow \mu$ to avoid cluttering notation later. We essentially introduce a latent variable $x_n$ for each gene expression measurement but must now perform inference using the Expectation-Maximisation (EM) algorithm due to the intractability of directly maximising the log-likelihood. The secondary latent variable $h_n$ is a binary indicator for whether the expression measurement in cell $c$ is dropout or not. In the following we derive the EM algorithm which follows a similar derivation to \cite{pierson2015zifa} but with some differences, so it is provided in full below.
 
 In the following let $\Theta = \{\mu_0, k, t^{(0)}, \sigma^2\}$ and consider the complete-data likelihood:
 
 \begin{equation}
 	\begin{aligned}
-p(\by, \bx, \bh, \Theta) & = \prod_c p(y_c, x_c, h_c, \Theta), \\
-& = \prod_c p(y_c | x_c, h_c) p(h_c | x_c, \Theta) p(x_c | \Theta), \\
-	p(y_c, x_c, h_c, \Theta) & =
+p(\by, \bx, \bh, \Theta) & = \prod_n p(y_n, x_n, h_n, \Theta), \\
+& = \prod_n p(y_n | x_n, h_n) p(h_n | x_n, \Theta) p(x_n | \Theta), \\
+	p(y_n, x_n, h_n, \Theta) & =
 	\begin{cases}
-		 (1 - e^{-\lambda x_c^2}) p(y_c | x_c, h_c = 0)  p(x_c | \Theta), & h = 0, \\
-		 e^{-\lambda x_c^2} p(y_c | x_c, h_c = 1)  p(x_c | \Theta) , & h = 1. \\
+		 (1 - e^{-\lambda x_n^2}) p(y_n | x_n, h_n = 0)  p(x_n | \Theta), & h = 0, \\
+		 e^{-\lambda x_n^2} p(y_n | x_n, h_n = 1)  p(x_n | \Theta) , & h = 1. \\
 	 \end{cases}
 \end{aligned}
 \end{equation}
 
 
-We then use the same trick as \cite{pierson2015zifa}: if $y_c = 0$ then we know necessarily that $h_c = 1$ as $h_c = 0$ with zero probability. Similarly, if $y_c > 0$ then we observe $x_c = y_c$ and know that $h_c = 0$. We therefore split the product up into terms involving $y_c = 0$ and those involving $y_c > 0$, and now consider the log of the complete data likelihood with the shorthand notation $\mu_c \equiv \mu(t_c, \theta)$:
+We then use the same trick as \cite{pierson2015zifa}: if $y_n = 0$ then we know necessarily that $h_n = 1$ as $h_n = 0$ with zero probability. Similarly, if $y_n > 0$ then we observe $x_n = y_n$ and know that $h_n = 0$. We therefore split the product up into terms involving $y_n = 0$ and those involving $y_n > 0$, and now consider the log of the complete data likelihood with the shorthand notation $\mu_n \equiv \mu(t_n, \theta)$:
 
 \begin{equation} \label{eq:lcl}
 \begin{aligned}
-\mathcal{L}(\by, \bx, \bh, \Theta) & = \sum_\cz \left[ \log \norm(x_c | \mu_c, \sigma^2) - \lambda x_c^2 \right] + \sum_\cnz \left[ \log \norm(y_c | \mu_c, \sigma^2) + \log(1 - e^{-\lambda y_c^2}) \right] \\
-& = \frac{-C}{2} \log(2 \pi \sigma^2) +
-\sum_\cz \left[ \frac{(x_c - \mu_c)^2}{2 \sigma^2} - \lambda x_c^2 \right] +
-\sum_\cnz \left[ \frac{(y_c - \mu_c)^2}{2 \sigma^2} + \log(1 - e^{-\lambda y_c^2}) \right] \\
-& = \frac{-C}{2} \log(2 \pi \sigma^2) +
-\sum_\cz \left[ -(\frac{1}{2\sigma^2} + \lambda) x_c^2 + \frac{\mu_c}{\sigma^2} x_c - \frac{\mu_c^2}{2\sigma^2}\right] +
-\sum_\cnz \left[ \frac{(y_c - \mu_c)^2}{2 \sigma^2} + \log(1 - e^{-\lambda y_c^2}) \right]
+\mathcal{L}(\by, \bx, \bh, \Theta) & = \sum_\cz \left[ \log \norm(x_n | \mu_n, \sigma^2) - \lambda x_n^2 \right] + \sum_\cnz \left[ \log \norm(y_n | \mu_n, \sigma^2) + \log(1 - e^{-\lambda y_n^2}) \right] \\
+& = \frac{-N}{2} \log(2 \pi \sigma^2)
+ + \sum_\cz \left[ \frac{(x_n - \mu_n)^2}{2 \sigma^2} - \lambda x_n^2 \right]\\
+& + \sum_\cnz \left[ \frac{(y_n - \mu_n)^2}{2 \sigma^2} + \log(1 - e^{-\lambda y_n^2}) \right] \\
+& = \frac{-N}{2} \log(2 \pi \sigma^2) +
+\sum_\cz \left[ -(\frac{1}{2\sigma^2} + \lambda) x_n^2 + \frac{\mu_n}{\sigma^2} x_n - \frac{\mu_n^2}{2\sigma^2}\right] \\
+& +
+\sum_\cnz \left[ \frac{(y_n - \mu_n)^2}{2 \sigma^2} + \log(1 - e^{-\lambda y_n^2}) \right]
 \end{aligned}
 \end{equation}
 
@@ -140,18 +141,18 @@ In order to perform EM we need to calculate the expected value of this log likel
 Q(\Theta|\Thetat) = \Ex_{\bx | \by, \Thetat} [\mathcal{L}(\by, \bx, \bh, \Theta)]
 \end{equation}
 
-In order to calculate this it is obvious from equation \ref{eq:lcl} we must calculate $\Ex_{\bx | \by, \Thetat} [ x_c ]$ and $\Ex_{\bx | \by, \Thetat} [ x_c^2 ]$. Notice we only care about $\cz$ since for $\cnz$ we know $x_c$ exactly. Note that in all the following all the parameters are assumed fixed at the previous iteration, e.g. $\mu_c \equiv \mu_c^{(t)}$. If we consider a conditional density of the form
+In order to calculate this it is obvious from equation \ref{eq:lcl} we must calculate $\Ex_{\bx | \by, \Thetat} [ x_n ]$ and $\Ex_{\bx | \by, \Thetat} [ x_n^2 ]$. Notice we only care about $\cz$ since for $\cnz$ we know $x_n$ exactly. Note that in all the following all the parameters are assumed fixed at the previous iteration, e.g. $\mu_n \equiv \mu_n^{(t)}$. If we consider a conditional density of the form
 
 \begin{equation}
-f(\bx | \by, \Thetat) = \prod_c f(x_c | y_c, \Thetat)
+f(\bx | \by, \Thetat) = \prod_n f(x_n | y_n, \Thetat)
 \end{equation}
 
 then
 
 \begin{equation}
 \begin{aligned}
-f(x_c | y_c, \Thetat) & = \frac{f(y_c | x_c, \Thetat)f(x_c | \Thetat)}{\int dx_c f(y_c | x_c, \Thetat)f(x_c | \Thetat)} \\
-& = \frac{e^{-\lambda x_c^2} \norm(x_c | \mu_c, \sigma^2)}{\int dx_c e^{-\lambda x_c^2} \norm(x_c | \mu_c, \sigma^2)}
+f(x_n | y_n, \Thetat) & = \frac{f(y_n | x_n, \Thetat)f(x_n | \Thetat)}{\int dx_n f(y_n | x_n, \Thetat)f(x_n | \Thetat)} \\
+& = \frac{e^{-\lambda x_n^2} \norm(x_n | \mu_n, \sigma^2)}{\int dx_n e^{-\lambda x_n^2} \norm(x_n | \mu_n, \sigma^2)}
 \end{aligned}
 \end{equation}
 
@@ -159,15 +160,15 @@ f(x_c | y_c, \Thetat) & = \frac{f(y_c | x_c, \Thetat)f(x_c | \Thetat)}{\int dx_c
 Some algebra later and we arrive at
 
 \begin{equation}
-f(x_c | y_c, \Thetat) = \norm\left(x_c | \alpha(t_c, \Thetat), \beta(\Thetat) \right)
+f(x_n | y_n, \Thetat) = \norm\left(x_n | \alpha(t_n, \Thetat), \beta(\Thetat) \right)
 \end{equation}
 
 where
 
 \begin{equation}
 \begin{aligned}
-\alpha(t_c, \Thetat) & = \frac{\mu_c}{2 \sigma^2 \lambda + 1} \\
-\beta(t_c) & = \frac{\sigma^2}{2 \sigma^2 \lambda + 1}
+\alpha(t_n, \Thetat) & = \frac{\mu_n}{2 \sigma^2 \lambda + 1} \\
+\beta(t_n) & = \frac{\sigma^2}{2 \sigma^2 \lambda + 1}
 \end{aligned}
 \end{equation}
 
@@ -175,8 +176,8 @@ and so
 
 \begin{equation}
 \begin{aligned}
-\Ex_{\bx | \by, \Thetat} [ x_c ] &= \alpha(t_c, \Thetat)  \\
-\Ex_{\bx | \by, \Thetat} [ x_c^2  ] &= \alpha(t_c, \Thetat)^2 + \beta(\Thetat).
+\Ex_{\bx | \by, \Thetat} [ x_n ] &= \alpha(t_n, \Thetat)  \\
+\Ex_{\bx | \by, \Thetat} [ x_n^2  ] &= \alpha(t_n, \Thetat)^2 + \beta(\Thetat).
 \end{aligned}
 \end{equation}
 
@@ -184,37 +185,37 @@ We need to maximise
 
 \begin{equation}
 \begin{aligned}
-Q(\Theta | \Thetat) &= \frac{-C}{2} \log(2 \pi \sigma^2) \\
+Q(\Theta | \Thetat) &= \frac{-N}{2} \log(2 \pi \sigma^2) \\
 & +
-\sum_\cz \left[ -(\frac{1}{2\sigma^2} + \lambda) \Ex_{\bx | \by, \Thetat} [ x_c^2 ] + \frac{\mu_c}{\sigma^2} \Ex_{\bx | \by, \Thetat} [ x_c ] - \frac{\mu_c^2}{2\sigma^2}\right] \\
+\sum_\cz \left[ -(\frac{1}{2\sigma^2} + \lambda) \Ex_{\bx | \by, \Thetat} [ x_n^2 ] + \frac{\mu_n}{\sigma^2} \Ex_{\bx | \by, \Thetat} [ x_n ] - \frac{\mu_n^2}{2\sigma^2}\right] \\
 & +
-\sum_\cnz \left[ \frac{(y_c - \mu_c)^2}{2 \sigma^2} + \log(1 - e^{-\lambda y_c^2}) \right]
+\sum_\cnz \left[ \frac{(y_n - \mu_n)^2}{2 \sigma^2} + \log(1 - e^{-\lambda y_n^2}) \right]
 \end{aligned}
 \end{equation}
 
-with respect to $\theta = \{\mu_0, k, t_0\}$, $\sigma^2$ and $\lambda$, recalling $\mu_c \equiv \mu_c(\theta, t_c)$. We wish to use gradient-based optimisation and so require the gradients. Note that
+with respect to $\theta = \{\mu_0, k, t_0\}$, $\sigma^2$ and $\lambda$, recalling $\mu_n \equiv \mu_n(\theta, t_n)$. We wish to use gradient-based optimisation and so require the gradients. Note that
 
 \begin{equation}
 \begin{aligned}
-\frac{dQ}{d\theta} &= \sum_c \frac{\partial Q}{\partial \mu_c} \frac{d \mu_c}{d \theta} \\
-& = \frac{1}{\sigma^2} \left[ \sum_\cz \left(  \Ex_{\bx | \by, \Thetat} [ x_c ] - \mu_c \right) \frac{d \mu_c}{d \theta} +
-\sum_\cnz \left( y_c - \mu_c \right) \frac{d \mu_c}{d \theta}\right]
+\frac{dQ}{d\theta} &= \sum_n \frac{\partial Q}{\partial \mu_n} \frac{d \mu_n}{d \theta} \\
+& = \frac{1}{\sigma^2} \left[ \sum_\cz \left(  \Ex_{\bx | \by, \Thetat} [ x_n ] - \mu_n \right) \frac{d \mu_n}{d \theta} +
+\sum_\cnz \left( y_n - \mu_n \right) \frac{d \mu_n}{d \theta}\right]
 \end{aligned}
 \end{equation}
 
-where the derivatives $\frac{d \mu_c}{d \theta}$ are the same as those given in equation \ref{eq:derivatives}. Finally we require the partial derivatives with respect to $\lambda$ and $\sigma^2$ which are given by
+where the derivatives $\frac{d \mu_n}{d \theta}$ are the same as those given in equation \ref{eq:derivatives}. Finally we require the partial derivatives with respect to $\lambda$ and $\sigma^2$ which are given by
 
 \begin{equation}
-\frac{dQ}{d \lambda} = -\sum_\cz  \Ex_{\bx | \by, \Thetat} [ x_c ] +
-\sum_\cnz \frac{y_c^2 e^{-\lambda y_c^2}}{1 - e^{-\lambda y_c^2}}
+\frac{dQ}{d \lambda} = -\sum_\cz  \Ex_{\bx | \by, \Thetat} [ x_n ] +
+\sum_\cnz \frac{y_n^2 e^{-\lambda y_n^2}}{1 - e^{-\lambda y_n^2}}
 \end{equation}
 
 and
 
 \begin{equation}
-\frac{dQ}{d\sigma^2} = \frac{-C}{2\sigma^2} +
-\frac{1}{2 \sigma^4} \left[ \sum_\cz \left( \Ex_{\bx | \by, \Thetat} [ x_c^2 ] - 2 \mu_c \Ex_{\bx | \by, \Thetat} [ x_c ] + \mu_c^2 \right) +
-\sum_\cnz (y_c - \mu_c)^2 \right]
+\frac{dQ}{d\sigma^2} = \frac{-N}{2\sigma^2} +
+\frac{1}{2 \sigma^4} \left[ \sum_\cz \left( \Ex_{\bx | \by, \Thetat} [ x_n^2 ] - 2 \mu_n \Ex_{\bx | \by, \Thetat} [ x_n ] + \mu_n^2 \right) +
+\sum_\cnz (y_n - \mu_n)^2 \right]
 \end{equation}
 
 Note that $\sigma^2$ has an analytical maximum by setting $\frac{dQ}{d\sigma^2} = 0$, but since this depends on $\theta$ and vice versa we instead numerically optimise all simultaneously.
