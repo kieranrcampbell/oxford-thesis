@@ -8,15 +8,70 @@
 
 \section{Statistical latent variable models}
 
-\subsection{Principal components analysis}
+\subsection{Principal component analysis}
+
+Principal component analysis (PCA, \cite{jolliffe2002principal}) is a ubiquitous linear dimensionality reduction technique. PCA has several interpretations\footnote{Lior Pachter has an excellent blog post on this at \url{https://liorpachter.wordpress.com/2014/05/26/what-is-principal-component-analysis/}}, but the most common is that of a linear projection to a low-dimensional space such that the variance of the data points in the projected space is maximised. Intuitively, this can be thought of finding a linear subspace of the high-dimensional data space that best ``explains''
+the data.
+
+Mathematically, we start with $G$-dimensional data points $\{\mby_n\}, \; n = 1, \ldots, N$ and wish to find the $Q$ principal axes $\mblambda_q, \; q = 1, \ldots, Q$ that act as a mapping from the observed to latent space such that the variance of the input points projected to the latent space is maximal. To find $\mblambda_q$ the eigenvectors of the sample covariance matrix
+
+\begin{equation}
+  \mbS = \frac{1}{N}\sum_{n = 1}^N (\mby_n - \bar{\mby}) (\mby_n - \bar{\mby})^T
+\end{equation}
+
+are calculated where $\bar{\mby}$ is the sample mean of $\mby_n$. The $Q$ principal axes are then the $Q$ eigenvectors of $\mbS$ with the largest eigenvalues. The latent space projections $\mbz_n$ of each data point may then be obtained via $\mbz_n = \mbLambda (\mby_n - \bar{\mby})$ where $\mbLambda$ is the $Q \times G$ matrix whose rows are $\mblambda_q$ ordered by decreasing eigenvalue.
+
+PCA is frequently used in computational genomics. It is commonly used for visualisation of genomic variation data such as single nucleotide polymorphism (SNP) datasets, where it has an elegant interpretation in terms of the underlying genealogical history of samples \cite{mcvean2009genealogical}.
+It is often applied to microarray gene expression data for tasks such as data visualisation (see e.g. \cite{ringner2008principal}) and for clustering samples \cite{yeung2001principal}.
+
+Since the advent of single-cell RNA-sequencing, PCA has been the go-to dimensionality reduction algorithm for exploratory data analysis\footnote{Though faces stiff competition from t-Stochastic Neighbour Embedding (tSNE)}. Examples include latent space projections to understand cell types and hierarchies in the developing lung \cite{treutlein2014reconstructing} and the transcriptional states defining differentiation of embryonic stem cells under different serums \cite{kolodziejczyk2015single}. PCA is also used for clustering cells, either as a preprocessing step prior to clustering algorithms like $k-$means or as part of likelihood-based clustering \cite{yau2016pcareduce}.
+
+PCA also forms an initial step in many pseudotime algorithms such as in TSCAN \cite{ji2016tscan} and Waterfall \cite{shin2015single}. However, no studies have actually considered that a principal component of the data itself could \emph{be} the pseudotemporal trajectory. Intuitively such an idea is appealing since we would expect the pseudotemporal process to be the dominant source of variation within the data.
 
 \subsection{Probabilistic principal components analysis}
 
-\subsection{Factor analysis}
+One weakness of standard PCA is the absence of any probabilistic framework or interpretation. In a landmark paper \cite{tipping1999probabilistic} Tipping \& Bishop derived\footnote{By first considering a factor analysis model that we discuss in section \ref{sec:intr:fa}.} probabilistic PCA (PPCA) that provides an explicit generative model for PCA and relates the maximum likelihood estimates of parameters to the algorithmic estimation we discussed previously.
 
-\subsubsection{A brief history of factor analysis}
+The generative model for PPCA is given by
 
-\subsubsection{The rotation problem}
+\begin{equation}
+  \begin{aligned}
+    \mbz_n & \sim \Norm(\mbzero, \mbI) \\
+    \mby_n & \sim \Norm(\mbLambda \mbz_n + \mbmu, \sigma^2 \mbI)
+  \end{aligned}
+\end{equation}
+
+where $\mbmu$ is the expectation of $\mby$ and $\sigma^2$ is the measurement variance. In other words, if we centre $\mby$ so that $\text{E}[\mby] = 0$ then PPCA corresponds to a Gaussian noise model with a mean given by standard PCA and isotropic covariance. Tipping and Bishop futher derived closed form expressions for the maximum likelihood estimates (MLEs) of $\mbLambda$ and $\sigma^2$ along with the conditional distribution of the latent variables $p(\mbz_n | \mbLambda, \mby_n)$. They demonstrated that in the limit $\sigma^2 \rightarrow 0$ the MLE estimate of $\mbLambda$ is identical (up to arbitrary rotation) to that of standard PCA. Furthermore, the MLE estimate of $\sigma^2$ is given by
+
+\begin{equation}
+  \sigma^2_{\text{MLE}} = \frac{1}{G-Q} \sum_{j = Q + 1}^G \zeta_j
+\end{equation}
+
+where $\zeta_j$ are the eigenvalues of the sample covariance matrix ordered by decreasing size. In other words $\sigma^2$ is the variance ``lost'' in the projection, averaged over the remaining dimensions.
+
+\subsection{Factor analysis} \label{sec:intr:fa}
+
+Factor analysis (FA) precedes both PCA and PPCA, dating back to Spearman's work on ``general intelligence'' \cite{spearman1904general} (see section \ref{intr:fa_hist}). The overall model is very similar to that of PPCA with the only difference being the measurement (co-)variance diagonal rather than isotropic. This gives a generative factor analysis model of the form
+
+\begin{equation}
+  \begin{aligned}
+    \mbz_n & \sim \Norm(\mbzero, \mbI) \\
+    \mby_n & \sim \Norm(\mbLambda \mbz_n + \mbmu, \mbSigma)
+  \end{aligned}
+\end{equation}
+
+where $\mbSigma = \text{diag}(\sigma_1^2, \ldots, \sigma_G^2)$.
+
+Maximum likelihood inference of factor analysis models may be performed using iterative procedures such as expectation-maximisation (EM) or Bayesian inference performed through MCMC methods or variational inference.
+
+Factor analysis notably suffers from the \emph{rotation problem}. Given a $Q \times Q$ orthogonal rotation matrix $\mbR$ the likelihood is invariant under simultaneous rotation of both the factor matrix $\mbLambda$ and latent values $\mbz$\footnote{
+Given measurement noise $\mbepsilon$ the likelihood is unchanged under $\mby = \mbLambda \mbz + \mbepsilon = \mbLambda \mbR \mbR^T \mbz + \mbepsilon = \mbLambda' \mbz' + \mbepsilon$ where $\mbLambda' = \mbLambda \mbR$ and $\mbz' = \mbR \mbz$ are the loadings and projections in the rotated space.
+}. %Several solutions have been proposed to this
+Note that if $Q=1$ the rotation problem is essentially a scaling problem (we can divide $\mbLambda$ by $k$ and multiply $\mbz$ by $k$ to achieve the same likelihood) but this is solved by fixing the scales of $\mbLambda$ and $\mbz$ through priors.
+
+\subsubsection{A brief history of factor analysis and connection to pseudotime} \label{intr:fa_hist}
+
+% \subsubsection{The rotation problem}
 
 \subsubsection{Nonlinear factor analysis}
 
