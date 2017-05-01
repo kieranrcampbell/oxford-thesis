@@ -4,7 +4,40 @@
 
 \section{Single-cell RNA-sequencing}
 
+\subsection{The central dogma of biology}
+
+% Central dogma
+
+% Why people want to study single-cells
+
+\subsection{Bulk expression quantification}
+
+% rt-QPCR (one paragraph)
+
+% microarrays (one paragraph)
+
+% RNA-seq (two paragraphs)
+
+\subsection{Single-cell expression quantification methods}
+
+\subsection{Features of scRNA-seq data}
+
+% Mean-variance relationship
+
+% Dropout
+
 \section{Pseudotime \& trajectories}
+
+\subsection{The pseudotime estimation problem}
+
+\subsection{Early applications to bulk expression data}
+
+\subsection{Single-cell trajectories}
+
+\subsection{Existing pseudotime inference algorithms}
+
+Development of many of these methods concurrent with the work of this thesis.
+
 
 \section{Statistical latent variable models}
 
@@ -53,7 +86,7 @@ where $\zeta_j$ are the eigenvalues of the sample covariance matrix ordered by d
 
 Factor analysis (FA) precedes both PCA and PPCA, dating back to Spearman's work on ``general intelligence'' \cite{spearman1904general} (see section \ref{intr:fa_hist}). The overall model is very similar to that of PPCA with the only difference being the measurement (co-)variance diagonal rather than isotropic. This gives a generative factor analysis model of the form
 
-\begin{equation}
+\begin{equation} \label{eq:fa}
   \begin{aligned}
     \mbz_n & \sim \Norm(\mbzero, \mbI) \\
     \mby_n & \sim \Norm(\mbLambda \mbz_n + \mbmu, \mbSigma)
@@ -69,12 +102,165 @@ Given measurement noise $\mbepsilon$ the likelihood is unchanged under $\mby = \
 }. %Several solutions have been proposed to this
 Note that if $Q=1$ the rotation problem is essentially a scaling problem (we can divide $\mbLambda$ by $k$ and multiply $\mbz$ by $k$ to achieve the same likelihood) but this is solved by fixing the scales of $\mbLambda$ and $\mbz$ through priors.
 
-\subsubsection{A brief history of factor analysis and connection to pseudotime} \label{intr:fa_hist}
+\subsubsection{Origins of factor analysis and connection to pseudotime} \label{intr:fa_hist}
 
-% \subsubsection{The rotation problem}
 
-\subsubsection{Nonlinear factor analysis}
 
-\subsection{Mixture models}
+\begin{table}
+  \centering
+\subfloat[School test scores for children across subjects]{\begin{tabular}{|c|ccc|}
+\hline
+Student & Maths & Physics & Biology\\
+\hline
+A & 8  & 9 & 7 \\
+B & 3 & 1 & 5 \\
+C & 6 & 6 & 8 \\
+D & 4 & 2 & 7 \\
+\hline
+\end{tabular}}
+\hspace{5pt}
+\subfloat[Gene expression values of cells for transcription factors]{\begin{tabular}{|c|ccc|}
+\hline
+Cell & \emph{MYOD} & \emph{MYF5} & \emph{MYOG} \\
+\hline
+A & 8  & 9 & 7 \\
+B & 3 & 1 & 5 \\
+C & 6 & 6 & 8 \\
+D & 4 & 2 & 7 \\
+\hline
+\end{tabular}}
+\caption{Spearman noted that children's test scores were correlated across subjects (a). Cells' expression of genes in biological pathways is likewise correlated (b).} \label{tbl:fa}
+\end{table}
+
+Factor analysis was first introduced by Spearman in 1904 \cite{spearman1904general} by considering children's test scores in subjects such as that in table \ref{tbl:fa}(a). He noticed that the scores are correlated - for example, if a child has a high score in physics they are more likely to have a high score in maths, and vice versa. Spearman's insight was that rather than the scores being correlated with each other, they were correlated with an underlying (one-dimensional) hidden factor he termed \emph{general intelligence}. Mathematically this can be expressed as
+
+\begin{equation}
+\mby_n = \mblambda z_n + \epsilon_n
+\end{equation}
+
+where $\mby_n$ is the vector of child $n$'s test scores, $\mblambda$ is a vector of subject specific constants (the ``loadings''), $z_n$ is the ``general intelligence'' and $\epsilon_n$ is any noise not explained by the model\footnote{
+Of course the idea of a single ``general intelligence'' goes against common sense. If there truly is a single latent factor it is possible to form the \emph{tetrad equations}. Later studies showed that deviations in the tetrad equations could not be explained by sampling noise alone. For an overview see \url{https://www.stat.cmu.edu/~cshalizi/350/lectures/12/lecture-12.pdf}.
+}.
+
+One can see in hindight the parallels to the pseudotime estimation problem: we measure some high-dimensional quantity $\mby_n$ over various subjects and have a hazy and somewhat under-defined one-dimensional generating process $z_n$. In the context of psychology, this process is intelligence: something unmeasurable that we use to make sense of observations in life such as performance in tests. Similarly in biology we have the concept of differentiation trajectories: something equally unmeasurable but which we indirectly observe through molecular measurements such as gene expression quantification.
+
+Given the parallels between the original interpretation of factor analysis and differentiation trajectories we may suspect that it is particularly suited to the pseudotime inference. Indeed, chapters 3-5 are devoted to various modifications of factor analysis to infer such trajectories.
+
+% \subsubsection{Nonlinear factor analysis}
+
+% \subsection{Mixture models}
+
+
+\subsection{Manifold learning}
+
+While not strictly a class of statistical latent variable model, manifold learning has found much success in single-cell genomics. While methods such as PCA and FA attempt to infer low-dimensional \textbf{linear} subspaces embedded in high-dimensional space, the field of manifold learning extends this to the nonlinear setting. Several manifold learning algorithms applied to single-cell genomics are reviewed below and utilised in chapter 2.
+
+\subsubsection{Laplacian eigenmaps}
+
+Laplacian eigenmaps \cite{Belkin2003} are part of a larger class of \emph{spectral methods} including diffusion maps (section \ref{sec:diffusion_maps}). Starting with the $N \times G$ matrix $\mbY$, laplacian eigenmaps seeks a $N \times Q$-dimensional embedding $\mbZ$ with row vectors $\mbz_n$ for each cell through minimisation of the quantity
+
+\begin{equation}
+  \sum_{n,n'} W_{n,n'}\lvert \lvert \mbz_n - \mbz_{n'}\rvert \rvert^2
+\end{equation}
+
+subject to the constrain that $\mbz_q^T \mbz_q = 1 \; \forall q$ where $\mbz_q$ are the column vectors of $\mbz$.
+ $\mbW$ is an $N \times N$ similarity matrix between the samples (cells) with the intuition that if
+$W_{n,n'}$ is large then the distance between $\mbz_n$ and $\mbz_{n'}$ is heavily penalised placing them close together in the reduced space. Conversely, if $W_{n,n'}$ is small then large distances between them does not affect the optimisation problem. Solutions for $\mbZ$ can readily be found by solving an eigenvalue equation. % KC check + reference
+Laplacian eigenmaps were used for pseudotime inference in the \texttt{embeddr} package \cite{campbell2015laplacian} using a symmetrised $k$-nearest neighbour graph for $\mbW$.
+
+
+\subsubsection{Diffusion maps} \label{sec:diffusion_maps}
+
+Diffusion maps are closely related to laplacian eigenmaps and have been successfully applied to single-cell RNA-seq data both in the context of visualisation \cite{haghverdi2015diffusion} and pseudotime inference \cite{haghverdi2016diffusion}. The basic idea is to consider points on the manifold in terms of a diffusion process, with a sample more likely to diffuse to one closer to it than further away. It begins by constructing a transition matrix
+
+\begin{equation}
+  P_{n',n} = \frac{1}{Z(\mby_{n'})} \exp\left( - \frac{\lvert \lvert \mby_n - \mby_{n'} \rvert \rvert^2}{2 \sigma^2}\right)
+\end{equation}
+
+where $Z(\mby_{n'}) = \sum_{n}  \exp\left( - \frac{\lvert \lvert \mby_n - \mby_{n'} \rvert \rvert^2}{2 \sigma^2}\right)$ and $\sigma^2$ is a characteristic length scale. $P_{n',n}$ can be thought of as the probability of transitioning or \emph{diffusing} from cell $n$ to $n'$. A renormalised transition matrix $\tilde{\mbP}$ can then be definied that takes into account the local density of samples in the space. One can then decompose the diffusion distances into a sum over the eigenvectors of $\tilde{\mbP}$
+weighted by eigenvalues,
+implying that retaining eigenvectors for the first $k$ ordered eigenvalues captures the major structure of the manifold and are therefore useful for visualisation. Haghverdi et al. \cite{haghverdi2015diffusion} further derive a heuristic for selection of the kernel width $\sigma$ in terms of the effective number of neighbours of each cell.
+
+\subsubsection{Multidimensional scaling}
+
+Multidimensional scaling (MDS) has previously been used for the visualisation of large genomic datasets \cite{tzeng2008multidimensional} and more recently was used as the initial dimensionality reduction step for the pseudotime algorithm \texttt{SCORPIUS} \cite{cannoodt2016scorpius}. It is motivated by the problem of trying to place cities on points on a map if we are given the distances between them. Given an $N \times N$ distance matrix $\mbD$ MDS attempts to minimise the quantity
+
+\begin{equation}
+  \texttt{Stress}(\mbZ) = \left(
+  \sum_{n \neq n' = 1}^N (d_{nn'} - \lvert \lvert \mbz_n - \mbz_{n'} \rvert \rvert)^2
+  \right)^{\frac{1}{2}}
+\end{equation}
+
+where $\mbz_n$ is the low dimensional embedding of sample $n$. The intuition is if $n$ and $n'$ are close we minimise the distance between  $\mbz_n$  $\mbz_{n'}$ and if $n$ and $n'$ are far apart we need to maximise the distance between  $\mbz_n$  and $\mbz_{n'}$ so that it is as close to $d_{nn'}$ as possible.
+
+\subsubsection{Locally linear embedding}
+
+Locally linear embedding (LLE) was used successfully by \emph{SLICER} \cite{welch2016slicer} as a nonlinear dimensionality step after variable gene selection. LLE begins by defining an $N \times N$ weight matrix $\mbW$ where $W_{nn'}$ represents how useful sample $n'$ is for reconstructing $n$. An optimal $\mbW$ is found by minimising
+
+\begin{equation}
+  \sum_{n} \lvert \lvert \mby_n - \sum_{n'} W_{nn'} \mby_{n'} \rvert \rvert^2
+\end{equation}
+
+where $\mbW$ is sparsely constrained so that each point is only reconstructed by its $k$ nearest neighbours and so that the row sums of $\mbW$ are 1. The $Q$ (reduced) dimensional reconstructions $\mbz_n, \; n = 1, \ldots, N$ are then found via minimising
+
+\begin{equation}
+  C(\mbZ) = \sum_{n} \lvert \lvert \mbz_n - \sum_{n'} W_{nn'} \mbz_{n'} \rvert \rvert^2
+\end{equation}
+
+where $\mbW$ is kept fixed in the second optimisation step. In other words, we seek a low dimensional embedding such that the points have approximately the same relationship to each other in the reduced space as in the full ($G$-dimensional) space. Minimisation of $C(\mbZ)$ can subsequently be performed via a sparse eigenvalue problem.
+
+\subsubsection{t-distributed stochastic neighbour embedding}
+
+t-distributed stochastic neighbour embedding (t-SNE) \cite{maaten2008visualizing} has become incredibly popular for the visualisation of single-cell RNA-seq data and as the initial dimensionality step for several pseudotime algorithms. Similarly to diffusion maps\footnote{
+Note that t-SNE differs in defining a different kernel width for each data point.
+}, it begins by defining a conditional transition matrix
+
+\begin{equation}
+  P_{n'|n} = \frac{1}{Z(\mby_{n'})} \exp\left( - \frac{\lvert \lvert \mby_n - \mby_{n'} \rvert \rvert^2}{2 \sigma_n^2}\right)
+\end{equation}
+
+which can be interpreted as the probability under a Gaussian likelihood of $n$ choosing $n'$ as its neighbour. This is then symmetrised to form $P_{n'n} = \frac{1}{2N}(  P_{n'|n} +   P_{n|n'})$.
+
+It then defines similarities in the latent space as
+
+\begin{equation}
+  Q_{nn'} = \frac{
+  (1 + \lvert \lvert \mbz_n - \mbz_{n'} \rvert \rvert^2)^{-1}
+  }{
+  \sum_{m \neq m'} (1 + \lvert \lvert \mbz_m - \mbz_{m'} \rvert \rvert^2)^{-1}
+  }
+\end{equation}
+
+which is equivalent to measuring distances in the latent space with a Student-t distribution with one degree of freedom. Values of $\mbz_n$ are found by minimising the Kullback–Leibler (KL) divergence
+%from $\mbP$ to $\mbQ$
+$\KL{\mbP}{\mbQ} = \sum_{n \neq n'} P_{nn'} \log \frac{P_{nn'}}{Q_{nn'}}$.
+
+It is hard to overstate how popular t-SNE has been for visualising single-cell gene expression data. Examples include as the initial dimensionality reduction step in \texttt{SCUBA} \cite{marco2014bifurcation} or for visualisation of branch structure of single-cell mass cytometry data \cite{setty2016wishbone}. Criticisms of t-SNE include the required specification of the kernel widths $\sigma_n$ (which can be interpreted in terms of an effective number of nearest neighbours or \emph{perplexity}) and the number of iterations of the (stochastic) gradient descent aglorithm.
+
 
 \subsection{Gaussian process latent variable models}
+
+Gaussian Process Latent Variable Models (GPLVM) are the subject of chapter 2 but are mentioned here for completeness. Technically GPLVM is a form of probabilistic manifold learning that learns an explicit map from the latent space to the observed space but may also be seen as a form of nonlinear factor analysis. In the factor analysis model of equation \ref{eq:fa} typical estimation proceeds by marginalising over $\mbz_n$ to give a marginal likelihood $\mby_n \sim(\mbmu, \mbLambda \mbLambda^T + \mbSigma)$ followed by direct optimisation. However, Lawrence \cite{lawrence2004gaussian} instead marginalised over the mapping $\mbLambda$ through a prior of the form $p(\mbLambda) = \prod_{q=1}^Q \Norm(\mblambda_q | \mbzero, \alpha^{-1} \mbI)$. This introduces a coupling between different samples $\mby_n$. Let $\mbY$ be the full $N \times G$ data matrix with row vectors $\mby_n$ and column vectors $\mby_g$ and $\mbZ$ the $N \times Q$
+matrix of latent values with row vectors $\mbz_n$. The likelihood marginalised over the mapping is then
+
+\begin{equation}
+  p(\mbY) = \prod_{g = 1}^G \norm(\mby_g | \mbzero, \alpha^{-1} \mbZ \mbZ^T + \mbSigma)
+\end{equation}
+
+where $\mbSigma$ is the diagonal noise covariance matrix as before.
+
+Lawrence's key insight was that the term $\alpha^{-1} \mbZ \mbZ^T$ in the covariance matrix represents similarity between difference samples, since the covariance between samples $n$ and $n'$ is $\alpha^{-1} \mbz_n \cdot \mbz_{n'}$. Therefore, it can be replaced with any positive definite \emph{kernel} $k(\mbz_n, \mbz_{n'})$ representing similarity between $\mbz_n$ and $\mbz_{n'}$. Popular examples include the squared exponential kernel
+
+\begin{equation}
+k_{\text{SQE}}(\mbz_n, \mbz_{n'}) = \sigma_f^2 \exp\left(-\frac{1}{2l^2} \lvert \lvert \mbz_n - \mbz_{n'} \rvert\rvert^2\right)
+\end{equation}
+
+as used in \cite{campbell2016order} or the Matern family such as the $\text{Matern}_{3/2}$ kernel used in \cite{reid2016pseudotime}:
+
+\begin{equation}
+  k_{\text{Matern}_{3/2}}(\mbz_n, \mbz_{n'}) =
+  \left(
+  1 + \sqrt{3} \lvert \mbz_n - \mbz_{n'} \rvert \right) \exp\left( - \sqrt{3} \lvert \mbz_n - \mbz_{n'} \rvert \right).
+\end{equation}
+
+GPLVM has been widely applied to single-cell expression data, including to single-cell qPCR data \cite{buettner2012novel} and single-cell RNA-seq \cite{campbell2016order,macaulay2016single}. Latent embeddings inferred using GPLVM are typically under-constrained leading to a number of studies that introduce ``data-driven priors'' to further constrain the model, such incorporating the t-SNE cost function to preserve local structure in GPLVM \cite{van2009preserving} 
