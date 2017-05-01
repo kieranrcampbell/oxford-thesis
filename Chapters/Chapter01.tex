@@ -38,6 +38,32 @@
 
 Development of many of these methods concurrent with the work of this thesis.
 
+\begin{sidewaystable}
+  \centering
+\begin{tabular}{|lccccc|}
+\hline
+Algorithm & Reference & Dimensionality reduction & Trajectory inference & Probabilistic & Branching \\
+\hline
+Monocle & \cite{Trapnell2014-xi} & ICA\footnote{Independent component analysis} &
+MST\footnote{Minimum spanning tree (cells are projected onto the longest path through the MST).} & No & Yes \\
+Wanderlust & \cite{Bendall2014-rc} & NA & KNN-graph\footnote{$k$-nearest neighbour graph. Trajectory inferred by an ensembl of random walks.} & No & No \\
+Monocle 2 & \cite{Qiu2017-eu} & DDR-tree & N/A & No & Yes \\
+Scuba & \cite{Marco2014-ug} & t-SNE\footnote{See section \ref{sec:tsne}} & Principal curves & No & Yes \\
+Diffusion pseudotime (DPT) & \cite{Haghverdi2016-eg} & N/A & Diffusion distance from root cell &
+Interpretation\footnote{DPT has an interpretation in terms of the probability of one cell state transitioning into the other. However, it does not define a generative probabilistic model.} & Yes \\
+SLICER & \cite{welch2016slicer} & Locally linear embedding\footnote{See section \ref{sec:lle}} & Principal curves & No & Yes \\
+DeLorean & \cite{reid2016pseudotime} & N/A & GPLVM\footnote{See section \ref{sec:gplvm}} & Yes & No \\
+TSCAN & \cite{Ji2016-gx} & PCA & Cluster-based MST & No & Yes \\
+Waterfall & \cite{shin2015single} & PCA & Cluster-based distances & No & No \\
+\rowcolor{Gray}
+Ouija & \cite{Campbell2016-ys} & N/A & Nonlinear factor analysis & Yes & No \\
+\rowcolor{Gray}
+MFA & \cite{campbell2017probabilistic} & N/A & Mixture of factor analysers & Yes & Yes \\
+\hline
+\end{tabular}
+\caption{An overview of some pseudotime algorithms. Most involve a dimensionality reduction step followed by pseudotime assignment (``trajectory inference'') in the reduced space, though arguably this constitutes a single dimensionality reduction step. Methods shaded in grey are introduced in this thesis.} \label{tbl:pseudotimecomparison}
+\end{sidewaystable}
+
 
 \section{Statistical latent variable models}
 
@@ -193,7 +219,7 @@ Multidimensional scaling (MDS) has previously been used for the visualisation of
 
 where $\mbz_n$ is the low dimensional embedding of sample $n$. The intuition is if $n$ and $n'$ are close we minimise the distance between  $\mbz_n$  $\mbz_{n'}$ and if $n$ and $n'$ are far apart we need to maximise the distance between  $\mbz_n$  and $\mbz_{n'}$ so that it is as close to $d_{nn'}$ as possible.
 
-\subsubsection{Locally linear embedding}
+\subsubsection{Locally linear embedding} \label{sec:lle}
 
 Locally linear embedding (LLE) was used successfully by \emph{SLICER} \cite{welch2016slicer} as a nonlinear dimensionality step after variable gene selection. LLE begins by defining an $N \times N$ weight matrix $\mbW$ where $W_{nn'}$ represents how useful sample $n'$ is for reconstructing $n$. An optimal $\mbW$ is found by minimising
 
@@ -209,7 +235,7 @@ where $\mbW$ is sparsely constrained so that each point is only reconstructed by
 
 where $\mbW$ is kept fixed in the second optimisation step. In other words, we seek a low dimensional embedding such that the points have approximately the same relationship to each other in the reduced space as in the full ($G$-dimensional) space. Minimisation of $C(\mbZ)$ can subsequently be performed via a sparse eigenvalue problem.
 
-\subsubsection{t-distributed stochastic neighbour embedding}
+\subsubsection{t-distributed stochastic neighbour embedding} \label{sec:tsne}
 
 t-distributed stochastic neighbour embedding (t-SNE) \cite{maaten2008visualizing} has become incredibly popular for the visualisation of single-cell RNA-seq data and as the initial dimensionality step for several pseudotime algorithms. Similarly to diffusion maps\footnote{
 Note that t-SNE differs in defining a different kernel width for each data point.
@@ -238,7 +264,7 @@ $\KL{\mbP}{\mbQ} = \sum_{n \neq n'} P_{nn'} \log \frac{P_{nn'}}{Q_{nn'}}$.
 It is hard to overstate how popular t-SNE has been for visualising single-cell gene expression data. Examples include as the initial dimensionality reduction step in \texttt{SCUBA} \cite{marco2014bifurcation} or for visualisation of branch structure of single-cell mass cytometry data \cite{setty2016wishbone}. Criticisms of t-SNE include the required specification of the kernel widths $\sigma_n$ (which can be interpreted in terms of an effective number of nearest neighbours or \emph{perplexity}) and the number of iterations of the (stochastic) gradient descent aglorithm.
 
 
-\subsection{Gaussian process latent variable models}
+\subsection{Gaussian process latent variable models} \label{sec:gplvm}
 
 Gaussian Process Latent Variable Models (GPLVM) are the subject of chapter 2 but are mentioned here for completeness. Technically GPLVM is a form of probabilistic manifold learning that learns an explicit map from the latent space to the observed space but may also be seen as a form of nonlinear factor analysis. In the factor analysis model of equation \ref{eq:fa} typical estimation proceeds by marginalising over $\mbz_n$ to give a marginal likelihood $\mby_n \sim(\mbmu, \mbLambda \mbLambda^T + \mbSigma)$ followed by direct optimisation. However, Lawrence \cite{lawrence2004gaussian} instead marginalised over the mapping $\mbLambda$ through a prior of the form $p(\mbLambda) = \prod_{q=1}^Q \Norm(\mblambda_q | \mbzero, \alpha^{-1} \mbI)$. This introduces a coupling between different samples $\mby_n$. Let $\mbY$ be the full $N \times G$ data matrix with row vectors $\mby_n$ and column vectors $\mby_g$ and $\mbZ$ the $N \times Q$
 matrix of latent values with row vectors $\mbz_n$. The likelihood marginalised over the mapping is then
@@ -263,4 +289,4 @@ as used in \cite{campbell2016order} or the Matern family such as the $\text{Mate
   1 + \sqrt{3} \lvert \mbz_n - \mbz_{n'} \rvert \right) \exp\left( - \sqrt{3} \lvert \mbz_n - \mbz_{n'} \rvert \right).
 \end{equation}
 
-GPLVM has been widely applied to single-cell expression data, including to single-cell qPCR data \cite{buettner2012novel} and single-cell RNA-seq \cite{campbell2016order,macaulay2016single}. Latent embeddings inferred using GPLVM are typically under-constrained leading to a number of studies that introduce ``data-driven priors'' to further constrain the model, such incorporating the t-SNE cost function to preserve local structure in GPLVM \cite{van2009preserving} 
+GPLVM has been widely applied to single-cell expression data, including to single-cell qPCR data \cite{buettner2012novel} and single-cell RNA-seq \cite{campbell2016order,macaulay2016single}. Latent embeddings inferred using GPLVM are typically under-constrained leading to a number of studies that introduce ``data-driven priors'' to further constrain the model, such incorporating the t-SNE cost function to preserve local structure in GPLVM \cite{van2009preserving}
