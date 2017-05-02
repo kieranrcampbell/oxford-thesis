@@ -512,3 +512,134 @@
   volume={2},
   year={2017}
 }
+
+
+@ARTICLE{Gupta2008-fd,
+  title       = "Extracting dynamics from static cancer expression data",
+  author      = "Gupta, Anupam and Bar-Joseph, Ziv",
+  affiliation = "Department of Computer Science, School of Computer Science,
+                 Carnegie Mellon University, Pittsburgh, PA 15213, USA.
+                 anupang@cs.cmu.edu",
+  abstract    = "Static expression experiments analyze samples from many
+                 individuals. These samples are often snapshots of the
+                 progression of a certain disease such as cancer. This raises
+                 an intriguing question: Can we determine a temporal order for
+                 these samples? Such an ordering can lead to better
+                 understanding of the dynamics of the disease and to the
+                 identification of genes associated with its progression. In
+                 this paper we formally prove, for the first time, that under a
+                 model for the dynamics of the expression levels of a single
+                 gene, it is indeed possible to recover the correct ordering of
+                 the static expression datasets by solving an instance of the
+                 traveling salesman problem (TSP). In addition, we devise an
+                 algorithm that combines a TSP heuristic and probabilistic
+                 modeling for inferring the underlying temporal order of the
+                 microarray experiments. This algorithm constructs
+                 probabilistic continuous curves to represent expression
+                 profiles leading to accurate temporal reconstruction for human
+                 data. Applying our method to cancer expression data we show
+                 that the ordering derived agrees well with survival duration.
+                 A classifier that utilizes this ordering improves upon other
+                 classifiers suggested for this task. The set of genes
+                 displaying consistent behavior for the determined ordering are
+                 enriched for genes associated with cancer progression.",
+  journal     = "IEEE/ACM Trans. Comput. Biol. Bioinform.",
+  volume      =  5,
+  number      =  2,
+  pages       = "172--182",
+  month       =  apr,
+  year        =  2008,
+  language    = "en"
+}
+
+@ARTICLE{Magwene2003-bm,
+  title       = "Reconstructing the temporal ordering of biological samples
+                 using microarray data",
+  author      = "Magwene, Paul M and Lizardi, Paul and Kim, Junhyong",
+  affiliation = "Department of Ecology and Evolutionary Biology, Yale
+                 University School of Medicine, New Haven, CT, USA.",
+  abstract    = "MOTIVATION: Accurate time series for biological processes are
+                 difficult to estimate due to problems of synchronization,
+                 temporal sampling and rate heterogeneity. Methods are needed
+                 that can utilize multi-dimensional data, such as those
+                 resulting from DNA microarray experiments, in order to
+                 reconstruct time series from unordered or poorly ordered sets
+                 of observations. RESULTS: We present a set of algorithms for
+                 estimating temporal orderings from unordered sets of sample
+                 elements. The techniques we describe are based on
+                 modifications of a minimum-spanning tree calculated from a
+                 weighted, undirected graph. We demonstrate the efficacy of our
+                 approach by applying these techniques to an artificial data
+                 set as well as several gene expression data sets derived from
+                 DNA microarray experiments. In addition to estimating
+                 orderings, the techniques we describe also provide useful
+                 heuristics for assessing relevant properties of sample
+                 datasets such as noise and sampling intensity, and we show how
+                 a data structure called a PQ-tree can be used to represent
+                 uncertainty in a reconstructed ordering. AVAILABILITY:
+                 Academic implementations of the ordering algorithms are
+                 available as source code (in the programming language Python)
+                 on our web site, along with documentation on their use. The
+                 artificial 'jelly roll' data set upon which the algorithm was
+                 tested is also available from this web site. The publicly
+                 available gene expression data may be found at
+                 http://genome-www.stanford.edu/cellcycle/ and
+                 http://caulobacter.stanford.edu/CellCycle/.",
+  journal     = "Bioinformatics",
+  volume      =  19,
+  number      =  7,
+  pages       = "842--850",
+  month       =  "1~" # may,
+  year        =  2003,
+  language    = "en"
+}
+
+@ARTICLE{Qiu2011-ol,
+  title       = "Discovering biological progression underlying microarray
+                 samples",
+  author      = "Qiu, Peng and Gentles, Andrew J and Plevritis, Sylvia K",
+  affiliation = "Department of Radiology, Stanford University, Stanford,
+                 California, USA. pqiu@mdanderson.org",
+  abstract    = "In biological systems that undergo processes such as
+                 differentiation, a clear concept of progression exists. We
+                 present a novel computational approach, called Sample
+                 Progression Discovery (SPD), to discover patterns of
+                 biological progression underlying microarray gene expression
+                 data. SPD assumes that individual samples of a microarray
+                 dataset are related by an unknown biological process (i.e.,
+                 differentiation, development, cell cycle, disease
+                 progression), and that each sample represents one unknown
+                 point along the progression of that process. SPD aims to
+                 organize the samples in a manner that reveals the underlying
+                 progression and to simultaneously identify subsets of genes
+                 that are responsible for that progression. We demonstrate the
+                 performance of SPD on a variety of microarray datasets that
+                 were generated by sampling a biological process at different
+                 points along its progression, without providing SPD any
+                 information of the underlying process. When applied to a cell
+                 cycle time series microarray dataset, SPD was not provided any
+                 prior knowledge of samples' time order or of which genes are
+                 cell-cycle regulated, yet SPD recovered the correct time order
+                 and identified many genes that have been associated with the
+                 cell cycle. When applied to B-cell differentiation data, SPD
+                 recovered the correct order of stages of normal B-cell
+                 differentiation and the linkage between preB-ALL tumor cells
+                 with their cell origin preB. When applied to mouse embryonic
+                 stem cell differentiation data, SPD uncovered a landscape of
+                 ESC differentiation into various lineages and genes that
+                 represent both generic and lineage specific processes. When
+                 applied to a prostate cancer microarray dataset, SPD
+                 identified gene modules that reflect a progression consistent
+                 with disease stages. SPD may be best viewed as a novel tool
+                 for synthesizing biological hypotheses because it provides a
+                 likely biological progression underlying a microarray dataset
+                 and, perhaps more importantly, the candidate genes that
+                 regulate that progression.",
+  journal     = "PLoS Comput. Biol.",
+  volume      =  7,
+  number      =  4,
+  pages       = "e1001123",
+  month       =  apr,
+  year        =  2011,
+  language    = "en"
+}

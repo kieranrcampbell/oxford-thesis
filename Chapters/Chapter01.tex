@@ -16,6 +16,8 @@
 
 % microarrays (one paragraph)
 
+Microarrays preceded RNA sequencing as the transcriptome-wide quantification method of choice. To infer nucleic acid abundance, DNA fragments (after reverse transcription from mRNA transcripts for gene expression quantification) bind to ``probes'' of known nucleic acid sequence and fluoresce strongly if a large quantity of nucleic acid with the correct complementary sequence is present.
+
 % RNA-seq (two paragraphs)
 
 \subsection{Single-cell expression quantification methods}
@@ -30,13 +32,52 @@
 
 \subsection{The pseudotime estimation problem}
 
+In many single-cell assays cells undergo some transformation over time. Examples include the differentiation of stem cells into neurons or skin cells, cells progressing through the cell cycle, or cells undergoing apoptosis (cell death). Ideally we would like to track expression changes over time, revealing key gene expression changes that correlate with the biological progression of interest.
+
+However, most gene expression quantification methods to date - particularly transcriptome-wide ones such as single-cell RNA sequencing - destroy the cell during the measurement process, thus prohibiting repeated time-series measurement on the same cell. A first solution would be to repeatedly measure sets of cells at different time points, analogous to bulk RNA sequencing. However, the transcriptional heterogeneity at the single-cell level leads to an asynchronicity of expression \cite{Trapnell2014-xi}, meaning some cells at a given time point will be transcriptionally more similar to those at the next and some transcriptionally more similar to those at the previous.
+
+\begin{figure}
+\centering
+  \includegraphics[width=0.98\textwidth]{gfx/ch1/figure1.png}
+  \caption{The pseudotime estimation problem.
+\textbf{A} Cells undergo some physical time process such as differentiation, cell-cycle, or apoptosis.
+\textbf{B} The cell capture and expression quantification method - such as single-cell RNA-seq or single-cell mass-cytometry - leads to a loss of temporal information (if it were possible to measure in the first place).
+\textbf{C} Pseudotime algorithms attempt to reconstruct the original time series using gene expression data alone.
+\textbf{D} Downstream analysis such as differential expression proceeds with the pseudotimes in place of the physical times.
+  } \label{fig:pseudotime}
+\end{figure}
+
+As a solution to these issues the idea of assigning cells a \emph{pseudotime} was proposed. In such a setting an algorithm takes the transcriptome-wide gene expression measurements for all cells and maps each on to a one-dimensional pseudotime\footnote{Mathematically, a pseudotime algorithm is just a function $f: \mathbb{R}^{N\times G} \rightarrow \mathbb{R}^N$ for $N$ cells and $G$ genes, mapping the gene expression matrix to a vector of pseudotimes (one for each cell). Strictly it is not a function $f: \mathbb{R}^G \rightarrow \mathbb{R}$ since the pseudotime for a given cell is (typically) dependent on all other cells. Such an explicit functional form reveals that pseudotime algorithms are in fact just a form of dimensionality reduction.}.
+The pseudotime of a particular cell quantitatively represents that cell's progression through the biological process of interest and is not necessarily supposed to represent the physical (capture) time due to the transcriptional asynchronicity mentioned above. Consequently, each cell acts as a surrogate time point, the transcriptome of a given cell representing the supposed transcriptional signature of the biological process at that cell's assigned (pseudo-)time point. The set of cells ordered by pseudotime is often described as a \emph{trajectory} representing the continuous progression of transcription along the process of interest (figure \ref{fig:pseudotime}).
+
+Several downstream analysis typically follow the assignment of pseudotimes to cells. Examples include identifying genes differentially expressed along the trajectory \cite{campbell2016switchde} or gene clusters differentially regulated \cite{Trapnell2014-xi}. However, care must be taken to realise that the pseudotimes are an uncertain estimate derived from exceptionally noisy input data and not a ``perfectly'' measured quantity such as physical capture time; this is the subject of chapter 2.
+
 \subsection{Early applications to bulk expression data}
 
-\subsection{Single-cell trajectories}
+The ideas behind pseudotime orderings were first introduced in the context of ordering bulk microarray samples by Magwene et al. in 2002 \cite{Magwene2003-bm}. They examine the case of tracking gene expression from tumour samples in mouse models from disease inception and argue that ``the samples obtained from a mouse model of cancer do not represent a time series with a well-defined developmental order''
+because early in cancer multiple tumours within the same tissue may progress asychronously. Magwene et al. therefore suggest that obtaining an ordering of samples based on the gene expression measurement alone may more accurately depict cancer development.
 
-\subsection{Existing pseudotime inference algorithms}
+Their algorithm is motivated by the fact that the noise-free progression of microarray samples would trace out a smooth one-dimensional curve embedded in high dimensional expression space. They begin by fitting a minimum spanning tree\footnote{
+A minimum spanning tree is a graph that connects all vertices together without any cycles using the minimum overall edge weight, a little like joining all the dots using the least ink possible.
+} (MST) to the data using a modified distance function that is the ``standard pairwise dissimilarity'' if two points are ``relatively similar'' and the sum of the pairwise dissimilarities between two samples if ``relatively dissimilar''.
 
-Development of many of these methods concurrent with the work of this thesis.
+If the MST represents a path (i.e. it has no branches) then this is taken to be the ordering of cells. However, if the MST does have branches then the ``diameter path'' (the longest path through the MST) is computed and various heuristics are run to assess whether the diameter path essentially represents the dominant mode of variation through the data. If so then the diamater path is taken to be the ordering and if not a set of orderings representing the uncertainty in path variations is returned. Magwene et al. applied this algorithm to time series data of bacterial gene expression and found that it reconstructed the true time ordering of the samples accurately.
+
+Gupta and Bar-Joseph (2008, \cite{Gupta2008-fd}) expanded on the ideas of Magwene et al. in three important ways. Firstly, they formally proved that a method could reconstruct the temporal order of expression profiling measurements. Interestingly, this proof shows that expression profiles of samples near each other in time will be more similar than those further apart in time, provided the change in expression is correlated over time\footnote{i.e. if a gene is upregulated at a given time point, it is more likely to be upregulated at the next and vice versa.} with high probability.
+Secondly, they applied their method to static cancer data rather than simply recovering the capture time from time-series microarrays, though in practice the algorithm of Gupta et al. could be applied here also. Finally, their method recovered expression profiles for individual genes using spline fits. Interestingly, their model is close to a nonlinear factor analysis model like that considered in chapter 3, but performs a line search at each iteration of an expectation-maximisation (EM) algorithm to find the pseudotimes of each sample that minimises the mean squared error, rather than maximum likelihood or Bayesian inference of the pseudotimes.
+
+Following this was the introduction of \emph{Sample Progression Discovery} (SPD) by Qui et al. in 2011 \cite{Qiu2011-ol}. This built on similar ideas of using MSTs to connect together microarray samples in a time ordering, with several important differences. SPD performs consensus clustering on the expression matrix to identify correlated gene expression modules and calculates a MST for each of them. It then chooses a subset of gene modules that have concordant MSTs and calculates an overall progression MST using only these. The authors emphasise that such an approach provides a feature selection ability, highlighting modules of genes associated with changes in the MST.
+
+
+% \subsection{Single-cell trajectories}
+
+\subsection{Single-cell pseudotime inference algorithms}
+
+\subsubsection{Overview}
+
+Ordering bulk microarray samples was arguably a niche area, with the three studies discussed above constituting the main work in the field. However, the advent of single-cell sequencing lead to an explosion of interest in the field, mostly due to the higher inter-sample heterogeneity present in single-cell data. The first single-cell pseudotime algorithm was published in March 2014 \cite{trapnell2014dynamics}; at time of writing (May 2017) there are now approximately 33 single-cell pseudotime inference algorithms that have at least been preprinted\footnote{
+A comprehensive spreadsheet of single-cell software can be found at \url{https://tinyurl.com/mqabyur}.
+}, a rate of roughly one per month.
 
 \begin{sidewaystable}
   \centering
@@ -63,6 +104,17 @@ MFA & \cite{campbell2017probabilistic} & N/A & Mixture of factor analysers & Yes
 \end{tabular}
 \caption{An overview of some pseudotime algorithms. Most involve a dimensionality reduction step followed by pseudotime assignment (``trajectory inference'') in the reduced space, though arguably this constitutes a single dimensionality reduction step. Methods shaded in grey are introduced in this thesis.} \label{tbl:pseudotimecomparison}
 \end{sidewaystable}
+
+This renaissance was largely spurred by the development of \texttt{Monocle} \cite{trapnell2014dynamics}, discussed in detail in section \ref{tbl:monocle}. Monocle's two step procedure - an initial dimensionality reduction step using independent component analysis followed by a ``trajectory inference'' step to order the cells using MSTs - greatly influenced the algorithms that followed. Examples include \texttt{TSCAN} that uses PCA for dimensionality reduction followed by clustering and MSTs for trajectory inference; \texttt{embeddr} that uses laplacian eigenmaps for dimensionality reduction and principal curves for trajectory inference; and \texttt{Waterfall} that uses PCA for dimensionality reduction followed by connecting clusters in the reduced space for trajectory inference. An overview of some pseudotime algorithms is given in table \ref{tbl:pseudotimecomparison} with several important contributions discussed in detail in the following sections.
+
+\subsubsection{Monocle} \label{tbl:monocle}
+
+Monocle was designed to understand the gene expression dynamics that accompany the differentiation of stem cells into human skeletal muscle myoblasts (HSMM). A serum switch induced differentiation and single-cell RNA-sequencing was performed at 0h, 24h, 48h and 72h. The authors noted that the expression patterns of key marker genes over time (such as switch-like inactivation of \emph{ID1}) was absent, and suggested asynchronicity of cellular development could be the underlying cause and thus a pseudotemporal ordering of cells was required.
+
+\subsubsection{Wanderlust}
+
+\subsubsection{DeLorean}
+
 
 
 \section{Statistical latent variable models}
