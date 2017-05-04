@@ -4,29 +4,33 @@
 
 \section{Single-cell RNA-sequencing}
 
-\subsection{The central dogma of biology}
+\subsection{Why quantify gene expression in single-cells?}
 
-% Central dogma
+\subsubsection{Central dogma}
 
-% Why people want to study single-cells
+\subsubsection{Heterogeneity at the single-cell level}
+
 
 \subsection{Bulk expression quantification}
 
-% rt-QPCR (one paragraph)
+\subsubsection{rt-qpcr}
 
-% microarrays (one paragraph)
+
+\subsubsection{Microarrays}
+
 
 Microarrays preceded RNA sequencing as the transcriptome-wide quantification method of choice. To infer nucleic acid abundance, DNA fragments (after reverse transcription from mRNA transcripts for gene expression quantification) bind to ``probes'' of known nucleic acid sequence and fluoresce strongly if a large quantity of nucleic acid with the correct complementary sequence is present.
 
-% RNA-seq (two paragraphs)
+\subsubsection{RNA sequencing}
+
 
 \subsection{Single-cell expression quantification methods}
 
 \subsection{Features of scRNA-seq data}
 
-% Mean-variance relationship
+\subsubsection{ Mean-variance relationship}
 
-% Dropout
+\subsubsection{Dropout}
 
 \section{Pseudotime \& trajectories}
 
@@ -52,7 +56,7 @@ The pseudotime of a particular cell quantitatively represents that cell's progre
 
 Several downstream analysis typically follow the assignment of pseudotimes to cells. Examples include identifying genes differentially expressed along the trajectory \cite{campbell2016switchde} or gene clusters differentially regulated \cite{Trapnell2014-xi}. However, care must be taken to realise that the pseudotimes are an uncertain estimate derived from exceptionally noisy input data and not a ``perfectly'' measured quantity such as physical capture time; this is the subject of chapter 2.
 
-\subsection{Early applications to bulk expression data}
+\subsection{Early applications to bulk expression data} \label{sec:int:early}
 
 The ideas behind pseudotime orderings were first introduced in the context of ordering bulk microarray samples by Magwene et al. in 2002 \cite{Magwene2003-bm}. They examine the case of tracking gene expression from tumour samples in mouse models from disease inception and argue that ``the samples obtained from a mouse model of cancer do not represent a time series with a well-defined developmental order''
 because early in cancer multiple tumours within the same tissue may progress asychronously. Magwene et al. therefore suggest that obtaining an ordering of samples based on the gene expression measurement alone may more accurately depict cancer development.
@@ -83,12 +87,12 @@ A comprehensive spreadsheet of single-cell software can be found at \url{https:/
   \centering
 \begin{tabular}{|lccccc|}
 \hline
-Algorithm & Reference & Dimensionality reduction & Trajectory inference & Probabilistic & Branching \\
+Algorithm & Reference & Dimensionality reduction & Cell ordering & Probabilistic & Branching \\
 \hline
 Monocle & \cite{Trapnell2014-xi} & ICA\footnote{Independent component analysis} &
 MST\footnote{Minimum spanning tree (cells are projected onto the longest path through the MST).} & No & Yes \\
-Wanderlust & \cite{Bendall2014-rc} & NA & KNN-graph\footnote{$k$-nearest neighbour graph. Trajectory inferred by an ensembl of random walks.} & No & No \\
-Monocle 2 & \cite{Qiu2017-eu} & DDR-tree & N/A & No & Yes \\
+Wanderlust & \cite{Bendall2014-rc} & N/A & KNN-graph\footnote{$k$-nearest neighbour graph. Trajectory inferred by an ensembl of random walks.} & No & No \\
+Monocle 2 & \cite{Qiu2017-eu} & DDR-tree & Distance from root cell & No & Yes \\
 Scuba & \cite{Marco2014-ug} & t-SNE\footnote{See section \ref{sec:tsne}} & Principal curves & No & Yes \\
 Diffusion pseudotime (DPT) & \cite{Haghverdi2016-eg} & N/A & Diffusion distance from root cell &
 Interpretation\footnote{DPT has an interpretation in terms of the probability of one cell state transitioning into the other. However, it does not define a generative probabilistic model.} & Yes \\
@@ -102,24 +106,69 @@ Ouija & \cite{Campbell2016-ys} & N/A & Nonlinear factor analysis & Yes & No \\
 MFA & \cite{campbell2017probabilistic} & N/A & Mixture of factor analysers & Yes & Yes \\
 \hline
 \end{tabular}
-\caption{An overview of some pseudotime algorithms. Most involve a dimensionality reduction step followed by pseudotime assignment (``trajectory inference'') in the reduced space, though arguably this constitutes a single dimensionality reduction step. Methods shaded in grey are introduced in this thesis.} \label{tbl:pseudotimecomparison}
+\caption{An overview of some pseudotime algorithms. Most involve a dimensionality reduction step followed by pseudotime assignment (``cell ordering'') in the reduced space, though arguably this constitutes a single dimensionality reduction step. Methods shaded in grey are introduced in this thesis.} \label{tbl:pseudotimecomparison}
 \end{sidewaystable}
 
-This renaissance was largely spurred by the development of \texttt{Monocle} \cite{trapnell2014dynamics}, discussed in detail in section \ref{tbl:monocle}. Monocle's two step procedure - an initial dimensionality reduction step using independent component analysis followed by a ``trajectory inference'' step to order the cells using MSTs - greatly influenced the algorithms that followed. Examples include \texttt{TSCAN} that uses PCA for dimensionality reduction followed by clustering and MSTs for trajectory inference; \texttt{embeddr} that uses laplacian eigenmaps for dimensionality reduction and principal curves for trajectory inference; and \texttt{Waterfall} that uses PCA for dimensionality reduction followed by connecting clusters in the reduced space for trajectory inference. An overview of some pseudotime algorithms is given in table \ref{tbl:pseudotimecomparison} with several important contributions discussed in detail in the following sections.
+This renaissance was largely spurred by the development of \texttt{Monocle} \cite{trapnell2014dynamics}, discussed in detail in section \ref{tbl:monocle}. Monocle's two step procedure - an initial dimensionality reduction step using independent component analysis followed by a ``cell ordering'' step to order the cells using MSTs - greatly influenced the algorithms that followed. Examples include \texttt{TSCAN} that uses PCA for dimensionality reduction followed by clustering and MSTs for cell ordering; \texttt{embeddr} that uses laplacian eigenmaps for dimensionality reduction and principal curves for cell ordering; and \texttt{Waterfall} that uses PCA for dimensionality reduction followed by connecting clusters in the reduced space for cell ordering. An overview of some pseudotime algorithms is given in table \ref{tbl:pseudotimecomparison} with several important contributions discussed in detail in the following sections.
 
 \subsubsection{Monocle} \label{tbl:monocle}
 
-Monocle was designed to understand the gene expression dynamics that accompany the differentiation of stem cells into human skeletal muscle myoblasts (HSMM). A serum switch induced differentiation and single-cell RNA-sequencing was performed at 0h, 24h, 48h and 72h. The authors noted that the expression patterns of key marker genes over time (such as switch-like inactivation of \emph{ID1}) was absent, and suggested asynchronicity of cellular development could be the underlying cause and thus a pseudotemporal ordering of cells was required.
+Monocle was designed to understand the gene expression dynamics that accompany the differentiation of stem cells into human skeletal muscle myoblasts (HSMM). There experimental design was to take stem cells and engineer a serum switch to induce differentiation, then perform single-cell RNA-sequencing at 0h, 24h, 48h and 72h afterwards. The authors noted that the expression patterns of key marker genes over time (such as switch-like inactivation of \emph{ID1}) was absent, and suggested asynchronicity of cellular development could be the underlying cause and thus a pseudotemporal ordering of cells was required.
+
+Monocle begins with a gene selection step to identify which should be retained for ordering the cells. In the original publication the authors used those genes differentially expressed\footnote{
+Using a Tobit likeihood model; see chapter 2 for further discussions on differential expression over pseudotime.
+} between the time points, though emphasise that other approaches (such as selecting highly variable genes) would work also.
+
+\begin{figure}
+\centering
+  \includegraphics[width=0.98\textwidth]{gfx/ch1/monocle.png}
+  \caption{The Monocle pseudotime algorithm (reused with permission).
+\textbf{a} Dimensionality reduction is performed on the expression matrix using ICA. A MST is then fitted in the reduced space and cells are ordered along the diameter path, with branching also detected. Downstream analysis then includes differential expression and gene clustering.
+\textbf{b} Monocle applied to human skeletal muscle myoblasts. The authors identified three cell types (proliferating cells, differentiating myoblasts, and interstitial mesenchymal cells). The main pseudotime trajectory progresses from the proliferating cells to the differentiating myoblasts, with the contaminating mesenchymal cells appearing on a separate branch.
+  } \label{fig:monocle}
+\end{figure}
+
+The algorithm proceeds by using independent component analysis (ICA) to reduce the dimensionality of the dataset down to two dimensions. ICA attempts to find latent components in the data that are statistically independent and assumes that each component is non-Gaussian\footnote{
+ICA finds a projection that maximises the kurtosis in the latent space, compared to PCA that maximises the variance (see section \ref{sec:intr:pca}).
+}. The original paper provides no justification for using ICA over any other dimensionality reduction algorithm, nor the choice of two latent dimensions though they do note that this makes it easier to visualise and interpret. Interestingly, the authors note
+
+\begin{displayquote}
+\emph{Reducing dimensionality of single-cell expression data amounts to describing
+each cell in terms of abstract sources, which are hidden variables that
+describe a cell’s state but which are reflected in observed gene expression
+values.}
+\end{displayquote}
+
+which would seemingly justify a single dimensionality reduction step down to a one-dimensional latent component as a valid pseudotime algorithm.
+
+However, the Monocle algorithm proceeds with a secondary cell ordering step in the reduced space. It largely follows the procedure of Magwene et al. \cite{Magwene2003-bm} (see section \ref{sec:int:early}) in constructing a MST in the reduced space and finding the ``diameter path'' (i.e. the longest path through the MST) as the trajectory. In order to find biological branches (rather than technical ones), the algorithm finds branches from ``indecisive'' vertices (those with degree greater than two) and returns the $k$ longest, where $k$ is an integer set by the user in line with prior knowledge of the expected number of terminally differentiated cells in the sample.
 
 \subsubsection{Wanderlust}
 
+Published just a month after Monocle was Wanderlust \cite{Bendall2014}, an algorithm developed to uncover human B cell lymphopoiesis using single-cell mass cytometry data. Compared to transcriptome wide RNA sequencing, mass cytometry measures a smaller number of markers. In this study, a custom panel of 44 makers designed to characterise B-cells were measured, including ``phenotypic proteins, transcription factors, regulatory enzymes, cell-state indicators, and activation of regulatory signaling molecules''.
+
+Wanderlust begins by constructing a $k$-nearest neighbour graph between all cells using euclidean distance and selects a small random subset of cells as ``waypoints''. It then creates a random ensembl of graphs by subsampling cells to mitigate the impact of ``short circuits'' on the trajectory construction\footnote{
+Short circuits are defined as ``spurious edges between distant cells'' - two cells distant in pseudotime are connected due to random fluctuations in their gene expression. In theory such a problem will be worse in the ~40 dimensional mass cytometry data than 1000+ dimensional single-cell RNA-seq.
+}. Wanderlust then assigns each cell an initial time as the shortest path through the graph from a manually chosen ``early'' cell, and performs an iterative procedure where each cells pseudotime is a weighted average of the distances to the waypoint cells, which is repeated until convergence. The overall pseudotime for each celll is taken as the average over   the ensembl of graphs.
+
 \subsubsection{DeLorean}
+
+DeLorean \cite{reid2016pseudotime} was published approximately two years after Monocle and Wanderlust and is mentioned here as an example of an entirely different method. DeLorean departs from previous approaches in using a probabilistic model called a Gaussian Process Latent Variable Model (GPLVM, discussed in section \ref{sec:gplvm} and the subject of most of chapter 2).
+
+The GPLVM learns a probabilistic mapping from the one dimensional latent pseudotimes to the observed gene expression profiles. The basic idea is that if two cells have similar pseudotimes then their transcriptomes will be highly correlated and thus will have similar measured expression profiles\footnote{
+This is essentially a continuity assumption - that cells close in pseudotime will have expression profiles ``close'' in expression space. This assumption was discussed in \cite{Gupta2008-fd} (see section \ref{sec:int:early}) who showed the change in expression over (pseudo-)time must be correlated for it to be true. This logic underlies many if not all pseudotime inference methods, such as DPT \cite{Haghverdi2016-eg}.
+}. Inference in the DeLorean model proceeds using the Stan probabilistic programming language, which performs automatic Bayesian inference using either Hamiltonian Monte Carlo (HMC) or Automatic-Differentiation Variational Inference (ADVI).
+
+DeLorean notes several drawbacks, some of which  we also grapple with in chapter 2. It may only be used on time-series single-cell expression profiles, and thus in a sense is used to refine time series rather than a strict pseudotime algorithm. If $k_n$ is the capture time of cell $n$, then the prior on $n$'s pseudotime $t_n$ takes the form $t_n \sim \Norm(k_n, \sigma_n^2)$, so the confidence in the capture time $\sigma_n$ must also be set by the user. Furthermore, the characteristic length scale of the GPLVM kernel (see section \ref{sec:gplvm}) must be manually set by the user, and even so the posterior distribution of pseudotimes is multi-modal. Finally, GPLVM requires parameters for each output (gene) which can scale poorly, so in practice pseudotime fitting is limited to a small number of genes chosen \emph{a priori}.
+
+However, a strength of DeLorean is the ability to discuss these drawbacks because of its formulation as a probabilistic model. Given the underlying continuity assumption common to all pseudotime algorithms we would expect they are all multimodal to some extent, or at least have multiple solutions that are dependent on algorithm parameters or initial values. However, their ad-hoc algorithmic nature precludes any assessment of this, while in the DeLorean model these can be recognised as a multimodal posterior distribution and steps tacken to mitigate this such as the systematically incorporating prior information in the form of capture times to constrain the latent space.
+
 
 
 
 \section{Statistical latent variable models}
 
-\subsection{Principal component analysis}
+\subsection{Principal component analysis} \label{sec:intr:pca}
 
 Principal component analysis (PCA, \cite{jolliffe2002principal}) is a ubiquitous linear dimensionality reduction technique. PCA has several interpretations\footnote{Lior Pachter has an excellent blog post on this at \url{https://liorpachter.wordpress.com/2014/05/26/what-is-principal-component-analysis/}}, but the most common is that of a linear projection to a low-dimensional space such that the variance of the data points in the projected space is maximised. Intuitively, this can be thought of finding a linear subspace of the high-dimensional data space that best ``explains''
 the data.
@@ -342,3 +391,11 @@ as used in \cite{campbell2016order} or the Matern family such as the $\text{Mate
 \end{equation}
 
 GPLVM has been widely applied to single-cell expression data, including to single-cell qPCR data \cite{buettner2012novel} and single-cell RNA-seq \cite{campbell2016order,macaulay2016single}. Latent embeddings inferred using GPLVM are typically under-constrained leading to a number of studies that introduce ``data-driven priors'' to further constrain the model, such incorporating the t-SNE cost function to preserve local structure in GPLVM \cite{van2009preserving}
+
+\section{Probabilistic modelling of genomic trajectories}
+
+The overall aim of this thesis is a comprehensive probabilistic treatment of the pseudotime problem. Chapter two exchanges the post-dimensionality-reduction cell ordering algorithms of many pseudotime methods for probabilistic curves using Gaussian Process Latent Variable Models and asks what the effects are of incorporating uncertainties into downstream modelling. It also introduces a differential-expression-over-pseudotime model.
+Chapter three introduces a generative model of pseudotime based on nonlinear factor analysis that replaces the dimensionality reduction and cell ordering steps with a single inference procedure.
+Chapter four considers Bayesian inference of bifurcations in single-cell data using a hierarchical mixture of factor analysers.
+Chapter five introduces a novel type of latent variable model that lets a secondary dataset to perturb the factor loadings in the first. This is applied to a diverse set of single-cell and bulk cancer studies and identifies novel interactions between phenotypic covariates and biological pathways.
+Finally, chapter six incorporates a discussion of some of the weaknesses of probabilstic models of pseudotimes and suggests future directions.
