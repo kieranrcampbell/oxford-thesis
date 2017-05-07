@@ -1,0 +1,400 @@
+
+\chapter{Inference for covariate-adjusted latent variable models} \label{app:clvm}
+
+
+For both Gibbs sampling and variational inference we require the conditional densities $p(\theta_n | \theta_{-i}, \bY)$.
+
+Recall we have data in the form of an $N \times G$ matrix $\bY$ and an $N \times P$ matrix $\bX$ for $N$ samples, $G$ features and $P$ covariates. With the notation of $I_N$ being the $N \times N$ identity matrix and $1_N$ being the column vector of ones, our model is
+
+\begin{equation}
+\begin{aligned}
+\alpha_{pg} & \sim \norm(0, \tau_\alpha^{-1}) \\
+\lambda_g & \sim \norm(0, \tau_\lambda^{-1}) \\
+z_n & \sim \norm(q_n, \tau_q^{-1}) \\
+\beta_{pg} & \sim \norm(0, \chi_{pg}^{-1}) \\
+\chi_{pg}^{-1} & \sim \text{Gamma}(a_\beta, b_\beta) \\
+\tau_{g}^{-1} & \sim \text{Gamma}(a, b) \\
+%\mu_{g} & \sim \norm(0, \tau_\mu^{-1}) \\
+\epsilon_{ng} & \sim \norm(0, \tau_g^{-1}) \\
+y_{ng} & =  \mu_g + \sum_p \alpha_{pg} x_{np} + \left( \lambda_g + \sum_p \beta_{pg} x_{np} \right) z_n + \epsilon_{ng}
+\end{aligned} \label{eq:clvm_model}
+\end{equation}
+
+where $\tau_\alpha$, $\tau_\lambda$, $a$, $b$, $a_\beta$, $b_\beta$, $\tau_q$ are fixed hyperparameters and $q_n$ encodes prior information about $z_n$ if available but typically $q_n = 0 \; \forall n$ in the uninformative case.
+
+
+
+The motivation to reintroduce $\mu_g$ even if the columns of $\bY$ are centred is as follows: if we consider (in a frequentist setting) the factor loadings to be fixed and $Y$, $X$ and $Z$ as random variables, then we have
+
+\begin{equation}
+E[Y_{ng}] \propto \lambda_g E[Z] + \sum_p \beta_{pg} E[X_{pg}Z_n]
+\end{equation}
+
+So if we wish to place an informative prior on $Z$ (ie $E[Z] \neq 0$) then $E[Y] \neq 0$ and we have to introduce gene-specific intercepts. This also demonstrates why it is advantageous to have the covariates as uncorrelated with the desired ``pseudotimes'' as possible: covariance here takes the marginal expectation of $Y$ away from zero, biasing modelling assumptions.
+
+
+\section{Gibbs updates} \label{app:clvm_gibbs}
+
+
+The conditional distributions are given below (where $\theta | \cdot$ can be interpreted as the conditional distribution of variable $\theta$ conditioned on \emph{all} other variables and the data). For simplicity we assume the summation is obvious from the variable (ie $\sum_p \equiv \sum_{p=1}^P$, etc).
+
+
+
+\paragraph{Conditional distribution of $\bz$}
+\begin{equation}
+z_n | \cdot \sim \norm \left( \frac{ \sum_g \tau_g k_{ng} (y_{ng} - \mu_{g} - \sum_p \alpha_{pg}x_{np}) + \tau_q q_n}{\sum_g \tau_g k_{ng}^2 + \tau_q}, [\sum_g \tau_g k_{ng}^2 + \tau_q]^{-1} \right)
+\end{equation}
+
+where $k_{ng} = \lambda_g + \sum_p \beta_{pg} x_{np}$.
+
+\paragraph{Conditional distribution of $\alpha_{pg}$}
+
+\begin{equation}
+\alpha_{pg} | \cdot \sim \norm \left( \frac{
+\tau_g \sum_n (y_{ng} - \tilde{\mu}_{ng}^{\alpha_p})x_{np}
+}{\tau_g \sum_n x_{np}^2 + \tau_\alpha},
+[\tau_g \sum_n x_{np}^2 + \tau_\alpha]^{-1} \right)
+\end{equation}
+
+where
+\begin{equation}
+\tilde{\mu}_{ng}^{\alpha_p} = \mu_g + t_n(\lambda_g + \sum_{p'} \beta_{p'g} x_{np'}) + \sum_{p' \neq p} \alpha_{p'g} x_{np'}
+\end{equation}
+
+in which $\sum_{p' \neq p}$ denotes the summation over 1 to $P$ excluding $p$.
+
+\paragraph{Conditional distribution of $\beta_{pg}$}
+
+\begin{equation}
+\beta_{pg} | \cdot \sim \norm \left( \frac{
+\tau_g \sum_n (y_{ng} - \tilde{\mu}_{ng}^{\beta_p})x_{np} z_n
+}{\tau_g \sum_n z_n^2 x_{np}^2 + \chi_{pg}},
+[\tau_g \sum_n z_n^2 x_{np}^2 + \chi_{pg}]^{-1} \right)
+\end{equation}
+
+where
+\begin{equation}
+\tilde{\mu}_{ng}^{\beta_p} = \mu_g + z_n \lambda_g  +
+\sum_{p'} \alpha_{p'g} x_{np'} + z_n \sum_{p' \neq p} \beta_{p'g} x_{np'}
+\end{equation}
+
+\paragraph{Conditional distribution of $\tau_g$}
+
+\begin{equation}
+\tau_g | \cdot \sim \text{Gamma}\left(
+a + \frac{N}{2}, b + \sum_n \frac{(y_{ng} - \tilde{\mu}^\tau_{ng})^2}{2}
+\right)
+\end{equation}
+
+where
+
+\begin{equation}
+\tilde{\mu}^\tau_{ng} = \mu_g + \sum_p \alpha_{pg} x_{np} + \left( \lambda_g + \sum_p \beta_{pg} x_{np} \right) \lambda_n.
+\end{equation}
+
+\paragraph{Conditional distribution of $\chi_{pg}$}
+
+\begin{equation}
+\chi_{pg} | \cdot \sim \text{Gamma}\left( a_\beta + \frac{1}{2}, b_\beta + \frac{\beta_{pg}^2}{2}\right)
+\end{equation}
+
+\paragraph{Conditional distribution of $\lambda_g$}
+
+\begin{equation}
+\lambda_g | \cdot \sim \norm\left(
+\frac{\tau_g \sum_n z_n(y_{ng} - \tilde{\mu}^\lambda_{ng})}{\tau_g \sum_n z_n^2 + \tau_\lambda},
+[\tau_g \sum_n t_n^2 + \tau_\lambda]^{-1}
+\right)
+\end{equation}
+
+where
+
+\begin{equation}
+\tilde{\mu}^\lambda_{ng} = \mu_g + \sum_p \alpha_{pg} x_{np} + \left( \sum_p \beta_{pg} x_{np} \right) z_n
+\end{equation}
+
+\paragraph{Conditional distribution of $\mu_g$}
+
+\begin{equation}
+\mu_g | \cdot \sim \norm\left(
+\frac{\tau_g \sum_n(y_{ng} - \nu_{ng})}{N \tau_g + \tau_\mu}, [N \tau_g + \tau_\mu]^{-1}
+\right)
+\end{equation}
+
+where
+
+\begin{equation}
+\nu_{ng} = \sum_p \alpha_{pg} x_{np} + \left( \lambda_g + \sum_p \beta_{pg} x_{np} \right) z_n
+\end{equation}
+
+
+
+\section{Variational inference} \label{app:clvm_vi}
+
+\subsection{Conditional expectations}
+
+
+\paragraph{Conditional expectation of $\mbz$}
+
+\begin{equation}
+\begin{aligned}
+\Ex_{-z_n}[\mu_{z_n}\tau_{z_n}] & = \sum_g \Big[ \frac{a_{\tau_g}}{b_{\tau_g}}
+\Big( m_{\lambda_g} + \sum_p m_{\beta_{pg}} x_{np} \Big) \\
+& \times \Big( y_{ng} - m_{\mu_g} - \sum_p m_{\alpha_{pg}} x_{np} \Big)
+\Big] + \tau_q q_n \\
+\Ex_{-z_n} [\tau_{z_n}] & = \sum_g \frac{a_{\tau_g}}{b_{\tau_g}}
+ \Big(m_{\lambda_g}^2 + s_{\lambda_g}^2 + 2m_{\lambda_g} \sum_p m_{\beta_{pg}} x_{np} \\
+ & + \sum_p (m_{\beta_{pg}}^2 + s_{\beta_{pg}}^2) x_{np}^2 +
+ \sum_{p,p': p \neq p'} m_{\beta_{pg}} m_{\beta_{p'g}} x_{np}x_{np'}
+\Big) + \tau_q
+\end{aligned}
+\end{equation}
+
+Where we have used the fact that
+
+\begin{equation}
+  \begin{aligned}
+\Ex_{-z_n}[(\lambda_g + \sum_p \beta_{pg} x_{np})^2] & =  \Big(m_{\lambda_g}^2 + s_{\lambda_g}^2 + 2m_{\lambda_g} \sum_p m_{\beta_{pg}} x_{np} \\
+& +
+ \sum_p (m_{\beta_{pg}}^2 + s_{\beta_{pg}}^2) x_{np} +
+ \sum_{p,p': p \neq p'} m_{\beta_{pg}} m_{\beta_{p'g}} x_{np}x_{np'}
+\Big)
+\end{aligned}
+\end{equation}
+
+and for several variables that $\Ex_{-z_n}[\theta^2] = \text{Var}_{-z_n}[\theta] + \Ex_{-z_n}[\theta]^2$.
+
+\paragraph{Conditional expectation of $\alpha_{pg}$}
+
+\begin{equation}
+\begin{aligned}
+\Ex_{-\alpha_{pg}}[\mu_{pg} \tau_{pg}] & =
+\frac{a_{\tau_g}}{b_{\tau_g}} \sum_n \Big (
+y_{ng} - m_{\mu_g} - m_{z_n}( m_{cg} + \sum_{p'} m_{\beta_{p'g}} x_{np} ) \\
+& - \sum_{p' \neq p} m_{\alpha_{p'g}} x_{np'}
+\Big) x_{np} \\
+\Ex_{-\alpha_{pg}}[\tau_{\alpha_{pg}}] & =
+\frac{a_{\tau_g}}{b_{\tau_g}} \sum_n x_{np}^2 + \tau_\alpha
+\end{aligned}
+\end{equation}
+
+\paragraph{Conditional expectation of $\beta_{pg}$}
+
+\begin{equation}
+\begin{aligned}
+\Ex_{-\beta_{pg}}[\mu_{\beta_{pg}} \tau_{\beta_{pg}}] & =
+\frac{a_{\tau_g}}{b_{\tau_g}} \sum_n \Big[
+y_{ng} - m_{\mu_g} - \frac{m_{z_n}^2 + s_{z_n}^2}{m_{z_n}} m_{\lambda_g} \\
+& - \sum_{p'} m_{\alpha_{p'g}} x_{np'}
+- \frac{m_{z_n}^2 + s_{z_n}^2}{m_{z_n}} \sum_{p' \neq p} m_{\beta_{p'g}} x_{np}
+\Big] m_{z_n} x_{np} \\
+\Ex_{-\beta_{pg}} [ \tau_{\beta_{pg}} ] & =
+\frac{a_{\tau_g}}{b_{\tau_g}} \sum_n (m_{z_n}^2 + s_{z_n}^2) x_{np}^2 +
+\frac{a_{\chi_{pg}}}{b_{\chi_{pg}}}
+\end{aligned}
+\end{equation}
+
+Where in both cases we have used the fact that $\Ex_{-\beta_{pg}} [z_n^2] = \text{Var}_{-\beta_{pg}}[z_n] + \Ex_{-\beta_{pg}}[z_n]^2$.
+
+\paragraph{Conditional expectation of $\tau_g$}
+
+\begin{equation}
+\begin{aligned}
+\Ex_{-\tau_g}[a_{\tau_g}] & = a + \frac{N}{2} \\
+\Ex_{-\tau_g}[b_{\tau_g}] & = b + \frac{1}{2} \sum_n f_{ng}
+\end{aligned}
+\end{equation}
+
+Where
+
+\begin{equation}
+\begin{aligned}
+f_{ng}  & =  \Ex_{-\tau_g} \left[ \left(y_{ng} - \mu_g - \sum_p \alpha_{pg} x_{np} - \left( \lambda_g + \sum_p \beta_{pg} x_{np} \right) z_n
+\right)^2 \right] \\
+ & =   \Ex_{-\tau_g} \Bigg[ y_{ng}^2 + \mu_g^2 + (\sum_p \alpha_{pg} x_{np})^2 + z_n^2 \lambda_g^2 + z_n^2 (\sum_p \beta_{pg}x_{np})^2  \\
+& + 2 \Big\{
+-y_{ng} (\mu_g + \sum_p \alpha_{pg} x_{np} + \left( \lambda_g + \sum_p \beta_{pg} x_{np} \right) z_n )
+ + \mu_g \sum_p \alpha_{pg} x_{np} + \mu_g z_n \lambda_g  \\
+ & + \mu_g z_n \sum_p \beta_{pg} x_{np}
++ z_n \lambda_g \sum_p \alpha_{pg} x_{np} \\
+& + z_n (\sum_p \alpha_{pg} x_{np})(\sum_p\beta_{pg} x_{np})
++ z_n^2 \lambda_g \sum_p \beta_{pg} x_{np}
+\Big\}
+\Bigg]
+\end{aligned}
+\end{equation}
+
+For this we require the identities
+
+\begin{equation}
+\begin{aligned}
+\Ex[\theta^2] & = \text{Var}[\theta] + \Ex[\theta]^2 \\
+\Ex[(\sum_p \gamma_{pg} x_{np})^2] & = \sum_p x_{np}^2 \Ex[\gamma_{pg}^2] +
+\sum_{p,p': p \neq p'} x_{np} x_{np'} \Ex[\gamma_{pg} \gamma_{p'g}]
+\end{aligned}
+\end{equation}
+
+This gives
+
+\begin{equation}
+\begin{aligned}
+f_{ng}  & =  y_{ng}^2 + m_{\mu_g}^2 + s_{\mu_g}^2 +
+ \sum_p (m_{\alpha_{pg}}^2 + s_{\alpha_{pg}}^2) x_{np}^2 + \sum_{p,p':p\neq p'} m_{\alpha_{pg}} m_{\alpha_{p'g}} x_{np} x_{np'} \\
+& +  (m_{z_n}^2 + s_{z_n}^2) (m_{\lambda_g}^2 + s_{\lambda_g}^2)
++  (m_{z_n}^2 + s_{z_n}^2)   \sum_p (m_{\beta_{pg}}^2 + s_{\beta_{pg}}^2) x_{np}^2 \\
+& + \sum_{p,p':p\neq p'} m_{\beta_{pg}} m_{\beta_{p'g}} x_{np} x_{np'} \\
+& + 2 \Big(
+-y_{ng} \bigg(m_{\mu_g} + \sum_p m_{\alpha_{pg}} x_{np} + ( m_{\lambda_g} + \sum_p m_{\beta_{pg}} x_{np} ) m_{z_n} \bigg) \\
+& + m_{\mu_g} \sum_p m_{\alpha_{pg}} x_{np} + m_{\mu_g} m_{z_n} m_{\lambda_g}  \\
+ & + m_{\mu_g} m_{z_n} \sum_p m_{\beta_{pg}} x_{np}
++ m_{z_n} m_{\lambda_g} \sum_p m_{\alpha_{pg}} x_{np} \\
+& + m_{z_n} (\sum_p m_{\alpha_{pg}} x_{np})(\sum_p m_{\beta_{pg}} x_{np})
++ (m_{z_n}^2 + s_{z_n}^2) m_{\lambda_g} \sum_p m_{\beta_{pg}} x_{np}
+\Big)
+\end{aligned}
+\end{equation}
+
+
+\paragraph{Conditional expectation of $\chi_{pg}$}
+
+\begin{equation}
+\begin{aligned}
+\Ex_{-\chi_{pg}}[a_{\chi_{pg}}] & = a_\beta + \frac{1}{2} \\
+\Ex_{-\chi_{pg}}[b_{\chi_{pg}}] & = b_\beta + \frac{1}{2}\left(
+m_{\beta_{pg}}^2 + s_{\beta_{pg}}^2 \right)
+\end{aligned}
+\end{equation}
+
+where again we have used the fact that $\Ex_{-\chi_{pg}}[\beta_{pg}^2] =
+\text{Var}_{-\chi_{pg}}[\beta_{pg}] +
+\Ex_{-\chi_{pg}}[\beta_{pg}]^2$.
+
+\paragraph{Conditional expectation of $\lambda_g$}
+
+\begin{equation}
+\begin{aligned}
+\Ex_{-\lambda_g}[\mu_{\lambda_g} \tau_{\lambda_g}] & = \frac{a_{\tau_g}}{b_{\tau_g}}
+\sum_n m_{z_n} \Bigg(
+y_{ng} - m_{\mu_g} \\
+&  - \sum_{p'} m_{\alpha_{p'g}} x_{np'} -
+\frac{m_{z_n}^2 + s_{z_n}^2}{m_{z_n}} (\sum_{p'} m_{\beta_{p'g}} x_{np'})
+\Bigg) \\
+\Ex_{-\lambda_g}[\tau_{\lambda_g}] & = \frac{a_{\tau_g}}{b_{\tau_g}} \sum_n(m_{z_n}^2 + s_{z_n}^2) + \tau_c
+\end{aligned}
+\end{equation}
+
+\paragraph{Conditional expectation of $\mu_g$}
+
+\begin{equation}
+\begin{aligned}
+\Ex_{-\mu_g}[\mu_{\mu_g} \tau_{\mu_g}] & =  \frac{a_{\tau_g}}{b_{\tau_g} }
+\sum_n \Bigg(
+y_{ng} - \sum_{p'} m_{\alpha_{p'g}} x_{np'} \\
+& - m_{z_n}(
+m_{\lambda_g} + \sum_{p'} m_{\beta_{p'g}} x_{np'})
+\Bigg) \\
+\Ex_{-\mu_g}[\tau_{\mu_g}] & =  \frac{a_{\tau_g}}{b_{\tau_g}} N + \tau_\mu
+\end{aligned}
+\end{equation}
+
+\subsection{Calculating the ELBO}
+
+To assess convergence of the CAVI algorithm we need to calculate the ELBO at every iteration (or every $n^{th}$ iteration). The ELBO is given by
+
+\begin{equation}
+\text{ELBO} = \Ex[\log p(\bY | \Theta)] + \Ex[\log p(\Theta)] - \Ex[\log q(\Theta)]
+\end{equation}
+
+where all expectations are taken with respect to the approximating distribution $Q(\cdot)$ and $\Theta$ denotes the full parameter set. Note that we are implicitly conditioning on the data wherever appropriate, so $p(\bY | \Theta) \equiv p(\bY | \Theta, \bX)$. For this we require the result that if $\theta \sim \text{Gamma}(a, b)$ then $\Ex[\log \theta] = \phi(a) - \log b$ where $\phi$ is the digamma function.
+
+\paragraph{Derivation of $\Ex[\log p(\bY | \Theta)]$}
+
+We have
+
+\begin{equation}
+\log p(\bY | \Theta) = \sum_n \sum_g \log \norm(y_{ng} | \mu_{ng}, \tau_g^{-1})
+\end{equation}
+
+where $\mu_{ng} = \mu_g + \sum_p \alpha_{pg} x_{np} + z_n \left( \lambda_g + \sum_p \beta_{pg} x_{np} \right)$. Then
+
+\begin{equation}
+\begin{aligned}
+\Ex[ \log p(\bY | \Theta) ] & \propto \sum_g \left[ \frac{N}{2} \Ex[\log \tau_g] -
+\frac{\Ex[\tau_g]}{2} \sum_n \Ex[ (y_{ng} - \mu_{ng})^2 ] \right] \\
+& = \sum_g \left[
+\frac{N}{2} (\phi(a_{\tau_g}) - \log b_{\tau_g}) - \frac{a_{\tau_g}}{2 b_{\tau_g}} \sum_n f_{ng}
+\right]
+\end{aligned}
+\end{equation}
+
+where $f_{ng}$ is defined as above and we have dropped additive terms since we are only concerned in changes in the ELBO.
+
+\paragraph{Derivation of  $\Ex[\log p(\Theta)]$}
+
+We consider $\Ex[\log p (z_n)]$ which generalises to all parameters with Gaussian priors. We have
+
+\begin{equation}
+\begin{aligned}
+\Ex[\log p (z_n)] &= \Ex\left[ \frac{1}{2} \log \frac{\tau_q}{2 \pi} - \frac{\tau_q}{2} (z_n - q_n)^2 \right] \\
+& = \frac{1}{2} \log \frac{\tau_q}{2 \pi} - \frac{\tau_q}{2} \Ex[ z_n^2 - 2 z_n q_n + q_n^2 ] \\
+& = \frac{1}{2} \log \frac{\tau_q}{2 \pi} - \frac{\tau_q}{2} \left( m_{z_n}^2 + s_{z_n}^2 - 2 m_{z_n} q_n + q_n^2 \right)
+\end{aligned}
+\end{equation}
+
+Next consider $\Ex[\log p (\tau_g)]$ which generalises to all parameters with Gamma priors. We have
+
+\begin{equation}
+\begin{aligned}
+\Ex[\log p(\tau_g)] & \propto \Ex[\log(\tau_g^{a-1} e^{-\tau_g b})] \\
+& = (a-1) \Ex[\log \tau_g] - b \Ex[\tau_g] \\
+& = (a-1)(\phi(a_{\tau_g}) - \log b_{\tau_g}) - \frac{a_{\tau_g}}{b_{\tau_g}} b
+\end{aligned}
+\end{equation}
+
+Thus the expression across all parameters up to a constant value is given by
+
+\begin{equation}
+\begin{aligned}
+\Ex[\log p(\Theta)] & \propto - \frac{\tau_q}{2}\sum_n (m_{z_n}^2 + s_{z_n}^2 - 2 m_{z_n} q_n) \\
+& -\frac{\tau_\mu}{2} \sum_g (m_{\mu_g}^2 +  s_{\mu_g}^2)  - \frac{\tau_c}{2} \sum_g (m_{\lambda_g}^2 + s_{\lambda_g}^2) \\
+& + \sum_g \left[ (a-1)(\phi(a_{\tau_g}) - \log b_{\tau_g}) - \frac{a_{\tau_g}}{b_{\tau_g}} b \right] \\
+& - \sum_p \sum_g \Big[ \frac{\tau_\alpha}{2} (m_{\alpha_{pg}}^2 + s_{\alpha_{pg}}^2) + \frac{a_{\chi_{pg}}}{2 b_{\chi_{pg}}} (m_{\beta_{pg}}^2 + s_{\beta_{pg}}^2) \\
+& - (a_\beta - 1) (\phi(a_{\chi_{pg}}) - \log b_{\chi_{pg}} ) - \frac{a_{\chi_{pg}}}{b_{\chi_{pg}}} b_\beta \Big]
+\end{aligned}
+\end{equation}
+
+\paragraph{Derivation of $\Ex[\log q(\Theta)]$}
+
+We consider $\Ex[\log q_z (z_n)]$ which naturally generalises to all parameters whose approximating distributions are Gaussian. We have
+
+\begin{equation}
+\begin{aligned}
+\Ex[\log q_z(z_n)] & \propto \Ex\left[ -\frac{1}{2} \log s_{z_n}^2 - \frac{1}{2 s_{z_n}^2} (z_n - m_{z_n})^2\right] \\
+& = -\frac{1}{2} \log s_{z_n}^2 - \frac{1}{2 s_{z_n}^2} \Ex[ z_n^2 - 2 z_n m_{z_n} + m_{z_n}^2 ] \\
+& = -\frac{1}{2} \log s_{z_n}^2 - \frac{1}{2 s_{z_n}^2} \Ex[ m_{z_n}^2 + s_{z_n}^2 - 2 m_{z_n}^2 + m_{z_n}^2 ] \\
+& \propto-\frac{1}{2} \log s_{z_n}^2
+\end{aligned}
+\end{equation}
+
+Similarly we consider $\Ex[\log q_\tau(\tau_g)]$ which generalises to all parameters whose approximating distribution is Gamma. We have
+
+\begin{equation}
+\begin{aligned}
+\Ex[\log q_\tau(\tau_g)] & \propto \Ex[(a_{\tau_g} - 1) \log \tau_g - \tau_g b_{\tau_g} ] \\
+& = (a_{\tau_g} - 1)(\phi(a_{\tau_g}) - \log b_{\tau_g}) - a_{\tau_g}
+\end{aligned}
+\end{equation}
+
+
+Summing this across all parameters gives
+
+\begin{equation}
+\begin{aligned}
+\Ex[\log q(\Theta)] &= -\frac{1}{2} \sum_n s_{z_n}^2 -
+\sum_g \left( \frac{1}{2} s_{\mu_g}^2 + \frac{1}{2} s_{\lambda_g}^2 -
+(a_{\tau_g} - 1)( \phi(a_{\tau_g}) - \log b_{\tau_g}) + a_{\tau_g} \right) \\
+& - \sum_g \sum_p \left(
+\frac{1}{2} s_{\alpha_{pg}}^2 + \frac{1}{2} s_{\beta_{pg}}^2 -
+(a_{\chi_{pg}} - 1)( \phi(a_{\chi_{pg}}) - \log b_{\chi_{pg}}) + a_{chi_{pg}} \right)
+\end{aligned}
+\end{equation}

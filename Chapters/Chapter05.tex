@@ -1,5 +1,5 @@
 %************************************************
-\chapter{Covariate latent variable models}\label{ch:phenotimechap} % $\mathbb{ZNR}$
+\chapter{Covariate-adjusted latent variable models}\label{ch:phenotimechap} % $\mathbb{ZNR}$
 %************************************************
 
 
@@ -9,195 +9,316 @@
 %*****************************************
 %*****************************************
 
-
-
 \section{Introduction}
 
-There exists a set of physical processes with an assumed temporal component but where precise measurement of times associated with events is precluded or impossible. % KC - note sure about this sentence
-Such ideas have recently flourished in the field of single-cell genomics, where cells will undergo some dynamic process such as differentiation but in which the destructive measurement of gene expression precludes physical measurement of the progression itself. Consequently, the progression is artificially inferred from the measured expression data as a \emph{pseudotime} (e.g. \cite{trapnell2014dynamics,delorean}), which in a statistical sense is akin to inference of a one-dimensional latent variable model.
-
-This situation also arises in the case of disease staging and survival analysis such as when a patient presents to a clinic with a disease of unknown progression. Typically, the patient will be assigned a discrete disease \emph{stage} after possibly invasive tests and/or surgery. The discrete nature of such staging is at odds with accepted knowledge of the underlying biology, which is consistent with a more continuous evolution of disease progression such as gradual changes in gene expression. Furthermore, such evolution is confounded by underlying population heterogeneity, where the evolution of molecular features along the trajectory may differ depending on external patient phenotypes, such as age and sex or molecular phenotypes such as mutations of a particular gene (figure \ref{fig:phenotime}).
-
-As a proof-of-concept solution to such issues we propose \emph{Covariate Latent Variable Models} (C-LVMs), a novel type of latent variable model similar to factor analysis in which the evolution of various dynamic genomic observables (such as gene expression) is allowed to vary according to a secondary set of covariates (such as mutation status). Such latent variable models combine two \emph{views} of the same data but where the relationship between each view and the latent variables is asymmetric. Formulated as a Bayesian hierarchical model we are further able to extract interactions between the patient trajectory and covariates, simultaneously providing insight into the underlying biology. We apply our model to RNA-seq data for the TCGA colorectal cancer dataset using microsatellite instability status as a covariate and extract a trajectory consistent with known markers of colorectal cancer prognosis. Finally, we propose a nonlinear, nonparametric extention and discuss the relationship to Gaussian Process Latent Variable Models.
-
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=.7\textwidth]{gfx/ch5/phenotime_diagram}
-  \caption{C-LVMs can be applied to infer trajectories in the presence of discrete covariates (left) or continuous covariates (right).}
- \label{fig:phenotime}
+\begin{figure}
+\centering
+  \includegraphics[width=0.98\textwidth]{gfx/ch5/1_method_diagram}
+  \caption{The behaviour of gene expression along trajectories may be affected by externally measured covariates.
+  Such covariates may be discrete (left) or continuous (right).
+  } \label{fig:phenotime_diagram}
 \end{figure}
 
-\section{Methods}
+So far in this thesis - and indeed in all published pseudotime algorithms to date - we have assumed that all cells or samples evolve along each trajectory identically. However, this assumption could easily be violated. For example, gene expression may change along the trajectory in a manner dependent on a cell's genetic background or perhaps upon a stimulant the cell has been exposed to.
 
-\subsection{Model}
+The intuition for this problem is shown in figure \ref{fig:phenotime_diagram}. We can imagine the association between gene expression and the latent trajectory dependending on some additional covariate (here given by the colour of the line). In the case of ``red'' samples, expression increases along the trajectory, while in the case of blue samples expression decreases. The same idea can easily be extended to the case in which the covariate is continuous.
 
-We begin with an $N \times G$ data matrix $\bY$ where $y_{ig}$ denotes the $i^{th}$ entry in the $g^{th}$ column for $i \in 1, \ldots, N$ samples and $g \in 1, \ldots, G$ features. Such a matrix would correspond to the measurement of a dynamic molecular process that we might reasonably expect to show continuous evolution as a disease progresses such as gene expression corresponding to a particular pathway. It is then trivial to learn a one-dimensional linear embedding that would be our ``best guess'' of such progression via a factor analysis model:
+Applying current pseudotime algorithms to such situations would confound inference. In the example in figure \ref{fig:phenotime_diagram} there is no change in gene expression along the trajectory if the covariate is ignored, meaning there is no information contained in the gene that could be used to infer the trajectory unless the covariate is somehow incorporated. Furthermore, such interactions would not exist for all genes, so it would be advantageous if a model could pick out these interactions as they would be informative of the underlying biology.
+
+As a solution to such issues this chapter introduces a general class of statistical models termed \emph{covariate-adjusted latent variable models} that allows an externally measured set of covariates to perturb the change of features along the latent space. We proceed by deriving a scalable variational inference algorithm for inferring such models and their interactions. This is applied to single-cell expression data in section \ref{sec:shalek} but also bulk RNA-seq data in sections \ref{sec:coad} and \ref{sec:brca}, where we show that such trajectories correspond to the activation of biological pathways. Next, the case of the external covariate being a censored survival time is considered, with an application to population-level breast cancer studies. Finally, a non-parameteric extension similar to GPLVM - termed \emph{Covariate-adjusted Gaussian Process Latent Variable Models} - is proposed.
+
+This chapter includes a minor change in notation - latent variables are now $z_n$ rather than $t_n$ as they may no longer represent physical time processes but more abstract notions of biological pathway activation.
+
+\section{Covariate-adjusted latent variable models}
+
+\subsection{Statistical model}
+
+\begin{figure}
+\centering
+  \includegraphics[width=0.98\textwidth]{gfx/ch5/2_phenopath_eqn}
+  \caption{PhenoPath models observed expression as a combination of standard differential expression (DE) and pathway effects, including covariate-pathway interactions.
+  } \label{fig:phenopath_eqn}
+\end{figure}
+
+We begin as usual with an $N \times G$ matrix of gene expression $\mbY$ with row vectors $\mby_n$ for $N$ samples and $G$ genes. A standard factor analysis model would infer a $Q$-dimensional embedding $\mbz_n$ for each sample $n = 1, \ldots, N$ where $Q \ll G$ via a model of the form
+
 \begin{equation}
-	y_{ig} = c_g z_i + \epsilon_{ig},  \; \epsilon_{ig} \sim \mathrm{N}(0,\tau_g^{-1})
+  \begin{aligned}
+\mbz_n & \sim \Norm(0, \mbI) \\
+\mby_n & \sim \Norm(\mbLambda \mbz_n, \mbSigma)
+  \end{aligned}
 \end{equation}
-where $z_i$ is the latent measure of progression for sample $i$ and $c_g$ is the factor loading for feature $g$ which essentially describes the evolution of $g$ along the patient trajectory.
 
-However, it is conceivable that the evolution of feature $g$ along the trajectory is not identical for all samples but is instead affected by a set of external covariates. Such covariates may correspond to patient phenotypes such as age or sex, EHR entries such as blood pressure or additional molecular data such as the mutation status of a particular gene. Note that we expect such features to be ``static'' and not necessarily correlate with the trajectory itself.
+where $\mbLambda$ is a $G \times Q$ factor loading matrix with column vectors $\mblambda_q$ and $\mbSigma = \text{diag}(\sigma_1^2, \ldots, \sigma_G^2)$ is a diagonal covariance matrix of measurement noise. As noted before, if $Q = 1$ then $z_n$ can be interpreted as the ``pseudotime'' of each cell in which case the factor loading matrix becomes a $G-$length factor loading vector $\mblambda$ and the likelihood of $\mby_n$ becomes $\mby_n  \sim \Norm(\mblambda z_n, \mbSigma)$.
 
-Introducing the $N \times P$ covariate matrix $\bX$ with the entry in the $i^{th}$ row and $p^{th}$ column given by $x_{ip}$, we allow such measurements to perturb the factor loading matrix
+We now consider the case mentioned in the introduction that we have an $N \times P$ matrix $\mbX$ that represents $P$ covariates for each of the $N$ samples. In a population wide study such covariates might represent phenotypic variables such as age or sex, while in a single-cell setting such covariates might represent genetic background or cell stimulus.
+
+We would like these covariates to perturb the change in expression of each gene along the trajectory. To do this we introduce an additional $G \times P$ matrix $\mbB$ whose entries $\beta_{pg}$ represent the effect of covariate $p$ on the change of gene $g$ along the trajectory. Thus the factor loading for gene $g$ becomes
+
 \begin{equation}
-	c_g \rightarrow \lambda_{ig} = c_g + \sum_{p=1}^P \beta_{pg} x_{ip}
+  \lambda_g \rightarrow \lambda_{ng}' = \lambda_g + \sum_{p=1}^P \beta_{pg} x_{np}
 \end{equation}
-where $\beta_{pg}$ quantifies the effect of covariate $p$ on the evolution of feature $g$. Despite $\bY$ being column-centred we need to reintroduce gene and covariate specific intercepts to satisfy the model assumptions, giving a generative model of the form
+
+or in vector notation  $\mblambda \rightarrow \mblambda'_n = \mblambda + \mbB \mbx_n$. In other words, each sample has a unique loading for each gene that depends on a common loading vector $\mblambda$ and modulation by the sample-specific covariates.
+
+In factor analysis models it is typical to standardize the data so that the marginal mean is 0 which simultaneously enforces the constraint $y=0$ when $z=0$. However in this case that constrains the data to ``swing'' around the origin based on the covariate which is overly restrictive. To solve this we introduce an additional $N \times P$ matrix $\mbA$ whose entries $\alpha_{pg}$ account for the global shift in expression of gene $g$ in response to covariate $p$. Therefore, the generative \emph{covariate-adjusted latent variable model} takes the form
+
 \begin{equation}
-	y_{ig} = \eta_g + \sum_{p=1}^P \alpha_{pg} x_{ip} + \left( c_g + \sum_{p=1}^P \beta_{pg} x_{ip}\right) z_i + \epsilon_{ig}, \; \;  \epsilon_{ig}\sim \mathrm{N}(0,\tau_g^{-1})
+  \begin{aligned}
+\mbz_n & \sim \Norm(0, \mbI) \\
+\mby_n & \sim \Norm\left( \mbA \mbx_n + (\mblambda + \mbB \mbx_n) z_n, \mbSigma\right)
+  \end{aligned} \label{eq:clvm}
 \end{equation}
 
-% KC - taken out from before to make shorter
-%\begin{equation}
-%\begin{aligned}
-%\chi_{pg} & \sim \mathrm{Gamma}(a_\beta, b_\beta) \\
-%\beta_{pg} & \sim \mathrm{N}(0, \tau_g^{-1} \chi_{pg}^{-1})
-%\end{aligned}
-%\end{equation}
+In a genomics context $\alpha_{pg}$ can be thought of as mediating differential expression (figure \ref{fig:phenopath_eqn}) while $\mblambda$ can be thought of as the change in expression along the latent trajectory regardless of covariates. Note that if we multiply out the bracket in \ref{eq:clvm} we see that this is a form of linear mixed model with interactions between the random and fixed effects, though to our knowledge such a model has not been proposed before.
 
+In practice we restrict ourselves to $Q=1$ dimensional latent spaces (that roughly correspond to ``pseudotimes'' or ``trajectories''). However, this can be readily extended to the $Q>1$ case by making $\mbB$ a $Q \times P \times G$ factor loading tensor\footnote{
+Technically an array rather than a tensor in the true sense.
+} whose entries $\beta_{qpg}$ quantify the interaction between covariate $p$ and gene $g$ in latent dimension $q$. The mean $\mu_{ng}$ for observation $y_{ng}$ is then given by
 
-Our goal is inference of $z_i$ that encodes disease progression along with $\beta_{pg}$ which is informative of novel interactions between continuous trajectories and external covariates. Consequently we place a sparse Bayesian prior on $\beta_{pg}$ of the form $\beta_{pg} \sim \mathrm{N}(0, \chi_{pg}^{-1})$ where the posterior of $\chi_{pg}$ is informative of the model's belief that $\beta_{pg}$ is non-zero. The complete generative model is therefore given by
+\begin{equation}
+  \mu_{ng} = \sum_{q=1}^Q \left(
+  \lambda_{qg} z_{nq} + \sum_{p=1}^P (\alpha_{qpg} x_{np} + \beta_{qpg} x_{np} z_{nq})
+  \right)
+\end{equation}
 
+In general we expect trajectory-covariate interactions to be rare we place an automatic relevance determination (ARD) prior on them (previously discussed in chapter 4).
+In the $Q=1$ dimensional case this takes the form $\beta_{g} \sim \Norm(0, \chi_g^{-1})$, $\chi_g \stackrel{iid}{\sim} \Gam(a_\beta, b_\beta)$. We set $a_\beta = b_\beta = 0.01$ which places the prior precision close to zero but has high variance. The overall generative model then takes the form
 
 \begin{equation}
 \begin{aligned}
 \alpha_{pg} & \sim \norm(0, \tau_\alpha^{-1}) \\
-c_g & \sim \norm(0, \tau_c^{-1}) \\
-z_i & \sim \norm(q_i, \tau_q^{-1}) \\
+\lambda_g & \sim \norm(0, \tau_\lambda^{-1}) \\
+z_n & \sim \norm(q_n, \tau_q^{-1}) \\
 \beta_{pg} & \sim \norm(0, \chi_{pg}^{-1}) \\
 \chi_{pg}^{-1} & \sim \text{Gamma}(a_\beta, b_\beta) \\
 \tau_{g}^{-1} & \sim \text{Gamma}(a, b) \\
-\mu_{g} & \sim \norm(0, \tau_\mu^{-1}) \\
-\epsilon_{ig} & \sim \norm(0, \tau_g^{-1}) \\
-y_{ig} & = \mu_g + \sum_p \alpha_{pg} x_{ip} + \left( c_g + \sum_p \beta_{pg} x_{ip} \right) z_i + \epsilon_{ig}
-\end{aligned}
+%\mu_{g} & \sim \norm(0, \tau_\mu^{-1}) \\
+\epsilon_{ng} & \sim \norm(0, \tau_g^{-1}) \\
+y_{ng} & = \mu_g +  \sum_p \alpha_{pg} x_{np} + \left( \lambda_g + \sum_p \beta_{pg} x_{np} \right) z_n + \epsilon_{ig}
+\end{aligned} \label{eq:clvm_model}
 \end{equation}
 
-where $\tau_\alpha$, $\tau_c$, $a$, $b$, $a_\beta$, $b_\beta$, $\tau_q$ are fixed hyperparameters and $q_i$ encodes prior information about $z_i$ if available but typically $q_i = 0 \; \forall i$ in the uninformative case.
-
-To understand this model it helps to consider the distribution of $\bY$ marginalised over the mapping $\{ c_g, \alpha_{pg}, \beta_{pg}\} \; \forall \; p,g$ with priors $c_g \sim \mathrm{N}(0, \tau_c^{-1})$ and $\alpha_{pg} \sim \mathrm{N}(0, \tau_\alpha^{-1})$. If $\by_g$ denotes the column vectors of $\bY$ and similarly $\bx_p$ for $\bX$, $[\bz]_i = z_i$, $\bo_N$ is the column vector of ones and $\odot$ denotes the element-wise product, then
-
-\begin{equation}
-	p(\by_g | \bX, \bz, \eta_g, \tau_g, \tau_c, \tau_\alpha, \chi_{pg}) \sim
-\mathrm{N}\left(
-\eta_g \bo_N, \bm \Sigma^{(g)}
-\right)
-\end{equation}
-
-where
-
-\begin{equation}
-\bm \Sigma^{(g)} =
-\tau_g^{-1} \bo_N +
-\tau_\alpha^{-1} \bX \bX^T +
-\tau_c^{-1} \bz \bz^T +
- \sum_p  \chi_{pg}^{-1} (\bx_p \odot \bz) (\bx_p \odot \bz)^T.
-\end{equation}
-
-We therefore see that the addition of the covariates adds extra terms to the covariance matrix corresponding to \emph{perturbations} of the latent variables with the covariates. Consequently, the scale on which $\bx_p$ is defined needs carefully calibrated. Furthermore, it is possible to extend the latent variable matrix to have dimension larger than 1 giving a novel dimensionality reduction technique for visualisation, though additional rotation issues arise.
+where $\tau_\alpha$, $\tau_\lambda$, $a$, $b$, $a_\beta$, $b_\beta$, $\tau_q$ are fixed hyperparameters and $q_n$ encodes prior information about $z_n$ if available but typically $q_n = 0 \; \forall n$ in the uninformative case.
 
 
 
 \subsection{Inference}
 
-We perform co-ordinate ascent mean field variational inference (see e.g. \cite{blei2016variational}) with an approximating distribution of the form
+\subsubsection{Gibbs sampling}
+
+The conditionally conjugate nature of the model in equation \ref{eq:clvm_model} makes Gibbs sampling once more possible, as explored in section \ref{sec:TODO}. The Gibbs updates for this are given in appendix \ref{app:clvm_gibbs}. However, Gibbs sampling becomes slow as the number of parameters increases, which needs particular care in this model given the number of parameters scales as $G \times P$ for $G$ genes and $P$ covariates.
+
+\subsubsection{Co-ordinate ascent variational inference}
+
+Instead we turn to variational inference which recasts Bayesian inference as an optimisation problem, rather than the sampling approaches previously used. Below, variational inference is briefly introduced along with the strategy for deriving updates for covariate-adjusted latent variable models, which may be found in \ref{app:clvm_vi}.
+
+In general Bayesian inference is concerned with inferring the posterior distribution $p(\mbtheta | \mbX) = \frac{p(\mbX | \mbtheta) p(\mbtheta)}{p(\mbX)}$ for some parameters $\mbTheta$ and data $\mbX$. This is difficult in general as the marginal likelihood $p(\mbX)$ is often intractable and hard to compute.
+
+Variational inference posits an approximating or \emph{variational} distribution $q(\mbtheta | \mblambda)$ with variational parameters $\mblambda$ and the objective of inference is to choose optimal $\mblambda$ so that $q(\mbtheta | \mblambda)$ is as ``close'' to $p(\mbtheta | \mbX)$ as possible. This closeness is normally definied with respect to some divergence measure such as the Kullback-Leibler (KL) divergence which is a measure of the non-symmetric difference between two probability distributions. Thus Bayesian inference is transformed into an optimisation procedure that attempts to minimise
+
+\begin{equation}
+  \KL{q(\mbtheta | \mblambda)}{p(\mbtheta | \mbX)} =
+  \int d\mbtheta q(\mbtheta | \mblambda) \log\left[ \frac{q(\mbtheta | \mblambda)}{p(\mbtheta | \mbX)}\right].
+\label{eq:kl_min}
+\end{equation}
+
+A little algebra shows that minimising the $KL$-divergence in equation \ref{eq:kl_min} is equivalent to maximising the evidence lower-bound (ELBO), defined as
+
+\begin{equation}
+  \text{ELBO}(\mblambda; \mbX, \mbtheta) = \mbE_{q(\mbtheta | \mblambda)} \left[
+\log q(\mbtheta | \mblambda) - \log p(\mbX, \mbtheta)
+  \right].
+\end{equation}
+
+Interestingly, because $\KL{q}{p} \geq 0$ for any $q$ and $p$ it is easy to show that the ELBO acts as a lower bound on the log marginal likelihood, i.e. $\log p(\mbX) \geq \text{ELBO}(\mblambda; \mbX, \mbtheta)$. Therefore, variational inference can be viewed either as choosing $\mblambda$ so that $q$ is as similar to $p$ as possible, or as choosing $\mblambda$ so that a lower bound on the marginal likelihood is maximised.
+
+For our model in equation \ref{eq:clvm_model} we make what is known as a mean-field variational approximation where the variational approximation factorises across all the parameters so $q(\mbtheta | \mblambda) = \prod_i q(\theta_i | \lambda_i)$. For co-ordinate ascent variational inference the approximating distributions should be of the family as each conditional distribution. The variational distribution for our model is therefore given by
 
 \begin{equation}
 \begin{aligned}
 & q\left(
-\{ z_i \}_{i=1}^N,
+\{ z_n \}_{n=1}^N,
 \{ \mu_g \}_{g=1}^G,
 \{ \tau_g \}_{g=1}^G,
-\{ c_g \}_{g=1}^G,
+\{ \lambda_g \}_{g=1}^G,
 \{ \alpha_{pg} \}_{g=1,p=1}^{G,P}
 \{ \beta_{pg} \}_{g=1,p=1}^{G,P}
 \{ \chi_{pg} \}_{g=1,p=1}^{G,P}
 \right) \\
-& = \prod_{i=1}^N \underbrace{q_z(z_i)}_{\text{Normal}}
+& = \prod_{n=1}^N \underbrace{q_z(z_n)}_{\text{Normal}}
 \prod_{g=1}^G \underbrace{q_\mu(\mu_g)}_{\text{Normal}}
-\underbrace{q_\tau(\tau_g)}_{\text{Gamma}} \underbrace{q_c(c_g)}_{\text{Normal}}
+\underbrace{q_\tau(\tau_g)}_{\text{Gamma}} \underbrace{q_\lambda(\lambda_g)}_{\text{Normal}}
 \prod_{p=1}^P \underbrace{q_\alpha (\alpha_{pg})}_{\text{Normal}}
 \underbrace{q_\beta(\beta_{pg})}_{\text{Normal}} \underbrace{q_\chi (\chi_{pg})}_{\text{Gamma}}
 \end{aligned}
 \end{equation}
 
-Due to the model's conjugacy the optimal update for each parameter $\theta_j$ given all other parameters $\bm \theta_{-j}$ can easily be computed via
+For conditionally conjugate models it is possible to derive updates that maximise the ELBO for each parameter, conditioned on all other parameters being held constant. For a general model let $\theta_j$ denote the $j^{\text{th}}$ parameter and  $\mbtheta_{-j}$ the vector of all parameters other than $j$. The update that provides the distribution for $\theta_j$ that maximises the ELBO is given by
 
 \begin{equation}
-q^*_j(\theta_j) \propto \exp \left\{  \mathbf{E}_{-j} \left[ \log p(\theta_j | \bm \theta_{-j}, \bX, \bY) \right]
- \right\}
+q^*_j(\theta_j) \propto \exp \left\{  \mbE_{-j} \left[ \log p(\theta_j | \mbtheta_{-j}, \mbY) \right]
+ \right\},
 \end{equation}
 
-%
-where the expectation is taken with respect to the variational density over $\bm \theta_{-j}$.
+where the expectation is taken with respect to the approximating distributions for all parameters other than $j$. Successively computing updates for each variable until the change in the ELBO falls below some pre-set threshold is known as co-ordinate ascent variational inference (CAVI). In our model all parameters have conditional distributions that are either normally distributed or gamma distributed. We can derive general updates for these two cases and the specific updates may be found in appendix \ref{app:clvm_vi}.
 
-
-\subsection{Identifying significant interactions} \label{sec:significant}
-
-For each gene $g$ and covariate $p$ we have $\beta_{pg}$ that encodes the effect of $p$ on the evolution of $g$ along the trajectory $\bz$. We would like to identify interesting or \emph{significant} interactions for further analysis and follow up.
-
-The variational approximation for $\beta_{pg}$ is given by
+Suppose $p(\theta_j | \theta_{-j}, \mbX) \sim \norm(\mu_{\theta_j}, \tau_{\theta_j}^{-1})$ where both the mean and precision  are dependent on the conditioning variables $\mbtheta_{-j}$ and the data $\mbX$. It follows that
 
 \begin{equation}
-\begin{aligned}
-q_{\beta_{pg}} & \sim \norm(m_{\beta_{pg}}, s^2_{\beta_{pg}}) .
-\end{aligned}
+q(\theta_j) = \norm\left(
+\theta_j |
+m_{\theta_j} = \frac{\text{E}_{-j}[\mu_{\theta_j} \tau_{\theta_j}]}{\text{E}_{-j}[\tau_{\theta_j}]},
+s_{\theta_j}^2 = \text{E}_{-j}[\tau_{\theta_j}]^{-1}
+\right)
 \end{equation}
 
-We therefore define an interaction as significant if $0$ falls outside the posterior $2 \sigma$ interval of $m_{\beta_{pg}}$. In other words, the interaction between $p$ and $g$ is significant if
+where the expectations are computed with respect to the distributions in TODO.
+
+If instead $p(\theta_j | \theta_{-j}, \mbX) = \text{Gamma}(\theta_j | a_{\theta_j}, b_{\theta_j})$ where again $a_{\theta_j}$ and $b_{\theta_j}$ are functions of the data $\mbX$ and all parameters other than $\theta_j$, then the CAVI update 	is given by
 
 \begin{equation}
-m_{\beta_{pg}} - 2 s_{\beta_{pg}} > 0
+q(\theta_j) = \text{Gamma}\left(
+\theta_j |
+\text{E}_{-j}[a_{\theta_j}], \text{E}_{-j}[b_{\theta_j}]
+\right).
 \end{equation}
-\emph{or}
-\begin{equation}
-m_{\beta_{pg}} + 2 s_{\beta_{pg}} < 0
-\end{equation}
-
-Note that variational inference typically underestimates posterior variances \cite{blei2016variational} so such a designation of \emph{significant} will be under-conservative.
-
-\section{Results}
 
 
+Variational inference for non-conditionally conjugate models is considered in \ref{sec:survival}.
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=.6\textwidth]{gfx/ch5/trajectory}
-  \caption{Test}
- \label{fig:trajectory}
+\subsection{Benchmarking through simulations}
+
+\begin{figure}
+\centering
+  \includegraphics[width=0.98\textwidth]{gfx/ch5/3_simulation_scenarios}
+   \caption{Four gene expression simulation scenarios were used: (1) differential expression only where the overall expression level for groups -1 and 1 differed but there is no dependence on pseudotime or pathway score, (2) pseudotime regulation only where the overall marginal distribution of expression values is identical between groups but expression changes with latent pathway score, (3) pseduotime and covariate interactions where the trajectory for each group differs over pathway score and (4) a complex scenario where differential expression and covariate-pseudotime interactions all exist. } \label{fig:simulation_scenarios}
 \end{figure}
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=.5\textwidth]{gfx/ch5/beta}
-  \caption{Test}
- \label{fig:beta}
-\end{figure}
+We first demonstrate the utility of PhenoPath by performing a simulation study to demonstrate the value of modelling covariate-pathway interactions. We simulated RNAseq-based gene expression data\cite{Frazee2015-vy} where genes were either (1) differentially expressed, (2) modulated along a hidden pathway trajectory, (3) modulated along a pathway with covariate interactions, or (4) differentially expressed with pathway modulation and covariate interactions (Supplementary Figure \ref{fig:simulation_pca}, \ref{fig:simulation_scenarios}). PhenoPath exhibited high specificity and sensitivity by classifying only a small number of simulated genes (2\%) as exhibiting interaction effects in cases 1-2 where there are no covariate-pathway interactions but identifies 78\% and 63\% of genes as exhibiting significant covariate-pathway interactions in cases 3 and 4 respectively (Fig. 1B). For comparison, a standard DE analysis using Limma-Voom identified 47\% and 59\% of genes as differentially expressed in cases 1 and 4 respectively. In case 2 only 2\% of genes are identified as DE as expected but, in case 3, 22\% of genes are identified as DE where Limma-Voom would not be expected to report any differentially expressed genes.
 
-We applied our method to a recent quantification \cite{tatlow2016cloud} of the TCGA RNA-seq colorectal cancer dataset \cite{weinstein2013cancer}. After a quality-control step we retained 284 samples for analysis and used the 6394 genes whose variance in $\log_2(\text{TPM}+1)$ exceeded $0.5$. The covariate used for $\bX$ was whether the tumour exhibited high microsatellite instability (MSI), a hyper-mutable phenotype caused by the loss of DNA mismatch repair activity.  Tumours with MSI are known have a different response to chemotherapeutics along with marginally better prognosis \cite{boland2010microsatellite}.
-
-We applied our covariate latent variable models to this data with strong shrinkage priors on $\beta$ ($a_\beta = 6$, $b_\beta=0.1$) on the assumption that such latent variable-covariate interactions are likely to be rare. Consequently, $\bz$ should largely recover the first principal component of the data, as seen in figure \ref{fig:trajectory}A. However, it can be seen when plotting $\bz$ against $\text{PC1}$ that the samples ``split'' based on MSI status. This is most likely due to the variation in gene expression caused by MSI status being absorbed by the $\alpha_{pg}$ coefficients of the model.
-
-We next sought to calibrate our inferred trajectory with some external measure of progression. Survival analysis in TCGA data is problematic - measurements of survival are taken from initial prognosis with scarce recording of the assay timing relative to this. Furthermore, in the colorectal cancer dataset used 243 / 284 (85\%) patients have no survival information recorded at all. Consequently, we sought to compare our trajectory with a genomic measure of prognosis, namely \emph{FOXP3+} regulatory T-cell (Treg) status which is associated with poor colorectal cancer prognosis \cite{shang2015prognostic}. We examined the expression of three Treg markers along $\bz$ (\emph{CD25}, \emph{CD4} and \emph{FOXP3}, not included in $\bY$) which showed decrease in expression along $\bz$ implying a possible association between the inferred trajectory and prognostic potential.
-
-Finally, we sought to identify significant interactions between genes, covariates and the trajectory. Using the significance criterion described in section \ref{sec:significant}, 35 genes were identified as showing possibly interesting interactions as can be seen on the $\beta$-$\chi^{-1}$ plot in figure \ref{fig:beta}A. Of the genes identified, \emph{MLH1} particularly stands out as having a strong association. \emph{MLH1} is known to be causal for MSI, either due to epigenetic silencing or a germline mutation \cite{vilar2010microsatellite}. To understand the precise (inter-)action of \emph{MLH1} we examined its behaviour along the immune-response trajectory coloured by MSI status (figure \ref{fig:beta}B). In the MSI-low regime the expression of \emph{MLH1} is constant independent of the immune ($\bz$) status. However, in the MSI-high regime the expression of \emph{MLH1} becomes dependent on the MSI-status of the tumour. As such, our covariate latent variable model has identified an interesting interaction between immune response, MSI-status and \emph{MLH1} expression.
-
-% The results may be seen in Figures \ref{fig:coad}B-D. The strong sparsity priors on $\beta$ suggest the effect of the covariates $\bX$ on the inferred $\bt$ will be minimal and should be similar to traditional factor analysis models; however, Figure \ref{fig:coad}B clearly shows MSI status having a discernible shift on the inferred latent variables. While this effect is small in the dataset examined it is conceivable that larger confounding effects may exist in other datasets. We subsequently examined the posterior values of $\chi^{-1}$ and $\beta$ for each coefficient and gene to discover any interactions between the lipid-metabolic trajectory and the covariates included (Figure \ref{fig:coad}C). This identified genes such as \emph{NRF2}, \emph{ALDH3B1} and \emph{PPARD} all associated with colorectal cancer outcomes \cite{lee2005nrf2,khorrami2015verification,park2012role}.
-
-
-
-\section{Discussion}
-
-We have proposed the concept of replacing discrete disease staging with data-driven continuous trajectories inferred from genomics data that hold prognostic and/or diagnostic value. By considering a modified factor analysis model we incorporate population-level heterogeneity that may confound existing trajectory-based analysis. By applying our model to RNA-seq data from the TCGA colorectal cancer dataset we simultaneously identify genes that possibly interact with externally measured covariates while learning a trajectory that correlates with known markers of colorectal cancer prognosis.
-
-One limitation of the model is its linear nature, making inferred latent variables similar to those from factor analysis. We therefore propose a nonlinear, nonparametric extension similar to Gaussian Process Latent Variable Models \cite{lawrence2004gaussian}. The trick is to consider the $\bX\bX^T$ term in the covariance matrix of the marginal distribution of $\bY$ and replace it with any (semi-)positive definite matrix representing ``similarity'' between the elements of $\by$, such as double-exponential kernels. We therefore mention the possibility of \emph{Covariate Gaussian Process Latent Variable Models} with kernels given by
-
+We performed a small simulation study to identify effects uncovered by PhenoPath that are missed by standard differential expression analyses. Specifically, we sought to compare differentially expressed genes identified by Limma Voom \cite{Law2014-tu}, one of the leading RNA-seq differential expression methods, to the $\beta$ interactions from PhenoPath. For $N = 200$ samples we assigned each to one of two categories given by the $x$ values $x = -1, 1$, and assigned a pseudotime $z$ through draws from a standard normal distribution. For each sample $i = 1, \ldots, N$ and gene $g = 1, \ldots, G$ we then generated a mean value through the PhenoPath mean function
 \begin{equation}
-K\left( \{\bx_{p = 1, \ldots, P}, \bz\}, \{\bx_{p = 1, \ldots, P}', \bz'\} \right) \propto K(\bx, \bx') + K(\bz, \bz') +
-\sum_p K(\bx_p \odot \bz, \bx_p' \odot \bz')
+  \mu_{ig} = \alpha_g x_i + (c_g + \beta_g x_i) z_i
 \end{equation}
 
-for some suitable choice of kernel function $K$. Note that the element-wise product $\odot$ only appears because of the linear relationship between the covariates and factor loading matrix. This could easily be replaced by any nonlinear and possibly nonparametric function $\bff$ giving terms of the form $K\left( (\bff(\bx_p, \bz), \bff(\bx_p', \bz') \right)$.
+The gene-specific parameters $(\alpha_g, c_g, \beta_g)$ were sampled in equal proportions from one of four classes:
+\begin{enumerate}
+  \item \emph{Differential expression only} where $\alpha_g = 1$ or -1 with equal probability and $c_g = \beta_g = 0$
+  \item \emph{Pseudotime regulation only} where $c_g = 1$ or -1 with equal probability and $\alpha_g = \beta_g = 0$
+  \item \emph{Pseudotime and covariate interactions} where $c_g$ and $\beta_g$ are set to 1 or -1  with equal probability and $\alpha_g = 0$
+  \item \emph{Differential expression, pseudotime and covariate interactions} where all parameters take on values of -1 or 1 with equal probabilities
+\end{enumerate}
 
-Inference for linear C-LVM was possibly on a laptop for $\mathcal{O}(10^2)$ samples, $\mathcal{O}(10^4)$ features $\mathcal{O}(1)$  covariates. However, such inference would become burdensome for increasing data size, particularly with respect to features and covariates as $\mathcal{O}(PG)$ parameters are required.  Fortunately, the currently-implemented CAVI inference can be easily modified to give scalable Stochastic Variational Inference \cite{hoffman2013stochastic} for this model.
+In order to generate RNA-seq reads we need positive count values. In the spirit of general linear models, we then used $g(x) = 2^x$ as a link function and generated a matrix of positive means
+\begin{equation}
+  \tilde{\mu}_{ig} = 2^{\mu_{ig}}
+\end{equation}
+
+We subsequently simulated a count matrix $c_{ig}$ by sampling for each entry from a negative binomial distribution with mean $\tilde{\mu}_{ig}$ and size parameter $\tilde{\mu}_{ig} / 3$. While this could be used as input to PhenoPath (suitable log transformed), we sought to make our simulation as realistic as possible including quantification errors. We subsequently simulated FASTA files using the Bioconductor package \texttt{polyester} \cite{Frazee2015-vy} using the first 400 transcripts of the reference transcriptome of the 22nd human chromosome. FASTA files were then converted to FASTQ files using a script copied from StackOverflow and quantified into TPM and count estimates using Kallisto \cite{Bray2016-uh}. The $\log_2(\text{TPM} + 1)$ values were then used for input to PhenoPath while the raw count values were used for input to Limma Voom.
+
+We sought to compare the performance of Limma Voom and PhenoPath in detecting differential expression and pathway interaction effects respectively, and show that there are pathway interaction effects not evident from differential expression analyses alone. We found that PhenoPath identifies such interactions with high precision (main text and Table \ref{tbl:fdr}).
+
+\begin{table}[!t]
+\begin{center}
+    \begin{tabular}{ | l | c  c  c |}
+    \hline
+    Algorithm & True positive rate & False positive rate & False discovery rate \\ \hline
+    Limma Voom & 0.82 & 0.09 & 0.18 \\
+    PhenoPath & 0.97 & 0.02 & 0.03 \\
+    \hline
+  \end{tabular}
+\end{center} \caption{A comparison of true positive, false positive, and false discovery rates for Limma Voom detecting differential expression and PhenoPath detecting covariate-pseudotime interactions on synthetic data.} \label{tbl:fdr}
+\end{table}
+
+% latex table generated in R 3.3.1 by xtable 1.8-2 package
+% Wed Apr 12 14:35:33 2017
+\begin{table}[ht]
+\centering
+\begin{tabular}{|l | c|}
+  \hline
+  Algorithm(s) & n \\
+  \hline
+ Both &  47 \\
+   PhenoPath only &  16 \\
+   Limma only &  12 \\
+   Neither &  25 \\
+   \hline
+\end{tabular} \caption{Number of interactions discovered as significant under the \emph{Differential expression, pseudotime and covariate interactions} regime.} \label{tbl:}
+\end{table}
+
+In our simulation study, Limma Voom ``only'' detects 47\% of the genes simulated as differentially expressed. Such power to detect differential expression is dependent on effect sizes and measurement noise, and so such a figure is in no way unreasonable given the parameters used. While a more comprehensive simulation study could examine detection rates across entire distributions over effect sizes and measurement noise, we simply sought to perform a simulation that demonstrated that PhenoPath identifies a subset of differential expression and that standard differential expression misses some interactions across a consistent effect size and noise regime.
+
+\begin{figure}
+\centering
+  \includegraphics[width=0.98\textwidth]{gfx/ch5/4_simulation_pca}
+  \caption{Simulations of RNA-seq data with covariate pseudotime interactions for 200 samples and 400 genes using the R/Bioconductor package \texttt{polyester}. \textbf{A} A PCA representation of the data coloured by pseudotime shows a clear splitting of trajectories between covariate status.\textbf{B} Comparison of the true pseudotime to both PC1 and PhenoPath pathway score$z$ with correlations of 0.85 and 0.97 respectively.
+  } \label{fig:simulation_pca}
+\end{figure}
+
+\begin{figure}
+\centering
+  \includegraphics[width=0.98\textwidth]{gfx/ch5/5_simulations}
+  \caption{A comparison of Limma Voom and PhenoPath on simulated data under a range of different regimes demonstrates PhenoPath is required to identify pathway-covariate interactions.
+  } \label{fig:simulations}
+\end{figure}
+
+
+\section{Applications of conditionally conjugate model}
+
+\subsection{Single-cell RNA-seq} \label{sec:shalek}
+
+\begin{figure}
+\centering
+  \includegraphics[width=0.98\textwidth]{gfx/ch5/6_shalek_thesis}
+  \caption{\textbf{A} PhenoPath applied to the Shalek et al. dataset uncovers genes differentially regulated along pseudotime depending on the stimulant (LPS or PAM) applied.
+  \textbf{B} PhenoPath infers pseudotimes ($z$) consistent with the physical capture times.
+  \textbf{C} A comparison of $p$-values obtained through a nonparametric statistical test for differential expression between LPS and PAM stimulation shows no particular relation with the interaction parameters $\beta$ inferred with PhenoPath.
+  \textbf{D} A GO enrichment analysis of the genes upregulated along pseudotime whose upregulation was increased by LPS stimulation showed enrichment for immune system processes.
+  \textbf{E} Example gene expression plots of some genes identified with differential interactions by PhenoPath. For example, \emph{Oasl2} shows upregulation under LPS exposure yet only slight transient regulation under PAM exposure. }  \label{fig:shalek}
+\end{figure}
+
+\begin{figure}
+   \includegraphics[width=\textwidth]{gfx/ch5/7_s_compare_monocle_dpt.png}
+   \caption{Performance of DPT and Monocle 2 on Shalek et al dataset.
+\textbf{A} Sorted DPT pseudotimes by index identifies three outlier cells. \textbf{B} Comparison of DPT pseudotimes to PhenoPath pathway score $z$. \textbf{C} Comparison of Monocle 2 pseudotimes to PhenoPath pathway score $z$.}
+	\label{fig:shalek_comparison}
+\end{figure}
+
+
+\subsection{Colorectal cancer bulk RNA-seq} \label{sec:coad}
+
+\begin{figure}
+\includegraphics[width=0.98\textwidth]{gfx/ch5/8_coad_figure.png}
+\caption{Immune-microsatellite instability interactions uncovered by PhenoPath in colorectal cancer.
+\textbf{A} PhenoPath applied to Colon Adenocarcinoma (COAD) RNA-seq expression data uncovers a landscape of interactions between the inferred immune trajectory and microsatellite instability status (MSI).
+\textbf{B} Expression of three T regulatory cell markers demonstrates that our pseudotime corresponds to activation of immune response pathways.
+\textbf{C} A comparison to the FDR-corrected $q$-values reported by Limma Voom demonstrates genes found interacting with MSI status and the immune pathway are found to be both DE and non-DE in standard analyses.
+\textbf{D} A GO enrichment analysis of upregulated genes implies the latent trajectory encodes immune pathway activation in each tumour.
+\textbf{E} The tumour suppressor genes \emph{MLH1} and \emph{TGFBR2} were identified by PhenoPath as significantly perturbed along the immune trajectory by MSI status. \emph{MLH1} shows no interaction with immune pathway activation in the MSI-low regime yet is highly correlated with immune pathway activation in the MSI-high regime.}
+\label{fig:coad}
+\end{figure}
+
+
+\subsection{Breast cancer bulk RNA-seq} \label{sec:brca}
+
+\begin{figure}[!p]
+\includegraphics[width=0.98\textwidth]{gfx/ch5/9_brca_figure}
+\caption{Vascular growth-ER status interactions uncovered by PhenoPath in breast cancer.
+\textbf{A} PhenoPath applied to Breast Cancer (BRCA) RNA-seq expression data uncovers a landscape of interactions between the inferred angiogenesis trajectory and estrogen receptor (ER) status.
+\textbf{B} A comparison to the FDR-corrected $q$-values reported by Limma Voom identifies a significant number of DE genes display an interaction with ER status and the angiogenic pathway.
+\textbf{C} A GO enrichment analysis of upregulated genes implies the latent trajectory encodes angiogenesis pathway activation in each tumour.
+\textbf{D} Four example genes \emph{ESR1}, \emph{FBP1}, and \emph{FOXC1} were identified by PhenoPath as significantly perturbed along the angiogenesis trajectory by ER status. The vertical dashed line signifies the calculated crossover point, demonstrating the expression profiles of these genes converge towards the end of the trajectory.
+\textbf{E} A histogram of the crossover points of all genes whose trajectory-covariate interactions were significant. The vast majority of crossover points are at the end of the trajectory (around 0.5, where the ``middle'' pathway score is 0) implying a convergence of gene expression as the trajectory progresses.
+} \label{fig:brca}
+\end{figure}
+
+\section{Perturbations by censored survival times} \label{sec:survival}
+
+\subsection{Modified statistical model}
+
+\subsection{Inference}
+
+\subsection{Application to breast cancer bulk RNA-seq}
+
+\section{Covariate-adjusted Gaussian Process Latent Variable Models}
