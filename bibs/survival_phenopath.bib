@@ -1,0 +1,974 @@
+
+@ARTICLE{Tran2016-ml,
+  title         = "Edward: A library for probabilistic modeling, inference, and
+                   criticism",
+  author        = "Tran, Dustin and Kucukelbir, Alp and Dieng, Adji B and
+                   Rudolph, Maja and Liang, Dawen and Blei, David M",
+  abstract      = "Probabilistic modeling is a powerful approach for analyzing
+                   empirical information. We describe Edward, a library for
+                   probabilistic modeling. Edward's design reflects an
+                   iterative process pioneered by George Box: build a model of
+                   a phenomenon, make inferences about the model given data,
+                   and criticize the model's fit to the data. Edward supports a
+                   broad class of probabilistic models, efficient algorithms
+                   for inference, and many techniques for model criticism. The
+                   library builds on top of TensorFlow to support distributed
+                   training and hardware such as GPUs. Edward enables the
+                   development of complex probabilistic models and their
+                   algorithms at a massive scale.",
+  month         =  "31~" # oct,
+  year          =  2016,
+  archivePrefix = "arXiv",
+  primaryClass  = "stat.CO",
+  eprint        = "1610.09787"
+}
+
+
+@ARTICLE{Campbell2016-nu,
+  title         = "Stratification of patient trajectories using covariate
+                   latent variable models",
+  author        = "Campbell, Kieran R and Yau, Christopher",
+  abstract      = "Standard models assign disease progression to discrete
+                   categories or stages based on well-characterized clinical
+                   markers. However, such a system is potentially at odds with
+                   our understanding of the underlying biology, which in highly
+                   complex systems may support a (near-)continuous evolution of
+                   disease from inception to terminal state. To learn such a
+                   continuous disease score one could infer a latent variable
+                   from dynamic ``omics'' data such as RNA-seq that correlates
+                   with an outcome of interest such as survival time. However,
+                   such analyses may be confounded by additional data such as
+                   clinical covariates measured in electronic health records
+                   (EHRs). As a solution to this we introduce covariate latent
+                   variable models, a novel type of latent variable model that
+                   learns a low-dimensional data representation in the presence
+                   of two (asymmetric) views of the same data source. We apply
+                   our model to TCGA colorectal cancer RNA-seq data and
+                   demonstrate how incorporating microsatellite-instability
+                   (MSI) status as an external covariate allows us to identify
+                   genes that stratify patients on an immune-response
+                   trajectory. Finally, we propose an extension termed
+                   Covariate Gaussian Process Latent Variable Models for
+                   learning nonparametric, nonlinear representations. An R
+                   package implementing variational inference for covariate
+                   latent variable models is available at
+                   http://github.com/kieranrcampbell/clvm.",
+  month         =  "27~" # oct,
+  year          =  2016,
+  archivePrefix = "arXiv",
+  primaryClass  = "stat.ML",
+  eprint        = "1610.08735"
+}
+
+
+@ARTICLE{Kingma2013-wo,
+  title         = "{Auto-Encoding} Variational Bayes",
+  author        = "Kingma, Diederik P and Welling, Max",
+  abstract      = "How can we perform efficient inference and learning in
+                   directed probabilistic models, in the presence of continuous
+                   latent variables with intractable posterior distributions,
+                   and large datasets? We introduce a stochastic variational
+                   inference and learning algorithm that scales to large
+                   datasets and, under some mild differentiability conditions,
+                   even works in the intractable case. Our contributions is
+                   two-fold. First, we show that a reparameterization of the
+                   variational lower bound yields a lower bound estimator that
+                   can be straightforwardly optimized using standard stochastic
+                   gradient methods. Second, we show that for i.i.d. datasets
+                   with continuous latent variables per datapoint, posterior
+                   inference can be made especially efficient by fitting an
+                   approximate inference model (also called a recognition
+                   model) to the intractable posterior using the proposed lower
+                   bound estimator. Theoretical advantages are reflected in
+                   experimental results.",
+  month         =  "20~" # dec,
+  year          =  2013,
+  archivePrefix = "arXiv",
+  primaryClass  = "stat.ML",
+  eprint        = "1312.6114v10"
+}
+
+
+@ARTICLE{Weinstein2013-ww,
+  title     = "The cancer genome atlas pan-cancer analysis project",
+  author    = "Weinstein, John N and Collisson, Eric A and Mills, Gordon B and
+               Shaw, Kenna R Mills and Ozenberger, Brad A and Ellrott, Kyle and
+               Shmulevich, Ilya and Sander, Chris and Stuart, Joshua M and
+               Network, Cancer Genome Atlas Research and {Others}",
+  journal   = "Nat. Genet.",
+  publisher = "Nature Publishing Group",
+  volume    =  45,
+  number    =  10,
+  pages     = "1113--1120",
+  year      =  2013
+}
+
+
+@ARTICLE{Law2014-tu,
+  title    = "voom: Precision weights unlock linear model analysis tools for
+              {RNA-seq} read counts",
+  author   = "Law, Charity W and Chen, Yunshun and Shi, Wei and Smyth, Gordon K",
+  abstract = "New normal linear modeling strategies are presented for analyzing
+              read counts from RNA-seq experiments. The voom method estimates
+              the mean-variance relationship of the log-counts, generates a
+              precision weight for each observation and enters these into the
+              limma empirical Bayes analysis pipeline. This opens access for
+              RNA-seq analysts to a large body of methodology developed for
+              microarrays. Simulation studies show that voom performs as well
+              or better than count-based RNA-seq methods even when the data are
+              generated according to the assumptions of the earlier methods.
+              Two case studies illustrate the use of linear modeling and gene
+              set testing methods.",
+  journal  = "Genome Biol.",
+  volume   =  15,
+  number   =  2,
+  pages    = "R29",
+  month    =  "3~" # feb,
+  year     =  2014,
+  language = "en"
+}
+
+
+@ARTICLE{Pimentel2016-xz,
+  title     = "Differential analysis of {RNA-Seq} incorporating quantification
+               uncertainty",
+  author    = "Pimentel, H J and Bray, N and Puente, S and Melsted, P and
+               Pachter, L",
+  abstract  = "Abstract We describe a novel method for the differential
+               analysis of RNA-Seq data that utilizes bootstrapping in
+               conjunction with response error linear modeling to decouple
+               biological variance from inferential variance. The method is
+               implemented in an interactive shiny app called sleuth that
+               utilizes kallisto quantifications and bootstraps for fast and
+               accurate analysis of RNA-Seq experiments.",
+  journal   = "bioRxiv",
+  publisher = "biorxiv.org",
+  year      =  2016
+}
+
+
+@ARTICLE{Katzman2016-jp,
+  title         = "Deep Survival: A Deep Cox Proportional Hazards Network",
+  author        = "Katzman, Jared and Shaham, Uri and Bates, Jonathan and
+                   Cloninger, Alexander and Jiang, Tingting and Kluger, Yuval",
+  abstract      = "Previous research has shown that neural networks can model
+                   survival data in situations in which some patients' death
+                   times are unknown, e.g. right-censored. However, neural
+                   networks have rarely been shown to outperform their linear
+                   counterparts such as the Cox proportional hazards model. In
+                   this paper, we run simulated experiments and use real
+                   survival data to build upon the risk-regression architecture
+                   proposed by Faraggi and Simon. We demonstrate that our
+                   model, DeepSurv, not only works as well as other survival
+                   models but actually outperforms in predictive ability on
+                   survival data with linear and nonlinear risk functions. We
+                   then show that the neural network can also serve as a
+                   recommender system by including a categorical variable
+                   representing a treatment group. This can be used to provide
+                   personalized treatment recommendations based on an
+                   individual's calculated risk. We provide an open source
+                   Python module that implements these methods in order to
+                   advance research on deep learning and survival analysis.",
+  month         =  "2~" # jun,
+  year          =  2016,
+  archivePrefix = "arXiv",
+  primaryClass  = "stat.ML",
+  eprint        = "1606.00931"
+}
+
+% The entry below contains non-ASCII chars that could not be converted
+% to a LaTeX equivalent.
+@INPROCEEDINGS{Ranganath2016-kn,
+  title      = "Deep Survival Analysis",
+  booktitle  = "Machine Learning for Healthcare Conference",
+  author     = "Ranganath, Rajesh and Perotte, Adler and Elhadad, No{\'e}mie
+                and Blei, David",
+  abstract   = "Disparate areas of machine learning have benefited from models
+                that can take raw data with little preprocessing as input and
+                learn rich representations of that raw data in order to perform
+                well on a given prediction task. We evaluate this approach in
+                healthcare by using longitudinal measurements of lab tests, one
+                of the more raw signals of a patient’s health state widely
+                available in clinical data, to predict disease onsets. In
+                particular, we train a Long Short-Term Memory (LSTM) recurrent
+                neural network and two novel convolutional neural networks for
+                multi-task prediction of disease onset for 133 conditions based
+                on 18 common lab tests measured over time in a cohort of 298K
+                patients derived from 8 years of administrative claims data. We
+                compare the neural networks to a logistic regression with
+                several hand-engineered, clinically relevant features. We find
+                that the representation-based learning approaches significantly
+                outperform this baseline. We believe that our work suggests a
+                new avenue for patient risk stratification based solely on lab
+                results.",
+  pages      = "101--114",
+  month      =  "10~" # dec,
+  year       =  2016,
+  language   = "en",
+  conference = "Machine Learning for Healthcare Conference"
+}
+
+@INPROCEEDINGS{Schulam2016-sj,
+  title     = "Disease Trajectory Maps",
+  booktitle = "Advances In Neural Information Processing Systems",
+  author    = "Schulam, Peter and Arora, Raman",
+  pages     = "4709--4717",
+  year      =  2016
+}
+
+
+@ARTICLE{Lawrence2005-cu,
+  title    = "Probabilistic Non-linear Principal Component Analysis with
+              Gaussian Process Latent Variable Models",
+  author   = "Lawrence, Neil",
+  journal  = "J. Mach. Learn. Res.",
+  volume   =  6,
+  number   = "Nov",
+  pages    = "1783--1816",
+  year     =  2005
+}
+
+@article{tatlow2016cloud,
+  title={A cloud-based workflow to quantify transcript-expression levels in public cancer compendia},
+  author={Tatlow, PJ and Piccolo, Stephen R},
+  journal={bioRxiv},
+  pages={063552},
+  year={2016},
+  publisher={Cold Spring Harbor Labs Journals}
+}
+
+@article{blei2016variational,
+  title={Variational inference: A review for statisticians},
+  author={Blei, David M and Kucukelbir, Alp and McAuliffe, Jon D},
+  journal={arXiv preprint arXiv:1601.00670},
+  year={2016}
+}
+
+
+@ARTICLE{Naderi2007-mb,
+  title       = "A gene-expression signature to predict survival in breast
+                 cancer across independent data sets",
+  author      = "Naderi, A and Teschendorff, A E and Barbosa-Morais, N L and
+                 Pinder, S E and Green, A R and Powe, D G and Robertson, J F R
+                 and Aparicio, S and Ellis, I O and Brenton, J D and Caldas, C",
+  affiliation = "Cancer Genomics Program, Department of Oncology, Hutchison/MRC
+                 Research Center, University of Cambridge, Cambridge, UK.",
+  abstract    = "Prognostic signatures in breast cancer derived from microarray
+                 expression profiling have been reported by two independent
+                 groups. These signatures, however, have not been validated in
+                 external studies, making clinical application problematic. We
+                 performed microarray expression profiling of 135 early-stage
+                 tumors, from a cohort representative of the demographics of
+                 breast cancer. Using a recently proposed semisupervised
+                 method, we identified a prognostic signature of 70 genes that
+                 significantly correlated with survival (hazard ratio (HR):
+                 5.97, 95\% confidence interval: 3.0-11.9, P = 2.7e-07). In
+                 multivariate analysis, the signature performed independently
+                 of other standard prognostic classifiers such as the
+                 Nottingham Prognostic Index and the 'Adjuvant!' software.
+                 Using two different prognostic classification schemes and
+                 measures, nearest centroid (HR) and risk ordering (D-index),
+                 the 70-gene classifier was also found to be prognostic in two
+                 independent external data sets. Overall, the 70-gene set was
+                 prognostic in our study and the two external studies which
+                 collectively include 715 patients. In contrast, we found that
+                 the two previously described prognostic gene sets performed
+                 less optimally in external validation. Finally, a common
+                 prognostic module of 29 genes that associated with survival in
+                 both our cohort and the two external data sets was identified.
+                 In spite of these results, further studies that profile larger
+                 cohorts using a single microarray platform, will be needed
+                 before prospective clinical use of molecular classifiers can
+                 be contemplated.",
+  journal     = "Oncogene",
+  volume      =  26,
+  number      =  10,
+  pages       = "1507--1516",
+  month       =  "1~" # mar,
+  year        =  2007,
+  language    = "en"
+}
+
+@ARTICLE{Aguirre-Gamboa2013-ku,
+  title       = "{SurvExpress}: an online biomarker validation tool and
+                 database for cancer gene expression data using survival
+                 analysis",
+  author      = "Aguirre-Gamboa, Raul and Gomez-Rueda, Hugo and
+                 Mart{\'\i}nez-Ledesma, Emmanuel and Mart{\'\i}nez-Torteya,
+                 Antonio and Chacolla-Huaringa, Rafael and
+                 Rodriguez-Barrientos, Alberto and Tamez-Pe{\~n}a, Jos{\'e} G
+                 and Trevi{\~n}o, Victor",
+  affiliation = "C{\'a}tedra de Bioinform{\'a}tica, Tecnol{\'o}gico de
+                 Monterrey, Monterrey, Nuevo Le{\'o}n, M{\'e}xico.",
+  abstract    = "Validation of multi-gene biomarkers for clinical outcomes is
+                 one of the most important issues for cancer prognosis. An
+                 important source of information for virtual validation is the
+                 high number of available cancer datasets. Nevertheless,
+                 assessing the prognostic performance of a gene expression
+                 signature along datasets is a difficult task for Biologists
+                 and Physicians and also time-consuming for Statisticians and
+                 Bioinformaticians. Therefore, to facilitate performance
+                 comparisons and validations of survival biomarkers for cancer
+                 outcomes, we developed SurvExpress, a cancer-wide gene
+                 expression database with clinical outcomes and a web-based
+                 tool that provides survival analysis and risk assessment of
+                 cancer datasets. The main input of SurvExpress is only the
+                 biomarker gene list. We generated a cancer database collecting
+                 more than 20,000 samples and 130 datasets with censored
+                 clinical information covering tumors over 20 tissues. We
+                 implemented a web interface to perform biomarker validation
+                 and comparisons in this database, where a multivariate
+                 survival analysis can be accomplished in about one minute. We
+                 show the utility and simplicity of SurvExpress in two
+                 biomarker applications for breast and lung cancer. Compared to
+                 other tools, SurvExpress is the largest, most versatile, and
+                 quickest free tool available. SurvExpress web can be accessed
+                 in http://bioinformatica.mty.itesm.mx/SurvExpress (a tutorial
+                 is included). The website was implemented in JSP, JavaScript,
+                 MySQL, and R.",
+  journal     = "PLoS One",
+  volume      =  8,
+  number      =  9,
+  pages       = "e74250",
+  month       =  "16~" # sep,
+  year        =  2013,
+  language    = "en"
+}
+
+@ARTICLE{Goswami2013-ar,
+  title       = "{PROGgene}: gene expression based survival analysis web
+                 application for multiple cancers",
+  author      = "Goswami, Chirayu Pankaj and Nakshatri, Harikrishna",
+  affiliation = "Thomas Jefferson University Hospitals, 117 S 11th Street,
+                 Suite 207, Philadelphia, PA 19107, USA.
+                 chirayu.goswami@jeffersonhospital.org.",
+  abstract    = "BACKGROUND: Identification of prognostic mRNA biomarkers has
+                 been done for various cancer types. The data that are
+                 published from such studies are archived in public
+                 repositories. There are hundreds of such datasets available
+                 for multiple cancer types in public repositories. Wealth of
+                 such data can be utilized to study prognostic implications of
+                 mRNA in different cancers as well as in different populations
+                 or subtypes of same cancer. DESCRIPTION: We have created a web
+                 application that can be used for studying prognostic
+                 implications of mRNA biomarkers in a variety of cancers. We
+                 have compiled data from public repositories such as GEO, EBI
+                 Array Express and The Cancer Genome Atlas for creating this
+                 tool. With 64 patient series from 18 cancer types in our
+                 database, this tool provides the most comprehensive resource
+                 available for survival analysis to date. The tool is called
+                 PROGgene and it is available at
+                 http://www.compbio.iupui.edu/proggene. CONCLUSIONS: We present
+                 this tool as a hypothesis generation tool for researchers to
+                 identify potential prognostic mRNA biomarkers to follow up
+                 with further research. For this reason, we have kept the web
+                 application very simple and straightforward. We believe this
+                 tool will be useful in accelerating biomarker discovery in
+                 cancer and quickly providing results that may indicate
+                 disease-specific prognostic value of specific biomarkers.",
+  journal     = "J. Clin. Bioinforma.",
+  volume      =  3,
+  number      =  1,
+  pages       = "22",
+  month       =  "28~" # oct,
+  year        =  2013,
+  language    = "en"
+}
+
+@article{verhaak2010integrated,
+  title={Integrated genomic analysis identifies clinically relevant subtypes of glioblastoma characterized by abnormalities in PDGFRA, IDH1, EGFR, and NF1},
+  author={Verhaak, Roel GW and Hoadley, Katherine A and Purdom, Elizabeth and Wang, Victoria and Qi, Yuan and Wilkerson, Matthew D and Miller, C Ryan and Ding, Li and Golub, Todd and Mesirov, Jill P and others},
+  journal={Cancer cell},
+  volume={17},
+  number={1},
+  pages={98--110},
+  year={2010},
+  publisher={Elsevier}
+}
+
+@article{ceccarelli2016molecular,
+  title={Molecular profiling reveals biologically discrete subsets and pathways of progression in diffuse glioma},
+  author={Ceccarelli, Michele and Barthel, Floris P and Malta, Tathiane M and Sabedot, Thais S and Salama, Sofie R and Murray, Bradley A and Morozova, Olena and Newton, Yulia and Radenbaugh, Amie and Pagnotta, Stefano M and others},
+  journal={Cell},
+  volume={164},
+  number={3},
+  pages={550--563},
+  year={2016},
+  publisher={Elsevier}
+}
+
+
+@ARTICLE{Chen2007-ql,
+  title    = "A {Five-Gene} Signature and Clinical Outcome in {Non--Small-Cell}
+              Lung Cancer",
+  author   = "Chen, Hsuan-Yu and Yu, Sung-Liang and Chen, Chun-Houh and Chang,
+              Gee-Chen and Chen, Chih-Yi and Yuan, Ang and Cheng, Chiou-Ling
+              and Wang, Chien-Hsun and Terng, Harn-Jing and Kao, Shu-Fang and
+              Chan, Wing-Kai and Li, Han-Ni and Liu, Chun-Chi and Singh, Sher
+              and Chen, Wei J and Chen, Jeremy J W and Yang, Pan-Chyr",
+  abstract = "Lung cancer --- predominantly non--small-cell lung cancer (NSCLC)
+              --- is the most common cause of death from cancer worldwide.1 The
+              relapse rate among patients with early-stage NSCLC is 40\% within
+              5 years after potentially curative treatment.2 The current
+              staging system for NSCLC is inadequate for predicting the outcome
+              of treatment. Gene-expression profiling (see Glossary) by means
+              of microarrays3,4 and reverse-transcriptase polymerase chain
+              reaction (RT-PCR)5,6 is useful for classifying tumors and
+              formulating a prognosis for patients with various types of
+              cancer,7--9 including lung cancer.10--16 The use of microarrays
+              in clinical practice is limited, however, by the large . . .",
+  journal  = "N. Engl. J. Med.",
+  volume   =  356,
+  number   =  1,
+  pages    = "11--20",
+  year     =  2007
+}
+
+@ARTICLE{Newhook2014-kc,
+  title       = "A thirteen-gene expression signature predicts survival of
+                 patients with pancreatic cancer and identifies new genes of
+                 interest",
+  author      = "Newhook, Timothy E and Blais, Edik M and Lindberg, James M and
+                 Adair, Sara J and Xin, Wenjun and Lee, Jae K and Papin, Jason
+                 A and Parsons, J Thomas and Bauer, Todd W",
+  affiliation = "Department of Surgery, University of Virginia,
+                 Charlottesville, Virginia, United States of America.
+                 Department of Biomedical Engineering, University of Virginia,
+                 Charlottesville, Virginia, United States of America.
+                 Department of Surgery, University of Virginia,
+                 Charlottesville, Virginia, United States of America.
+                 Department of Surgery, University of Virginia,
+                 Charlottesville, Virginia, United States of America.
+                 Department of Public Health Sciences, University of Virginia,
+                 Charlottesville, Virginia, United States of America.
+                 Department of Public Health Sciences, University of Virginia,
+                 Charlottesville, Virginia, United States of America.
+                 Department of Biomedical Engineering, University of Virginia,
+                 Charlottesville, Virginia, United States of America.
+                 Department of Microbiology, Immunology, and Cancer Biology,
+                 University of Virginia, Charlottesville, Virginia, United
+                 States of America. Department of Surgery, University of
+                 Virginia, Charlottesville, Virginia, United States of America.",
+  abstract    = "BACKGROUND: Currently, prognostication for pancreatic ductal
+                 adenocarcinoma (PDAC) is based upon a coarse clinical staging
+                 system. Thus, more accurate prognostic tests are needed for
+                 PDAC patients to aid treatment decisions. METHODS AND
+                 FINDINGS: Affymetrix gene expression profiling was carried out
+                 on 15 human PDAC tumors and from the data we identified a
+                 13-gene expression signature (risk score) that correlated with
+                 patient survival. The gene expression risk score was then
+                 independently validated using published gene expression data
+                 and survival data for an additional 101 patients with
+                 pancreatic cancer. Patients with high-risk scores had
+                 significantly higher risk of death compared to patients with
+                 low-risk scores (HR 2.27, p = 0.002). When the 13-gene score
+                 was combined with lymph node status the risk-score further
+                 discriminated the length of patient survival time (p<0.001).
+                 Patients with a high-risk score had poor survival independent
+                 of nodal status; however, nodal status increased
+                 predictability for survival in patients with a low-risk gene
+                 signature score (low-risk N1 vs. low-risk N0: HR = 2.0, p =
+                 0.002). While AJCC stage correlated with patient survival (p =
+                 0.03), the 13-gene score was superior at predicting survival.
+                 Of the 13 genes comprising the predictive model, four have
+                 been shown to be important in PDAC, six are unreported in PDAC
+                 but important in other cancers, and three are unreported in
+                 any cancer. CONCLUSIONS: We identified a 13-gene expression
+                 signature that predicts survival of PDAC patients and could
+                 prove useful for making treatment decisions. This risk score
+                 should be evaluated prospectively in clinical trials for
+                 prognostication and for predicting response to chemotherapy.
+                 Investigation of new genes identified in our model may lead to
+                 novel therapeutic targets.",
+  journal     = "PLoS One",
+  volume      =  9,
+  number      =  9,
+  pages       = "e105631",
+  month       =  "2~" # sep,
+  year        =  2014,
+  language    = "en"
+}
+
+@ARTICLE{Beer2002-wm,
+  title       = "Gene-expression profiles predict survival of patients with
+                 lung adenocarcinoma",
+  author      = "Beer, David G and Kardia, Sharon L R and Huang, Chiang-Ching
+                 and Giordano, Thomas J and Levin, Albert M and Misek, David E
+                 and Lin, Lin and Chen, Guoan and Gharib, Tarek G and Thomas,
+                 Dafydd G and Lizyness, Michelle L and Kuick, Rork and
+                 Hayasaka, Satoru and Taylor, Jeremy M G and Iannettoni, Mark D
+                 and Orringer, Mark B and Hanash, Samir",
+  affiliation = "Department of Surgery, University of Michigan, Ann Arbor,
+                 Michigan, USA. dgbeer@umich.edu",
+  abstract    = "Histopathology is insufficient to predict disease progression
+                 and clinical outcome in lung adenocarcinoma. Here we show that
+                 gene-expression profiles based on microarray analysis can be
+                 used to predict patient survival in early-stage lung
+                 adenocarcinomas. Genes most related to survival were
+                 identified with univariate Cox analysis. Using either two
+                 equivalent but independent training and testing sets, or
+                 'leave-one-out' cross-validation analysis with all tumors, a
+                 risk index based on the top 50 genes identified low-risk and
+                 high-risk stage I lung adenocarcinomas, which differed
+                 significantly with respect to survival. This risk index was
+                 then validated using an independent sample of lung
+                 adenocarcinomas that predicted high- and low-risk groups. This
+                 index included genes not previously associated with survival.
+                 The identification of a set of genes that predict survival in
+                 early-stage lung adenocarcinoma allows delineation of a
+                 high-risk group that may benefit from adjuvant therapy.",
+  journal     = "Nat. Med.",
+  volume      =  8,
+  number      =  8,
+  pages       = "816--824",
+  month       =  aug,
+  year        =  2002,
+  language    = "en"
+}
+
+
+@ARTICLE{Patel2014-uu,
+  title       = "Single-cell {RNA-seq} highlights intratumoral heterogeneity in
+                 primary glioblastoma",
+  author      = "Patel, Anoop P and Tirosh, Itay and Trombetta, John J and
+                 Shalek, Alex K and Gillespie, Shawn M and Wakimoto, Hiroaki
+                 and Cahill, Daniel P and Nahed, Brian V and Curry, William T
+                 and Martuza, Robert L and Louis, David N and Rozenblatt-Rosen,
+                 Orit and Suv{\`a}, Mario L and Regev, Aviv and Bernstein,
+                 Bradley E",
+  affiliation = "Department of Neurosurgery, Massachusetts General Hospital and
+                 Harvard Medical School, Boston, MA 02114, USA. Department of
+                 Pathology and Center for Cancer Research, Massachusetts
+                 General Hospital and Harvard Medical School, Boston, MA 02114,
+                 USA. Broad Institute of Harvard and Massachusetts Institute of
+                 Techonology (MIT), Cambridge, MA 02142, USA. Howard Hughes
+                 Medical Institute Chevy Chase, MD 20815, USA. Broad Institute
+                 of Harvard and Massachusetts Institute of Techonology (MIT),
+                 Cambridge, MA 02142, USA. Broad Institute of Harvard and
+                 Massachusetts Institute of Techonology (MIT), Cambridge, MA
+                 02142, USA. Broad Institute of Harvard and Massachusetts
+                 Institute of Techonology (MIT), Cambridge, MA 02142, USA.
+                 Department of Pathology and Center for Cancer Research,
+                 Massachusetts General Hospital and Harvard Medical School,
+                 Boston, MA 02114, USA. Broad Institute of Harvard and
+                 Massachusetts Institute of Techonology (MIT), Cambridge, MA
+                 02142, USA. Howard Hughes Medical Institute Chevy Chase, MD
+                 20815, USA. Department of Neurosurgery, Massachusetts General
+                 Hospital and Harvard Medical School, Boston, MA 02114, USA.
+                 Department of Neurosurgery, Massachusetts General Hospital and
+                 Harvard Medical School, Boston, MA 02114, USA. Department of
+                 Neurosurgery, Massachusetts General Hospital and Harvard
+                 Medical School, Boston, MA 02114, USA. Department of
+                 Neurosurgery, Massachusetts General Hospital and Harvard
+                 Medical School, Boston, MA 02114, USA. Department of
+                 Neurosurgery, Massachusetts General Hospital and Harvard
+                 Medical School, Boston, MA 02114, USA. Department of Pathology
+                 and Center for Cancer Research, Massachusetts General Hospital
+                 and Harvard Medical School, Boston, MA 02114, USA. Broad
+                 Institute of Harvard and Massachusetts Institute of
+                 Techonology (MIT), Cambridge, MA 02142, USA. Department of
+                 Pathology and Center for Cancer Research, Massachusetts
+                 General Hospital and Harvard Medical School, Boston, MA 02114,
+                 USA. Broad Institute of Harvard and Massachusetts Institute of
+                 Techonology (MIT), Cambridge, MA 02142, USA.
+                 bernstein.bradley@mgh.harvard.edu aregev@broadinstitute.org
+                 suva.mario@mgh.harvard.edu. Broad Institute of Harvard and
+                 Massachusetts Institute of Techonology (MIT), Cambridge, MA
+                 02142, USA. Howard Hughes Medical Institute Chevy Chase, MD
+                 20815, USA. Department of Biology, MIT, Cambridge, MA 02139,
+                 USA. bernstein.bradley@mgh.harvard.edu
+                 aregev@broadinstitute.org suva.mario@mgh.harvard.edu.
+                 Department of Pathology and Center for Cancer Research,
+                 Massachusetts General Hospital and Harvard Medical School,
+                 Boston, MA 02114, USA. Broad Institute of Harvard and
+                 Massachusetts Institute of Techonology (MIT), Cambridge, MA
+                 02142, USA. Howard Hughes Medical Institute Chevy Chase, MD
+                 20815, USA. bernstein.bradley@mgh.harvard.edu
+                 aregev@broadinstitute.org suva.mario@mgh.harvard.edu.",
+  abstract    = "Human cancers are complex ecosystems composed of cells with
+                 distinct phenotypes, genotypes, and epigenetic states, but
+                 current models do not adequately reflect tumor composition in
+                 patients. We used single-cell RNA sequencing (RNA-seq) to
+                 profile 430 cells from five primary glioblastomas, which we
+                 found to be inherently variable in their expression of diverse
+                 transcriptional programs related to oncogenic signaling,
+                 proliferation, complement/immune response, and hypoxia. We
+                 also observed a continuum of stemness-related expression
+                 states that enabled us to identify putative regulators of
+                 stemness in vivo. Finally, we show that established
+                 glioblastoma subtype classifiers are variably expressed across
+                 individual cells within a tumor and demonstrate the potential
+                 prognostic implications of such intratumoral heterogeneity.
+                 Thus, we reveal previously unappreciated heterogeneity in
+                 diverse regulatory programs central to glioblastoma biology,
+                 prognosis, and therapy.",
+  journal     = "Science",
+  volume      =  344,
+  number      =  6190,
+  pages       = "1396--1401",
+  month       =  "20~" # jun,
+  year        =  2014,
+  language    = "en"
+}
+
+@ARTICLE{Buettner2015-qq,
+  title       = "Computational analysis of cell-to-cell heterogeneity in
+                 single-cell {RNA-sequencing} data reveals hidden
+                 subpopulations of cells",
+  author      = "Buettner, Florian and Natarajan, Kedar N and Casale, F Paolo
+                 and Proserpio, Valentina and Scialdone, Antonio and Theis,
+                 Fabian J and Teichmann, Sarah A and Marioni, John C and
+                 Stegle, Oliver",
+  affiliation = "1] Helmholtz Zentrum M{\"u}nchen-German Research Center for
+                 Environmental Health, Institute of Computational Biology,
+                 Neuherberg, Germany. [2] European Molecular Biology
+                 Laboratory, European Bioinformatics Institute, Wellcome Trust
+                 Genome Campus, Hinxton, Cambridge, UK. 1] European Molecular
+                 Biology Laboratory, European Bioinformatics Institute,
+                 Wellcome Trust Genome Campus, Hinxton, Cambridge, UK. [2]
+                 Wellcome Trust Sanger Institute, Hinxton, UK. European
+                 Molecular Biology Laboratory, European Bioinformatics
+                 Institute, Wellcome Trust Genome Campus, Hinxton, Cambridge,
+                 UK. 1] European Molecular Biology Laboratory, European
+                 Bioinformatics Institute, Wellcome Trust Genome Campus,
+                 Hinxton, Cambridge, UK. [2] Wellcome Trust Sanger Institute,
+                 Hinxton, UK. 1] European Molecular Biology Laboratory,
+                 European Bioinformatics Institute, Wellcome Trust Genome
+                 Campus, Hinxton, Cambridge, UK. [2] Wellcome Trust Sanger
+                 Institute, Hinxton, UK. 1] Helmholtz Zentrum
+                 M{\"u}nchen-German Research Center for Environmental Health,
+                 Institute of Computational Biology, Neuherberg, Germany. [2]
+                 Department of Mathematics, Technische Universit{\"a}t
+                 M{\"u}nchen, Munich, Germany. 1] European Molecular Biology
+                 Laboratory, European Bioinformatics Institute, Wellcome Trust
+                 Genome Campus, Hinxton, Cambridge, UK. [2] Wellcome Trust
+                 Sanger Institute, Hinxton, UK. 1] European Molecular Biology
+                 Laboratory, European Bioinformatics Institute, Wellcome Trust
+                 Genome Campus, Hinxton, Cambridge, UK. [2] Wellcome Trust
+                 Sanger Institute, Hinxton, UK. European Molecular Biology
+                 Laboratory, European Bioinformatics Institute, Wellcome Trust
+                 Genome Campus, Hinxton, Cambridge, UK.",
+  abstract    = "Recent technical developments have enabled the transcriptomes
+                 of hundreds of cells to be assayed in an unbiased manner,
+                 opening up the possibility that new subpopulations of cells
+                 can be found. However, the effects of potential confounding
+                 factors, such as the cell cycle, on the heterogeneity of gene
+                 expression and therefore on the ability to robustly identify
+                 subpopulations remain unclear. We present and validate a
+                 computational approach that uses latent variable models to
+                 account for such hidden factors. We show that our single-cell
+                 latent variable model (scLVM) allows the identification of
+                 otherwise undetectable subpopulations of cells that correspond
+                 to different stages during the differentiation of naive T
+                 cells into T helper 2 cells. Our approach can be used not only
+                 to identify cellular subpopulations but also to tease apart
+                 different sources of gene expression heterogeneity in
+                 single-cell transcriptomes.",
+  journal     = "Nat. Biotechnol.",
+  volume      =  33,
+  number      =  2,
+  pages       = "155--160",
+  month       =  feb,
+  year        =  2015,
+  language    = "en"
+}
+
+
+@ARTICLE{Trapnell2014-xi,
+  title       = "The dynamics and regulators of cell fate decisions are
+                 revealed by pseudotemporal ordering of single cells",
+  author      = "Trapnell, Cole and Cacchiarelli, Davide and Grimsby, Jonna and
+                 Pokharel, Prapti and Li, Shuqiang and Morse, Michael and
+                 Lennon, Niall J and Livak, Kenneth J and Mikkelsen, Tarjei S
+                 and Rinn, John L",
+  affiliation = "1] Department of Stem Cell and Regenerative Biology, Harvard
+                 University, Cambridge, Massachusetts, USA. [2] The Broad
+                 Institute of MIT and Harvard, Cambridge, Massachusetts, USA.
+                 [3]. 1] Department of Stem Cell and Regenerative Biology,
+                 Harvard University, Cambridge, Massachusetts, USA. [2] The
+                 Broad Institute of MIT and Harvard, Cambridge, Massachusetts,
+                 USA. [3] Harvard Stem Cell Institute, Harvard University,
+                 Cambridge, Massachusetts, USA. [4]. The Broad Institute of MIT
+                 and Harvard, Cambridge, Massachusetts, USA. The Broad
+                 Institute of MIT and Harvard, Cambridge, Massachusetts, USA.
+                 Fluidigm Corporation, South San Francisco, California, USA. 1]
+                 Department of Stem Cell and Regenerative Biology, Harvard
+                 University, Cambridge, Massachusetts, USA. [2] The Broad
+                 Institute of MIT and Harvard, Cambridge, Massachusetts, USA.
+                 The Broad Institute of MIT and Harvard, Cambridge,
+                 Massachusetts, USA. Fluidigm Corporation, South San Francisco,
+                 California, USA. 1] Department of Stem Cell and Regenerative
+                 Biology, Harvard University, Cambridge, Massachusetts, USA.
+                 [2] The Broad Institute of MIT and Harvard, Cambridge,
+                 Massachusetts, USA. [3] Harvard Stem Cell Institute, Harvard
+                 University, Cambridge, Massachusetts, USA. 1] Department of
+                 Stem Cell and Regenerative Biology, Harvard University,
+                 Cambridge, Massachusetts, USA. [2] The Broad Institute of MIT
+                 and Harvard, Cambridge, Massachusetts, USA. [3] Department of
+                 Pathology, Beth Israel Deaconess Medical Center, Boston,
+                 Massachusetts, USA.",
+  abstract    = "Defining the transcriptional dynamics of a temporal process
+                 such as cell differentiation is challenging owing to the high
+                 variability in gene expression between individual cells.
+                 Time-series gene expression analyses of bulk cells have
+                 difficulty distinguishing early and late phases of a
+                 transcriptional cascade or identifying rare subpopulations of
+                 cells, and single-cell proteomic methods rely on a priori
+                 knowledge of key distinguishing markers. Here we describe
+                 Monocle, an unsupervised algorithm that increases the temporal
+                 resolution of transcriptome dynamics using single-cell RNA-Seq
+                 data collected at multiple time points. Applied to the
+                 differentiation of primary human myoblasts, Monocle revealed
+                 switch-like changes in expression of key regulatory factors,
+                 sequential waves of gene regulation, and expression of
+                 regulators that were not known to act in differentiation. We
+                 validated some of these predicted regulators in a loss-of
+                 function screen. Monocle can in principle be used to recover
+                 single-cell gene expression kinetics from a wide array of
+                 cellular processes, including differentiation, proliferation
+                 and oncogenic transformation.",
+  journal     = "Nat. Biotechnol.",
+  volume      =  32,
+  number      =  4,
+  pages       = "381--386",
+  month       =  apr,
+  year        =  2014,
+  language    = "en"
+}
+
+
+% The entry below contains non-ASCII chars that could not be converted
+% to a LaTeX equivalent.
+@ARTICLE{Cannoodt2016-bd,
+  title     = "Computational methods for trajectory inference from single-cell
+               transcriptomics",
+  author    = "Cannoodt, R and Saelens, W and Yvan, S",
+  abstract  = "Abstract Recent developments in single-cell transcriptomics have
+               opened new opportunities for studying dynamic processes in
+               immunology in a high-throughput and unbiased manner. Starting
+               from a mixture of cells in different stages of a developmental
+               process, unsupervised trajectory inference algorithms aim to
+               automatically reconstruct the underlying developmental path that
+               cells are following. In this review, we break down the
+               strategies ...",
+  journal   = "European Journal of Immunology",
+  publisher = "Wiley Online Library",
+  year      =  2016
+}
+
+
+@ARTICLE{Campbell2016-nl,
+  title       = "Order Under Uncertainty: Robust Differential Expression
+                 Analysis Using Probabilistic Models for Pseudotime Inference",
+  author      = "Campbell, Kieran R and Yau, Christopher",
+  affiliation = "Department of Physiology, Anatomy and Genetics, University of
+                 Oxford, Oxford, United Kingdom. Wellcome Trust Centre for
+                 Human Genetics, University of Oxford, Oxford, United Kingdom.
+                 Wellcome Trust Centre for Human Genetics, University of
+                 Oxford, Oxford, United Kingdom. Department of Statistics,
+                 University of Oxford, Oxford, United Kingdom.",
+  abstract    = "Single cell gene expression profiling can be used to quantify
+                 transcriptional dynamics in temporal processes, such as cell
+                 differentiation, using computational methods to label each
+                 cell with a 'pseudotime' where true time series
+                 experimentation is too difficult to perform. However, owing to
+                 the high variability in gene expression between individual
+                 cells, there is an inherent uncertainty in the precise
+                 temporal ordering of the cells. Pre-existing methods for
+                 pseudotime estimation have predominantly given point estimates
+                 precluding a rigorous analysis of the implications of
+                 uncertainty. We use probabilistic modelling techniques to
+                 quantify pseudotime uncertainty and propagate this into
+                 downstream differential expression analysis. We demonstrate
+                 that reliance on a point estimate of pseudotime can lead to
+                 inflated false discovery rates and that probabilistic
+                 approaches provide greater robustness and measures of the
+                 temporal resolution that can be obtained from pseudotime
+                 inference.",
+  journal     = "PLoS Comput. Biol.",
+  volume      =  12,
+  number      =  11,
+  pages       = "e1005212",
+  month       =  nov,
+  year        =  2016,
+  language    = "en"
+}
+
+
+@ARTICLE{Reid2016-yo,
+  title       = "Pseudotime estimation: deconfounding single cell time series",
+  author      = "Reid, John E and Wernisch, Lorenz",
+  affiliation = "MRC Biostatistics Unit, Cambridge CB2 0SR, UK. MRC
+                 Biostatistics Unit, Cambridge CB2 0SR, UK.",
+  abstract    = "MOTIVATION: Repeated cross-sectional time series single cell
+                 data confound several sources of variation, with contributions
+                 from measurement noise, stochastic cell-to-cell variation and
+                 cell progression at different rates. Time series from single
+                 cell assays are particularly susceptible to confounding as the
+                 measurements are not averaged over populations of cells. When
+                 several genes are assayed in parallel these effects can be
+                 estimated and corrected for under certain smoothness
+                 assumptions on cell progression. RESULTS: We present a
+                 principled probabilistic model with a Bayesian inference
+                 scheme to analyse such data. We demonstrate our method's
+                 utility on public microarray, nCounter and RNA-seq datasets
+                 from three organisms. Our method almost perfectly recovers
+                 withheld capture times in an Arabidopsis dataset, it
+                 accurately estimates cell cycle peak times in a human prostate
+                 cancer cell line and it correctly identifies two precocious
+                 cells in a study of paracrine signalling in mouse dendritic
+                 cells. Furthermore, our method compares favourably with
+                 Monocle, a state-of-the-art technique. We also show using
+                 held-out data that uncertainty in the temporal dimension is a
+                 common confounder and should be accounted for in analyses of
+                 repeated cross-sectional time series. AVAILABILITY AND
+                 IMPLEMENTATION: Our method is available on CRAN in the
+                 DeLorean package. CONTACT: john.reid@mrc-bsu.cam.ac.uk
+                 SUPPLEMENTARY INFORMATION: Supplementary data are available at
+                 Bioinformatics online.",
+  journal     = "Bioinformatics",
+  volume      =  32,
+  number      =  19,
+  pages       = "2973--2980",
+  month       =  "1~" # oct,
+  year        =  2016,
+  language    = "en"
+}
+
+
+@ARTICLE{Fan2016-af,
+  title       = "Characterizing transcriptional heterogeneity through pathway
+                 and gene set overdispersion analysis",
+  author      = "Fan, Jean and Salathia, Neeraj and Liu, Rui and Kaeser,
+                 Gwendolyn E and Yung, Yun C and Herman, Joseph L and Kaper,
+                 Fiona and Fan, Jian-Bing and Zhang, Kun and Chun, Jerold and
+                 Kharchenko, Peter V",
+  affiliation = "Department of Biomedical Informatics, Harvard Medical School,
+                 Boston, Massachusetts, USA. Illumina Inc., San Diego,
+                 California, USA. Department of Bioengineering, University of
+                 California, San Diego, California, USA. Department of
+                 Molecular and Cellular Neuroscience, Dorris Neuroscience
+                 Center, The Scripps Research Institute, La Jolla, California,
+                 USA. Department of Molecular and Cellular Neuroscience, Dorris
+                 Neuroscience Center, The Scripps Research Institute, La Jolla,
+                 California, USA. Department of Biomedical Informatics, Harvard
+                 Medical School, Boston, Massachusetts, USA. Illumina Inc., San
+                 Diego, California, USA. Illumina Inc., San Diego, California,
+                 USA. Present address: AnchorDx Corporation, International
+                 Biotech Island, Guangzhou, Guangdong, China. Department of
+                 Bioengineering, University of California, San Diego,
+                 California, USA. Department of Molecular and Cellular
+                 Neuroscience, Dorris Neuroscience Center, The Scripps Research
+                 Institute, La Jolla, California, USA. Department of Biomedical
+                 Informatics, Harvard Medical School, Boston, Massachusetts,
+                 USA.",
+  abstract    = "The transcriptional state of a cell reflects a variety of
+                 biological factors, from cell-type-specific features to
+                 transient processes such as the cell cycle, all of which may
+                 be of interest. However, identifying such aspects from noisy
+                 single-cell RNA-seq data remains challenging. We developed
+                 pathway and gene set overdispersion analysis (PAGODA) to
+                 resolve multiple, potentially overlapping aspects of
+                 transcriptional heterogeneity by testing gene sets for
+                 coordinated variability among measured cells.",
+  journal     = "Nat. Methods",
+  volume      =  13,
+  number      =  3,
+  pages       = "241--244",
+  month       =  mar,
+  year        =  2016,
+  language    = "en"
+}
+
+@article{young2010gene,
+  title={Gene ontology analysis for RNA-seq: accounting for selection bias},
+  author={Young, Matthew D and Wakefield, Matthew J and Smyth, Gordon K and Oshlack, Alicia},
+  journal={Genome biology},
+  volume={11},
+  number={2},
+  pages={R14},
+  year={2010},
+  publisher={BioMed Central}
+}
+
+@article{ozturk2016sdpr,
+  title={SDPR functions as a metastasis suppressor in breast cancer by promoting apoptosis},
+  author={Ozturk, Sait and Papageorgis, Panagiotis and Wong, Chen Khuan and Lambert, Arthur W and Abdolmaleky, Hamid M and Thiagalingam, Arunthathi and Cohen, Herbert T and Thiagalingam, Sam},
+  journal={Proceedings of the National Academy of Sciences},
+  volume={113},
+  number={3},
+  pages={638--643},
+  year={2016},
+  publisher={National Acad Sciences}
+}
+
+@article{deng2015prmt1,
+  title={PRMT1 promotes mitosis of cancer cells through arginine methylation of INCENP},
+  author={Deng, Xiaolan and Von Keudell, Gottfried and Suzuki, Takehiro and Dohmae, Naoshi and Nakakido, Makoto and Piao, Lianhua and Yoshioka, Yuichiro and Nakamura, Yusuke and Hamamoto, Ryuji},
+  journal={Oncotarget},
+  volume={6},
+  number={34},
+  pages={35173},
+  year={2015},
+  publisher={Impact Journals, LLC}
+}
+
+@article{gao2016dual,
+  title={The dual function of PRMT1 in modulating epithelial-mesenchymal transition and cellular senescence in breast cancer cells through regulation of ZEB1},
+  author={Gao, Yanyan and Zhao, Yaping and Zhang, Juechao and Lu, Yang and Liu, Xin and Geng, Pengyu and Huang, Baiqu and Zhang, Yu and Lu, Jun},
+  journal={Scientific reports},
+  volume={6},
+  year={2016},
+  publisher={Nature Publishing Group}
+}
+
+@article{wang2012top2a,
+  title={TOP2A amplification in breast cancer is a predictive marker of anthracycline-based neoadjuvant chemotherapy efficacy},
+  author={Wang, Jiayu and Xu, Binghe and Yuan, Peng and Zhang, Pin and Li, Qing and Ma, Fei and Fan, Ying},
+  journal={Breast cancer research and treatment},
+  volume={135},
+  number={2},
+  pages={531--537},
+  year={2012},
+  publisher={Springer}
+}
+
+@article{hoffman2013stochastic,
+  title={Stochastic variational inference.},
+  author={Hoffman, Matthew D and Blei, David M and Wang, Chong and Paisley, John William},
+  journal={Journal of Machine Learning Research},
+  volume={14},
+  number={1},
+  pages={1303--1347},
+  year={2013}
+}
+
+
+@ARTICLE{Sever2015-ru,
+  title       = "Signal transduction in cancer",
+  author      = "Sever, Richard and Brugge, Joan S",
+  affiliation = "Cold Spring Harbor Laboratory, Cold Spring Harbor, New York
+                 11724. Harvard Medical School, Department of Cell Biology,
+                 Boston, Massachusetts 02115.",
+  abstract    = "Cancer is driven by genetic and epigenetic alterations that
+                 allow cells to overproliferate and escape mechanisms that
+                 normally control their survival and migration. Many of these
+                 alterations map to signaling pathways that control cell growth
+                 and division, cell death, cell fate, and cell motility, and
+                 can be placed in the context of distortions of wider signaling
+                 networks that fuel cancer progression, such as changes in the
+                 tumor microenvironment, angiogenesis, and inflammation.
+                 Mutations that convert cellular proto-oncogenes to oncogenes
+                 can cause hyperactivation of these signaling pathways, whereas
+                 inactivation of tumor suppressors eliminates critical negative
+                 regulators of signaling. An examination of the PI3K-Akt and
+                 Ras-ERK pathways illustrates how such alterations dysregulate
+                 signaling in cancer and produce many of the characteristic
+                 features of tumor cells.",
+  journal     = "Cold Spring Harb. Perspect. Med.",
+  volume      =  5,
+  number      =  4,
+  month       =  "1~" # apr,
+  year        =  2015,
+  language    = "en"
+}
