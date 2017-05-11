@@ -63,15 +63,18 @@ Our objective here is to use parametric forms for the mapping function $f$ that 
 
 \begin{figure}% [!t]
 	\centering
-	\includegraphics[width=\textwidth,angle=90]{gfx/ch3/main_fig}
-	\caption{{\bf Overview of Ouija.}
-	\textbf{A} A small panel of genes is chosen with \emph{a priori} knowledge about their expression dynamics, either as cell-type specific marker genes or from pathway interaction databases such as KEGG. The pseudotimes are subsequently inferred using Ouija followed by downstream analyses such as differential expression and clustering of additional genes  using standard methods such as those described in \cite{Trapnell2014}.
-	\textbf{B} Ouija infers pseudotimes using Bayesian nonlinear factor analysis by decomposing the input gene expression matrix through a sigmoidal mapping function. The latent variables become the pseudotimes of the cells while the factor loading matrix is informative of different types of gene behaviour. A heteroskedastic dispersed noise model with dropout is used to accurately model scRNA-seq data.
-	\textbf{C}  Examples of sigmoidal gene expression for three different sets of parameters. Points represent simulated gene expression, with the solid black line denoting the sigmoid curve and the red dashed line denoting the activation time.
-	The sigmoid function is parameterised by (i) $\mu_0$ - the average peak expression level, (ii) $k$ - the activation strength and (iii) $t_0$ - the activation time. \emph{Left} Fast `switch-on' behaviour with parameters $k= 30$, $\mu_0 = 1$, $t_0 = 0.5$, \emph{Centre} Slower `switch-off' behaviour with parameters $k= -10$, $\mu_0 = 2$, $t_0 = 0.5$ and \emph{Right} Decaying behaviour with parameters $k= -5$, $\mu_0 = 10$, $t_0 = 0$.
-	\textbf{D} The effect of prior expectations on the `activation time' $t_0$ parameter. A highly peaked prior (top) corresponds to confident knowledge of where in the trajectory a gene turns on or off, while a more diffuse prior (bottom) indicates more uncertainty as to where in the trajectory the gene behaviour occurs.
-	\textbf{E} Comparison of Ouija to alternative pseudotime inference algorithms. Ouija is the only algorithm that explicitly allows incorporation of prior knowledge of gene behaviour.}
-	\label{fig:main}
+	\includegraphics[width=1.8\textwidth,angle=90]{gfx/ch3/main_fig}
+  \caption{(Caption next page.)} \label{fig:main}
+\end{figure}
+\addtocounter{figure}{-1}
+\begin{figure}
+  \caption{{\bf Overview of Ouija.}
+  \textbf{A} A small panel of genes is chosen with \emph{a priori} knowledge about their expression dynamics, either as cell-type specific marker genes or from pathway interaction databases such as KEGG. The pseudotimes are subsequently inferred using Ouija followed by downstream analyses such as differential expression and clustering of additional genes  using standard methods such as those described in \cite{Trapnell2014}.
+  \textbf{B} Ouija infers pseudotimes using Bayesian nonlinear factor analysis by decomposing the input gene expression matrix through a sigmoidal mapping function. The latent variables become the pseudotimes of the cells while the factor loading matrix is informative of different types of gene behaviour. A heteroskedastic dispersed noise model with dropout is used to accurately model scRNA-seq data.
+  \textbf{C}  Examples of sigmoidal gene expression for three different sets of parameters. Points represent simulated gene expression, with the solid black line denoting the sigmoid curve and the red dashed line denoting the activation time.
+  The sigmoid function is parameterised by (i) $\mu_0$ - the average peak expression level, (ii) $k$ - the activation strength and (iii) $t_0$ - the activation time. \emph{Left} Fast `switch-on' behaviour with parameters $k= 30$, $\mu_0 = 1$, $t_0 = 0.5$, \emph{Centre} Slower `switch-off' behaviour with parameters $k= -10$, $\mu_0 = 2$, $t_0 = 0.5$ and \emph{Right} Decaying behaviour with parameters $k= -5$, $\mu_0 = 10$, $t_0 = 0$.
+  \textbf{D} The effect of prior expectations on the `activation time' $t_0$ parameter. A highly peaked prior (top) corresponds to confident knowledge of where in the trajectory a gene turns on or off, while a more diffuse prior (bottom) indicates more uncertainty as to where in the trajectory the gene behaviour occurs.
+  \textbf{E} Comparison of Ouija to alternative pseudotime inference algorithms. Ouija is the only algorithm that explicitly allows incorporation of prior knowledge of gene behaviour.}
 \end{figure}
 
 

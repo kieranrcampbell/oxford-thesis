@@ -581,6 +581,11 @@ K\left( \{\mbx, \mbz\}, \{\mbx', \mbz'\} \right) \propto K(\mbx, \mbx') + K(\mbz
 K(\mbx \odot \mbz,\mbx' \odot \mbz')
 \end{equation}
 
+\begin{figure}
+  \centering
+\includegraphics[width=0.85\textwidth]{gfx/ch5/cgplvm_prior}
+\caption{Draws from a CGPLVM prior with $\lambda = 0.5$, $\gamma = \nu = \eta = \delta = 0.2$ and $\xi \in \{0, 0.1, 0.5, 1\}$. For small $\xi$ an identical trajectory is taken regardless of $x$ but as $\xi$ increases differing trajectories become apparent.} \label{fig:cgplvm_prior}
+\end{figure}
 
 
 for some choice of kernel function $K$ such as the squared exponential kernel $k_{\text{SQE}}(x, x') = \sigma_f^2 \exp\left(-\frac{1}{2l^2}(x - x')^2\right)$. In this case the kernel for the $g^{\text{th}}$ output dimension (typically genes in a biological context) is given by
@@ -594,15 +599,36 @@ for some choice of kernel function $K$ such as the squared exponential kernel $k
 \end{aligned}
 \end{equation}
 
-where $\{\mbdelta, \mbeta, \mbnu, \mbgamma, \mbxi, \mblambda\}$ are the complete set of kernel parameters.
+where $\{\mbdelta, \mbeta, \mbnu, \mbgamma, \mbxi, \mblambda\}$ are the complete set of kernel parameters. Example draws from the GP priors of such kernels can be seen in figure \ref{fig:cgplvm_prior}.
 
 
 Note that the interactions between the latent variables and the covariates appear linearly (through the element-wise multiplication) because this was the formulation in the original model. These interactions may therefore be made nonlinear by replacing the third term in the covariance of equation \ref{eq:clvm_kernel} with $K(\mbf(\mbx, \mbz), \mbf(\mbx', \mbz'))$ where $\mbf$ is any function that obeys $[\mbf(\mbx, \mbz)]_i = f(x_i, z_i)$ (i.e. $\mbf$ acts element-wise along the vectors $\mbz$ and $\mbx$.)
 
-\begin{figure}
-  \centering
-\includegraphics[width=0.85\textwidth]{gfx/ch5/cgplvm_prior}
-\caption{Draws from a CGPLVM prior with $\lambda = 0.5$, $\gamma = \nu = \eta = \delta = 0.2$ and $\xi \in \{0, 0.1, 0.5, 1\}$. For small $\xi$ an identical trajectory is taken regardless of $x$ but as $\xi$ increases differing trajectories become apparent.}
-\end{figure}
+
 
 \subsection{Black-box inference}
+
+
+\begin{figure}
+  \centering
+\includegraphics[width=1.1\textwidth]{gfx/ch5/thesis_features_all}
+\caption{Synthetic data used to test CGPLVM for $N=50$ samples and $G=10$ features, with kernel parameters $\eta = 0.2$, $\gamma \nu = \delta = \xi = 1$, and $\sigma^2 = 0.01$. The first 5 features had $\lambda = 0.2$ and the final 5 had $\lambda = 0$.} \label{fig:cgplvm_data}
+\end{figure}
+
+As a small proof-of-concept we created a synthetic dataset (figure \ref{fig:cgplvm_data}) for $N=50$ samples and $G=10$ features, with $z$ drawn from $\text{Unif(-1, 1)}$ and the covariates sampled randomly from $\{-1, -0.5, 0, 0.5, 1\}$. The kernel parameters were fixed to $\eta = 0.2$, $\gamma \nu = \delta = \xi = 1$, and $\sigma^2 = 0.01$. The first 5 features had $\lambda = 0.2$ and the final 5 had $\lambda = 0$ so that half the features exhibited covariate-latent variable interactions. The model was implemented in the probabilistic programming language \texttt{Stan} with hierarchical priors $\lambda_g \sim \chi^2(1)$, $z_n \sim \Norm(0,1)$ and $1 / \sigma^2 \sim \text{Gamma}(0.1, 0.1)$.
+\texttt{Stan} was run for 4000 iterations (2000 burn-in) with the latent variables initialised to the first principal component of the data.
+
+
+
+\begin{figure}
+  \centering
+\includegraphics[width=0.9\textwidth]{gfx/ch5/cgplvm_results}
+\caption{Black-box inference for CGPLVM on synthetic data.
+\textbf{A} Comparison of posterior mean inferred $z$ from CGPLVM vs. true $z$.% has $\rho_{Pearson} = 0.998$.
+\textbf{B} Same comparison with first principal component of the data. % has $\rho_{Pearson} = 0.971$.
+\textbf{C} Traceplot of the posterior log-likelihood suggests good convergence of the model.
+\textbf{D} Posterior boxplot of $\mblambda$ identifies interactions for the odd-numbered features.
+} \label{fig:cgplvm_results}
+\end{figure}
+
+The results can be seen in figure \ref{fig:cgplvm_results}. Figure \ref{fig:cgplvm_results}A compares the true latent variable values $z$ to those inferred by the model, demonstrating high correlation (with the exception of two points). Figure \ref{fig:cgplvm_results}B compares the first principal component of the data to the true values, showing obviousl correlation but also confounding due to $x$. An initial analysis suggests the HMC algorithm has converged (figure \ref{fig:cgplvm_results}C) due to good mixing of the log-posterior. Also of interest was the ability of the model to detect interactions between $x$ and $z$ in the Gaussian Process model. To do this we an examine boxplots of the posterior of $\mblambda$. Figure \ref{fig:cgplvm_results}D demonstrates that the first 5 features (that were designed with interactions in the synthetic data) have higher posterior mean values than the second five, demonstrating such models are able to detect interactions.
