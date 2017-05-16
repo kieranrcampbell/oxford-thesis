@@ -101,9 +101,9 @@ In a further example, ZIFA \cite{pierson2015zifa} proposes a double-exponential 
 
 Therefore, accounting for zero-inflation in our mixture-of-factor analysers model is equivalent ot modifying the likelihood to a mixture of an amplified component and dropout component depending on the latent expression. However, the difficulty here is that we must sample from the conditional distribution $p(\lambda | \cdot)$ (where $\cdot$ is all parameters and data other than $\lambda$), which to the best of our knowledge does not exist analytically.
 
-\begin{figure}[h]
+\begin{figure}%[h]
 	\centering
-	\includegraphics[width=0.9\textwidth]{gfx/ch4/s1_dropout}
+	\includegraphics[width=\textwidth]{gfx/ch4/s1_dropout}
 	\caption{Dropout relationships in single-cell RNA-seq data for two scRNA-seq datasets. An exponential dropout model (blue) empirically fits the data better than double exponential (red).} \label{fig:dropout}
 \end{figure}
 
@@ -145,9 +145,9 @@ While incorporating zero-inflation in the likelihood leads to a less-mispecified
 
 \section{Multiple solutions to bifurcation inference}
 
-\begin{figure}[!t]
+\begin{figure}%[!t]
 	\centering
-	\includegraphics[width=0.9\textwidth]{gfx/ch4/bifurcation_solutions}
+	\includegraphics[width=\textwidth]{gfx/ch4/bifurcation_solutions}
 	\caption{Multiple solutions to bifurcation inference.
 {\normalfont
 Starting with three cell states we would like to infer a bifurcation process from one to the other two. If a single gene is upregulated in one of the states yet downregulated in the other two then clearly any state may act as the beginning of the trajectory. For example, if we start in state 1 then the gene is upregulated along state 2 and stays constant in state 3; if we start in state 2 then the gene is downregulated in states 1 \& 3; if we start in state 3 then the gene is upregulated in state 2 and remains downregulated in state 1.  However, due to the nonidentifiability this is true if we add additional genes that are upregulated in one or two of the cell states. The equivalent geometric argument is that we can build the transcriptomic profiles across all genes by spinning the figure about \textbf{B} (with possible inversion) and ``adding'' that gene. No matter how many additional genes we add, any one of the three states can act as the root state or beginning of pseudotime. Therefore, in the absence of any additional information there are always three equally valid solutions to bifurcation inference from gene expression data alone.
@@ -189,7 +189,7 @@ Alternatively, if $k_{gb_1} < 0$ then the genes must begin in an \emph{on} state
 
 \begin{figure}
 	\centering
-	\includegraphics[width=0.9\textwidth]{gfx/ch4/s2_synthetic}
+	\includegraphics[width=\textwidth]{gfx/ch4/s2_synthetic}
 	\caption{Generation of synthetic data to test \texttt{mfa}. Examples of diverging monotonic behaviour across branches (\textbf{A} - \textbf{B}) and diverging transient behaviour (\textbf{C} - \textbf{D}), with resulting PCA representations coloured by both pseudotime (\textbf{E}) and branch allocation (\textbf{F}).} \label{fig:mfa_synthetic}
 \end{figure}
 
@@ -211,7 +211,7 @@ Our synthetically generated data is mildly mis-specified with respect to our mod
 
 \begin{figure}
 	\centering
-	\includegraphics[width=0.85\textwidth]{gfx/ch4/fig1_toy}
+	\includegraphics[width=\textwidth]{gfx/ch4/fig1_toy}
 	\caption{Probabilistic inference of bifurcations in synthetic data. { \normalfont
 \textbf{A} PCA representation of a toy dataset for 300 cells and 60 genes, coloured by the maximum aposteriori (MAP) pseudotime estimates.
 \textbf{B} Equivalent representation as \textbf{(A)} colour by the MAP branch estimate.
@@ -238,7 +238,7 @@ One notable difference between MFA and existing bifurcation inference algorithms
 
 \begin{figure}
 	\centering
-	\includegraphics[width=.9\textwidth]{gfx/ch4/dropout}
+	\includegraphics[width=\textwidth]{gfx/ch4/dropout}
 	\caption{The effects of modelling zero-inflation. {\normalfont
 \textbf{A} Zero counts observed in single-cell RNA-seq data may be attributed to either \emph{true zeros} where no mRNA of a given gene is produced in a cell, or \emph{dropout} where there is a failure to reverse-transcribe the low levels of starting material. Alternatively, a count is registered and the gene is \emph{amplified}. In theory not accounting for dropouts will reduce the accuracy of pseudotime inference - the two red counts at pseudotimes of 4 and 6 would be ordered with the blue counts. However, in practice it is impossible to distinguish between \emph{dropouts} and \emph{true zeros}.
 \textbf{B} The percentage of counts with zero expression across 50 replicates for each value of $\lambda$ used in dropout simulations.
@@ -260,7 +260,7 @@ The resulting correlations with the true pseudotimes across the range of $\lambd
 
 \begin{figure}
 	\centering
-	\includegraphics[width=.9\textwidth]{gfx/ch4/scrnaseq_fig}
+	\includegraphics[width=\textwidth]{gfx/ch4/scrnaseq_fig}
 	\caption{Inference of bifurcations in scRNA-seq data of 4,423 Hematopoietic progenitor/stem cells (HSPCs) differentiating into myeloid and erythroid precursors.
 	{\normalfont
 \textbf{A} tSNE representation from \cite{setty2016wishbone} coloured by the maximum aposteriori (MAP) pseudotime.
@@ -299,7 +299,7 @@ We subsequently compared the inferred pseudotimes and branching to those found u
 
 \begin{figure}
 	\centering
-	\includegraphics[width=.9\textwidth]{gfx/ch4/masscyto_fig}
+	\includegraphics[width=\textwidth]{gfx/ch4/masscyto_fig}
 	\caption{Inference of bifurcations in single-cell mass cytometry data of a subsample of 2,000 HPSCs differentiating into monocyte and erythrocyte progenitors.
 	{\normalfont
 	\textbf{A} tSNE representation from \cite{setty2016wishbone} coloured by the maximum aposteriori (MAP) pseudotime.
@@ -330,9 +330,8 @@ There is a natural trade-off in designing such models between flexibility and pr
 \subsection{Scalable inference}
 
 %There are several extensions that can be applied to our model.
-While our current inference procedure performs well on large single cell RNA-seq datasets there are scalable extensions that help as the number of single cells sequenced increases. The conditionally conjugate nature of the model makes it amenable to co-ordinate ascent variational inference (CAVI)\footnote{Ideas we explore further in chapter 5.}, where a variational approximation transforms inference into an optimisation procedure. Once CAVI updates have been derived, an easy next step is   stochastic variational inference (SVI, \cite{hoffman2013stochastic}), which subsamples data points for highly scalable inference. Such procedures will become more and more prominent in single-cell statistical analysis as technologies such as DropSeq (TODO CITE) produces expression profiles for $\mathcal{O}(10^6)+$ cells.
-
-
+While our current inference procedure performs well on large single cell RNA-seq datasets there are scalable extensions that help as the number of single cells sequenced increases. The conditionally conjugate nature of the model makes it amenable to co-ordinate ascent variational inference (CAVI)\footnote{Ideas we explore further in chapter 5.}, where a variational approximation transforms inference into an optimisation procedure. Once CAVI updates have been derived, an easy next step is   stochastic variational inference (SVI, \cite{hoffman2013stochastic}), which subsamples data points for highly scalable inference. Such procedures will become necessary in single-cell statistical analysis as new technologies such as DropSeq \cite{Macosko2015-ek}
+and 10x genomics \cite{eisenstein2015startups} produce expression profiles for $>\mathcal{O}(10^6)$ cells.
 
 \subsection{Limits of linear latent variable models}
 
@@ -340,7 +339,7 @@ In general we expect linear latent variables to be highly mis-specificed with re
 
 \begin{figure}
 	\centering
-	\includegraphics[width=0.9\textwidth]{gfx/ch4/limits_of_chi}
+	\includegraphics[width=\textwidth]{gfx/ch4/limits_of_chi}
 	\caption{.} \label{fig:chi}
 \end{figure}
 
@@ -350,13 +349,13 @@ However, the gene \emph{CD34} is incorrectly designated as one that should bifur
 
 \subsection{Choosing the number of branches}
 
-A further limitation of our model is the requirement to specifcy the number of branches $B$ \emph{a priori}. While at time of writing no single-cell datasets are known to have more than a single bifurcation point, the increasing resolution of single-cell technologies make such situations likely in the future. Here we propose two extensions for selecting the number of branches, by viewing it as a model selection problem or by modifying the model to be a nonparametric (\ie infinite) mixture of factor analysers.
+A further limitation of our model is the requirement to specify the number of branches $B$ \emph{a priori}. While at time of writing no single-cell datasets are known to have more than a single bifurcation point, the increasing resolution of single-cell technologies make such situations likely in the future. Here we propose two extensions for selecting the number of branches, by viewing it as a model selection problem or by modifying the model to be a nonparametric (i.e. infinite) mixture of factor analysers.
 
 \subsubsection{As a model selection problem}
 
 One method to choose the number of branches is to construct a finite set of (non-zero) integers and choose the number that best explains the data by some measure. We can view this as the classic Bayesian model selection problem where we wish to compute the marginal likelihood of the data given a pre-specified number of branches.
 
-Without loss of generality consider two numbers of branches, $B_1$ and $B_2$. We can compute the marginal likelihood of the data $\bY$ given the number of branches $B$ via
+Without loss of generality consider two numbers of branche, $B_1$ and $B_2$. We can compute the marginal likelihood of the data $\bY$ given the number of branches $B$ via
 
 \begin{equation}
 	p(\bY | B) = \int_{\bm \Theta} p(\bY | \bm \Theta, B) p (\bm \Theta | B) d \bm\Theta

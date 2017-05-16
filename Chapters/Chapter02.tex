@@ -199,7 +199,19 @@ In the case of $D = 2$ and $Q = 1$, we have two output dimensions controlled by 
 
 \subsection{Probabilistic pseudotime inference using Gaussian Process Latent Variable Models}
 
-For this application, the latent space is one-dimensional, describing pseudotime progression whilst the observations are the reduced dimensionality representations of the single cell expression data. We will use Bayesian inference to characterise the joint posterior distribution $p(\bt|\bX)$ of the pseudotimes $\bt = \{ t_1, \dots, t_n \}$ given the expression data $\bX = \{\bx_1, \dots, \bx_n \}$ for $n$ single cells. As the integrals involved are mathematically intractable, we will use Markov Chain Monte Carlo simulations to obtain a numerical approximation to the posterior by drawing samples from the posterior distribution. Each sample corresponds to one possible trajectory \emph{and} ordering for the cells with the set of samples providing an approximate distribution of pseudotimes. The pseudotime values are between measured 0 and 1 where a value of 0 corresponds to one end state of the temporal process and a value 1 to the other. In this work we focus only on non-bifurcating processes. Fig. \ref{fig:workflow} gives a diagrammatic representation of our proposed workflow and a more detailed model descriptions is given in Methods.
+In the case of single-cell pseudotime the latent space is one dimensional with values representing some notion of cellular progression. The observed data is the $N \times G$ expression matrix $\mbY$ for $N$ cells and $G$ genes. However, $G$ is typically high-dimensional with $10^4$ genes expressed per cell not unusual. We therefore perform an initial dimensionality reduction step to an $N \times P$ matrix $\mbX$, in keeping with most pseudotime algorithms. In practice we alternate between using PCA and laplacian eigenmaps, but any of the manifold learning algorithms referenced in \ref{sec:int:manifold} may equally be used.
+
+The goal of Bayesian pseudotime inference is then to infer the posterior distribution $p(\mbt|\mbX)$ where $\bt$ is the $N$-length pseudotime vector $\bt = [ t_1, \dots, t_n ]$. If $\mbTheta$ is  the complete set of model parameters (other than $\mbt$) then Bayes rule gives
+
+\begin{equation}
+	p(\mbt | \mbX) = \frac{
+\int_{\Omega_{\mbTheta}} d\mbTheta p(\mbX | \mbt, \mbTheta) p(\mbt | \mbTheta) p(\mbTheta)
+	}{
+\int_{\Omega_{\mbt}} \int_{\Sigma_{\mbTheta}} d\mbt d\mbTheta p(\mbX | \mbt, \mbTheta) p(\mbt | \mbTheta) p(\mbTheta)
+	}
+\end{equation} \label{eq:bayesrule}
+
+where $\Omega_{\mbTheta}$ and $\Omega_{\mbt}$ are the sample spaces of $\mbTheta$ and $\mbt$ respectively. The the integrals in equation \ref{eq:bayesrule} are intractable so we turn to approximation methods, in particular Markov Chain Monte Carlo (MCMC) to obtain a numerical approximation from the posterior by drawing samples from the posterior distribution (see section \ref{sec:stan} for further details). In the case of single-cell pseudotime, each sample corresponds to one possible trajectory \emph{and} ordering for the cells with the set of samples providing an approximate distribution of pseudotimes. For interpretability the latent pseudotime values are constrained between measured 0 and 1 where a value of 0 corresponds to one end state of the temporal process and a value 1 to the other.
 
 \begin{figure}
 \centering
@@ -207,25 +219,75 @@ For this application, the latent space is one-dimensional, describing pseudotime
   \caption{{\bf Workflow for fitting Bayesian Gaussian Process Latent Variable Model pseudotime models.} Reduced-dimension representations of the gene expression data (from Laplacian eigenmaps, PCA and/or t-SNE) are created. The pseudotime can be fitted using one or more low dimensional representations of the data. Posterior samples of pseudotimes are drawn from a Bayesian GPLVM and these are used to obtain alternative pseudotime estimates. Downstream differential analyses can be performed on the posterior samples to characterise the robustness with respect to variation in pseudotime estimates.} \label{fig:workflow}
 \end{figure}
 
-The hierarchical model specification for the Gaussian Process Latent Variable model is described as follows:
+The hierarchical model specification for probabilistic pseudotime using a Gaussian Process Latent Variable model is then
 \begin{equation} \label{eq:model}
 \begin{aligned}
 	\gamma & \sim \mathrm{Gamma}(\gamma_\alpha, \gamma_\beta), \\
-	\lambda_j & \sim  \mathrm{Exp(\gamma)}, ~j=1,\dots, P, \\
-	 \sigma_j^2 & \sim   \mathrm{InvGamma}(\alpha, \beta), ~j=1,\dots, P, \\
-	t_i & \sim
-			\mathrm{TruncNormal}_{[0, 1)}(\mu_t, \sigma_t^2), ~i=1,\dots,N,\\
+	\lambda_p & \sim  \mathrm{Exp(\gamma)}, ~p=1,\dots, P, \\
+	 \sigma_p^2 & \sim   \mathrm{InvGamma}(\alpha, \beta), ~p=1,\dots, P, \\
+	t_n & \sim
+			\mathrm{TruncNormal}_{[0, 1)}(\mu_t, \sigma_t^2), ~n=1,\dots,N,\\
 	\bSigma & =  \mathrm{diag}(\sigma_1^2, \dots, \sigma_P^2) \\
-	K^{(j)}(t, t') & = \exp( -\lambda_j (t-t')^2 ), ~j=1,\dots, P, \\
-	\mu_j &\sim  \mathrm{GP}(0, K^{(j)}), ~ j=1,\dots,P,  \\
-	\bx_{i} & \sim  \mathrm{MultiNorm}( \bmu(t_i), \bSigma ), ~i=1,\dots,N.
+	K^{(p)}(t, t') & = \exp( -\lambda_p (t-t')^2 ), ~p=1,\dots, P, \\
+	\mu_p &\sim  \mathrm{GP}(0, K^{(p)}), ~ p=1,\dots,P,  \\
+	\mbx_{n} & \sim  \mathrm{MultiNorm}( \mbmu(t_n), \mbSigma ), ~i=1,\dots,N.
 \end{aligned}
+\end{equation}\label{eq:pseudogp_model}
+
+where $\bx_{n}$ is the $P$-dimensional input of cell $n$ (of $N$) found by performing dimensionality reduction on the entire gene set (for our experiments $P=2$ following previous studies).
+The observed data is distributed according to a multivariate normal distribution with mean function $\bmu$ and a diagonal noise covariance matrix $\mbSigma$. The prior over the mean function $\bmu$ in each dimension is given by a Gaussian Process with zero mean and covariance function $K$ given by a standard double exponential kernel. The latent pseudotimes $t_1, \dots, t_N$ are drawn from a truncated Normal distribution on the range $[0, 1)$. Under this model $|\mblambda|$ can be thought of as the arc-length of the pseudotime trajectories, so applying larger levels of shrinkage to it will result in smoother trajectories passing through the point space. This shrinkage is ultimately controlled by the gamma hyperprior on $\gamma$, whose mean and variance are given by $\frac{\gamma_\alpha}{\gamma_\beta}$ and $\frac{\gamma_\alpha}{\gamma^2_\beta}$ respectively. Therefore, adjusting these parameters allows curves to match prior smoothness expectations provided by plotting marker genes. The hyperparameters $\gamma_\alpha$, $\gamma_\beta$, $\alpha$, $\beta$, $\mu_t$ and $\sigma_t^2$ are fixed and values for specific experiments for given in appendix \ref{app:pseudogp_data_analysis}.
+
+%Inference was performed using the Stan probabilistic programming language \cite{gelman2015stan} and our implementation is available as an \texttt{R} package at \url{http://www.github.com/kieranrcampbell/pseudogp}.
+
+The overall workflow can be seen in figure \ref{fig:workflow}. We begin by reducing the dimensionality of the data using methods such as principal component analysis or laplacian eigenmaps. Next, 	the statistical model is fit to infer numerical approximations to the posterior distributions of the pseudotimes. This allows us to quantify the uncertainty in the pseudotime of each cell. Finally, we can propagate this uncertainty to downstream analysis such as differential expression, where each draw from the MCMC simulation is passed through the analysis to give us a distribution over the results.
+
+\subsection{Inference} \label{sec:stan}
+
+The model definied in equation \ref{eq:pseudogp_model} is not conditionally conjugate, meaning we cannot use Gibbs sampling for inference. An alternative would be to use a Metropolis-Hastings algorithm\footnote{
+Our initial implementation used exactly this.
+} that can perform Bayesian posterior inference on any model for which the likelihood can be evaluated. However, Metropolis-Hastings requires manual tuning of proposal distributions in order to explore the posterior space efficiently and can exhibit poor mixing in high-dimensional spaces.
+
+In order to sidestep these issues we turn to the probabilistic programming language (PPL) Stan \cite{gelman2015stan} that performs efficient inference on arbirarty (non-conjugate) Bayesian models. PPLs have become increasingly popular in the past few years with examples such as Stan, PyMC3 \cite{salvatier2016probabilistic}, Infer.net \cite{wang2011using} and Edward \cite{tran2016edward}. They describe probabilistic models and perform inference in a (semi-) automated manner, taking much of the work out of statistical modelling and to some extent freeing models from assumptions that lead to easier inference.
+
+We use Stan for the majority of the statistical inference in both chapters 2 \& 3 so describe briefly how it works. Stan uses Hamiltonian Monte Carlo (HMC, see e.g. \cite{neal2011mcmc}), a form of monte carlo sampling that leverages gradient information to quickly traverse through ``flat'' regions of posterior probability to more effectively explore the space.
+
+\paragraph{Hamiltonian Dynamics}
+
+Hamiltonian Dynamics describe the evolution of a system defined by a position vector $\mbtheta$ and momentum vector $\mbp$. The dynamics of the system are governed by the Hamiltonian $H(\mbtheta, \mbp) = U(\mbtheta) + K(\mbp)$ - the sum of a potential energy term $U(\mbtheta)$ and kinetic energy term $K(\mbp)$. The system then evolves according to Hamilton's equations
+\begin{equation}
+\begin{aligned}
+\frac{d\theta_i}{dt} & = & \frac{\partial H}{\partial p_i} \\
+\frac{dp_i}{dt} & = & -\frac{\partial H}{\partial \theta_i}
+\end{aligned} \label{eq:hd}
 \end{equation}
-where $\bx_{i}$ is the $P$-dimensional input of cell $i$ (of $N$) found by performing dimensionality reduction on the entire gene set (for our experiments $P=2$ following previous studies). The observed data is distributed according to a multivariate normal distribution with mean function $\bmu$ and a diagonal noise covariance matrix $\bSigma$. The prior over the mean function $\bmu$ in each dimension is given by a Gaussian Process with zero mean and covariance function $K$ given by a standard double exponential kernel. The latent pseudotimes $t_1, \dots, t_N$ are drawn from a truncated Normal distribution on the range $[0, 1)$. Under this model $|\bl|$ can be thought of as the arc-length of the pseudotime trajectories, so applying larger levels of shrinkage to it will result in smoother trajectories passing through the point space. This shrinkage is ultimately controlled by the gamma hyperprior on $\gamma$, whose mean and variance are given by $\frac{\gamma_\alpha}{\gamma_\beta}$ and $\frac{\gamma_\alpha}{\gamma^2_\beta}$ respectively. Therefore, adjusting these parameters allows curves to match prior smoothness expectations provided by plotting marker genes.
 
-The hyperparameters $\gamma_\alpha$, $\gamma_\beta$, $\alpha$, $\beta$, $\mu_t$ and $\sigma_t^2$ are fixed and values for specific experiments for given in S1 Supplementary Text. Inference was performed using the Stan probabilistic programming language \cite{gelman2015stan} and our implementation is available as an \texttt{R} package at \url{http://www.github.com/kieranrcampbell/pseudogp}.
+The kinetic energy is often defined as $K(\bp) = \bp^T \mbM^{-1} \bp / 2$ where $M$ is a symmetric, positive definite mass matrix, which is typically diagonal. Note that this corresponds to the log probability function of a multivariate normal with mean $\mbzero$ and covariance matrix $\mbM$. Crucially, Hamiltonian Dynamics may be simulated on a computer by discretising the equations of motion, most typically using the leapfrog method (see \cite{neal2011mcmc}).
 
+\paragraph{Hamiltonian Monte Carlo}
 
+The trick behind Hamiltonian Monte Carlo (HMC) is to choose $H(\mbtheta, \mbp)$ such that the hamiltonian dynamics allow us to effictively explore the target distribution. To do this HMC borrows the idea of the canonical distribution from statistical physics, which for some energy function $E(\theta)$ is defined as\footnote{We set the temperature that typically appears in the exponent to $T=1$.} $p(\theta) = \frac{1}{Z}\exp(-E(\theta))$ for some normalising constant $Z$. Therefore, if the energy function is the Hamiltonian $H(\mbtheta, \mbp) = U(\mbtheta) + K(\mbp)$ then the probability density factorises as
+
+\begin{equation}
+	p(\mbtheta, \mbp) \propto \exp(-U(\mbtheta)) \exp(-K(\mbp))
+\end{equation}
+
+so $\mbtheta$ and $\mbp$ are independent. To target the Bayesian posterior density $p(\mbtheta | \mbX)$ the potential energy $U$ is set so that
+
+\begin{equation}
+	U(\mbtheta) = -\log\left[ p(\mbX | \mbtheta) p(\mbtheta )\right].
+\end{equation}
+
+The HMC algorithm begins by initialising the parameters $\mbtheta$ and the momenta $\mbp$ (by drawing from the prior $\Norm(\mbzero, \mbM)$). A single HMC iteration involves simulating Hamiltonian dynamics on $(\mbtheta, \mbp)$ according to equation \ref{eq:hd} for $L$ steps with a step-size of $\epsilon$, ending at some position $\mbtheta*$, at which point the momentum is negated giving a proposed state $(\mbtheta*, \mbp*)$. The proposed state is then accepted with probability
+
+\begin{equation}
+	\text{min}\left[ 1, exp(-H(\mbtheta*, \mbp*) + H(\mbtheta, \mbp))\right].
+\end{equation}
+
+For each subsequent iteration the momentum variables are re-sampled from the prior.
+
+\paragraph{No-U-Turn Sampler}
+
+One issue with HMC is the need to specify the number of steps $L$ and the step-size $\epsilon$ to which efficient inference is often highly sensitive. Stan is able to automatically determine both $L$ and $\epsilon$ using what's known as the No-U-Turn Sampler (NUTS, \cite{Hoffman2014-pl}). The basic idea is to run HMC for enough iterations until the proposed location starts to move back towards itself - in other words, until the dot product of the displacement with the current momentum turns negative. The step size $\epsilon$ is then set to ensure the average acceptance probability is close to the optimal value.
 
 
 
@@ -253,7 +315,7 @@ It is interesting to discuss the latter point as it is an issue that is often no
 
 Returning to the intrinsic cell-to-cell variability, we next considered the conditional posterior predictive data distributions $p(\bX^*|t^*, \bX)$ which are shown in Fig. \ref{fig:posmean}D-F. These distributions show the possible distribution of future data points given the existing data \emph{and} a theoretical pseudotime $t^*$ and, in this example, we condition on pseudotimes $t^* = 0.5$ and $t^* = 0.7$. Although the two pseudotimes differ by a magnitude of 0.2, the conditional predictive distributions are very close or overlapping. This means that cells with pseudotimes of 0.5 or 0.7 could have given rise to data point occupying these overlapping regions. This variability is what ultimately limits the temporal resolution that can be obtained.
 
-It is important to note that the posterior mean trajectories correspond to certain \textit{a priori} or subjective smoothness assumptions (specified as hyperparameters in the model specification) which dedicate the curvature properties of the trajectory. Fig. \ref{fig:varygamma} shows three alternative posterior mean pseudotime trajectories for the Trapnell data based on different hyperparameters settings for the GPLVM. In a truly unsupervised scenario all three paths could be plausible as we would have little information to inform us about the true shape of the trajectory. This would become an additional source of uncertainty in the pseudotime estimates. However, we favoured hyperparameter settings that gave rise to well-defined (unimodal) posterior distributions that resulted in multiple independent Markov Chain Monte Carlo runs converging to the same mean trajectory rather than settings that give rise to a ``lumpy" posterior distribution with many local modes corresponding to different interpretations of the data (see Supplementary Figure S2). Later on, when we consider inference using multiple representations, the ability to specify a wider choice of trajectories is useful as we will demonstrate how the correspondence between pseudotime trajectories in different reduced dimension representations is not always obvious from a visual analysis.
+It is important to note that the posterior mean trajectories correspond to certain \textit{a priori} or subjective smoothness assumptions (specified as hyperparameters in the model specification) which dedicate the curvature properties of the trajectory. Fig. \ref{fig:varygamma} shows three alternative posterior mean pseudotime trajectories for the Trapnell data based on different hyperparameters settings for the GPLVM. In a truly unsupervised scenario all three paths could be plausible as we would have little information to inform us about the true shape of the trajectory. This would become an additional source of uncertainty in the pseudotime estimates. However, we favoured hyperparameter settings that gave rise to well-defined (unimodal) posterior distributions that resulted in multiple independent Markov Chain Monte Carlo runs converging to the same mean trajectory rather than settings that give rise to a ``lumpy'' posterior distribution with many local modes corresponding to different interpretations of the data (see Supplementary Figure S2). Later on, when we consider inference using multiple representations, the ability to specify a wider choice of trajectories is useful as we will demonstrate how the correspondence between pseudotime trajectories in different reduced dimension representations is not always obvious from a visual analysis.
 
 \begin{figure}
 
@@ -323,7 +385,7 @@ Representative examples of genes with large and small activation strengths showe
 
 We further explore this in Fig. \ref{fig:switchres2} which shows ten genes identified as having significant switch-like pseudotime dependence but with a range of mean activation times $t_0$. The switch-like behaviour is stable to the different posterior pseudotime estimates that were sampled from the GPLVM. It is clear that the two genes RARRES3 and C1S are activating at an earlier time compared to the genes IL20RA and APOL4. However, we cannot be confident of the ordering within the pairs RARRES3/C1S and IL20RA/APOL4 in pseudotime since the distributions over the activation times are not well-separated and it is impossible to make any definitive statements as to whether one of these genes (in)activates before another. If the probability of a sequence of activation events is required, instead of examining each gene in isolation, we can count the number of posterior samples in which one gene precedes another instead and evidence may emerge of a possible ordering. These observations suggests a finite temporal resolution limit that can be obtained using pseudotemporal ordering.
 
-\begin{figure}[h]
+\begin{figure}%[h]
 \centering
 	\includegraphics[width=\textwidth]{gfx/ch2/figure9.png}
 \caption{ {\bf Identifying pseudotime dependent gene activation behaviour.} Ten selected genes from \cite{Trapnell2014} found using our  sigmoidal gene activation model exhibiting a range of activation times. For each gene, we show the expression levels of each cell (centre) where each row corresponds to an ordering according to a different posterior samples of pseudotime. The orange line corresponds to a point estimate of the activation time. The posterior density of the estimated activation time is also shown (right).

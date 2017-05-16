@@ -98,15 +98,15 @@ The approach we adopt is therefore a form of latent variable model implemented a
 
 
 \subsubsection{Mean-variance relation}
+%
+% \noindent\fbox{%
+% \parbox{\textwidth}{%
+% Reproducible analysis for exploratory plots can be found in \texttt{mean-variance.Rmd} and for parameter estimation in \texttt{generating-synthetic-data.Rmd}.
+% }%
+% }
+% \;
 
-\noindent\fbox{%
-\parbox{\textwidth}{%
-Reproducible analysis for exploratory plots can be found in \texttt{mean-variance.Rmd} and for parameter estimation in \texttt{generating-synthetic-data.Rmd}.
-}%
-}
-\;
-
-Many authors [edgeR, deseq2 etc] have noted that the variance for gene $g$ in sample $c$ is related to its mean via
+Many authors TODO have noted that the variance for gene $g$ in sample $c$ is related to its mean via
 
 \begin{equation} \label{eq:overd}
 \sigma_{cg}^2 = \mu_{cg}(1 + \phi_g \mu_{cg})
@@ -326,7 +326,7 @@ We investigated the use of limited marker gene panels for pseudotime inference u
 Fig. \ref{fig:correlation}A shows the correlation between pseudotimes obtained for the Trapnell data set whilst equivalent results for the Shin and Zhou data sets can be found in Supp. Fig. 1A and Supp. Fig. 2A respectively. Our analysis shows that pseudotime estimates obtained from marker gene panels differed between pseudotime algorithms with many showing only weak correlation between inferred pseudotimes. However, qualitatively, all algorithms produced plausible gene expression variation over the inferred pseudotimes (Fig. \ref{fig:correlation}B, Supp. Fig. 1B and Supp. Fig. 2B).
 
 
-\begin{figure}[!t]
+\begin{figure}%[!t]
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch3/algorithms.png}
 	\caption{\textbf{Comparison of pseudotime methods across three scRNA-seq data sets.} We compared pseudotime estimates from three studies \cite{Shin2015,Trapnell2014,zhou2016tracing} using 5 different approaches. In (A) we compared the correlation between marker-based pseudotimes with those obtained from random gene-sets of varying (including the marker gene set), (B) we show the correlation with whole transcriptome (global) pseudotime obtained from all genes }
@@ -338,7 +338,7 @@ We investigated further by examining the relationship between pseudotimes obtain
 Our major observation is the striking variability in pseudotime estimates across data sets, gene sets and replicates for all algorithms
 (Fig. \ref{fig:comparisons}). As the number of additional genes included in each data set increases, the correlation of the estimated pseudotimes to the reference marker-based pseudotimes typically decreases (Fig. \ref{fig:comparisons}A) whilst the correlation with global pseudotime increases respectively (Fig. \ref{fig:comparisons}B). Note that Ouija is not included in the latter analysis since it is not intended to be applied to whole transcriptome analyses. This behaviour is expected since the forms of variation encoded in the larger gene set are likely to differ from that encoded within the marker genes. However, it is evident that depending on the dataset and genes chosen there is large variability in the consistency of pseudotime algorithm fitting. In other words, there is no one global solution that consistently fits the same pseudotime that will recapitulate the desired behaviour of marker genes.
 
-\begin{figure}[!t]
+\begin{figure}%[!t]
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch3/de_results.png}
 	\caption{\textbf{Comparison of differential expression analyses.} We compared differential expression across pseudotime analyses. In (A)  }
