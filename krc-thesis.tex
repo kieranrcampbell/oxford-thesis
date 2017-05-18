@@ -30,7 +30,7 @@
 \documentclass[ twoside,openright,titlepage,numbers=noenddot,headinclude,%1headlines,% letterpaper a4paper
                 footinclude=true,cleardoublepage=empty,abstractoff, % <--- obsolete, remove (todo)
                 BCOR=5mm,paper=a4,fontsize=12pt,%11pt,a4paper,%
-                ngerman,american,%
+                ngerman,american,%draft,%
                 ]{scrreprt}
 
 %********************************************************************
@@ -39,8 +39,8 @@
 \input{classicthesis-config}
 
 % Dustin tran's maths stuff
-% \input{preamble/preamble}
 \input{preamble/preamble_math}
+
 
 %********************************************************************
 % Bibliographies
@@ -75,7 +75,9 @@
 % Frontmatter
 %*******************************************************
 % \include{FrontBackmatter/DirtyTitlepage}
+%\newgeometry{left=2in,right=3in}
 \include{FrontBackmatter/Titlepage}
+%\restoregeometry
 \include{FrontBackmatter/Titleback}
 \cleardoublepage\include{FrontBackmatter/Dedication}
 %\cleardoublepage\include{FrontBackmatter/Foreword}
@@ -133,10 +135,10 @@
 \cleardoublepage
 % \part{Appendix}
 
-% \include{Chapters/Chapter0A}
-% \include{Chapters/Chapter0B}
-% \include{Chapters/Chapter0C}
-% \include{Chapters/Chapter0D}
+\include{Chapters/Chapter0A}
+\include{Chapters/Chapter0B}
+\include{Chapters/Chapter0C}
+\include{Chapters/Chapter0D}
 
 %********************************************************************
 % Other Stuff in the Back

@@ -28,11 +28,55 @@ Microarrays preceded RNA sequencing as the transcriptome-wide quantification met
 
 \subsection{Features of scRNA-seq data}
 
-\subsubsection{ Mean-variance relationship}
+
+
+\subsubsection{Mean-variance relationship}
+
+One feature of single-cell RNA-seq data (and indeed RNA-seq data in general) is a non-trivial relationship between the variance of the expression and its mean. Accurate characterisation of this relationship is particularly crucial for small sample size datasets in order to robustly estimate the variance for statistical tests of differential expression \cite{Robinson2010-rj}. Statistical models of RNA-seq data typically fall into to camps when it comes to the distribution used for the likelihood. The first are the ``count-based'' methods  that act on the raw counts (scaled by size factors) using negative binomial distributions such as DESeq(2) and EdgeR \cite{Anders2010,Robinson2010-rj}. The second are the ``abundance-based'' methods  that log-transform\footnote{
+Typically with some offset $c$ via $\log(x+c)$ to avoid divergence issues when $x \rightarrow 0$.
+} the (normalised) counts and model using a Gaussian likelihood, such as Limma Voom and Sleuth \cite{Law2014-tu,Pimentel2016-xz}.
+
+In the case of the count-based methods, RNA-seq data are  be well-approximated by negative binomial distributions \cite{Anders2010,Robinson2010-rj,Risso2017-qk} which relates the variance $\sigma^2$ to the mean $\mu$ of the counts for a given gene as
+
+\begin{equation}
+  \sigma^2 = \mu + \alpha \mu^2
+\end{equation}
+
+\begin{figure}
+\centering
+  \includegraphics[width=1.05\textwidth]{gfx/ch1/od-thesis.png}
+  \caption{Mean variance relationships in an example single-cell dataset of thymic epithelial cells. Single-cell RNA-seq data shows a characteristic dependency on the $\text{CV}^2 = \frac{\sigma^2}
+{\mu^2}$ on the mean counts for each gene (left). Methods such as \cite{Brennecke2013-xy} can then be used to identify genes that vary more than expected at random due to the technical noise in the dataset. An alternative view is to look at the mean variance trend in log space (right), where the overdispersed genes from \cite{Brennecke2013-xy} are often the most variable.} \label{fig:od}
+\end{figure}
+
+where $\alpha$ is a dispersion parameter and in the limit $\alpha \rightarrow 0$ a Poisson noise model is recovered. In other words the variance in expression increases quadratically with the mean number of counts for a particular gene. A common quantity to examine in such cases in the squared coefficient of variation $\text{CV}^2 = \frac{\sigma^2}{\mu^2}$ which for the negative binomial model implies $\text{CV}^2 = \alpha + \frac{1}{\mu}$. This relationship can be seen for a dataset of differentiating thymic epthilelial cells in figure \ref{fig:od}.
+
+This relationship between the squared coefficient of variation and mean expression was exploited in a seminal single-cell RNA-seq paper \cite{Brennecke2013-xy} to identify genes that varied more than can be expected at random due to technical noise in the dataset. First a $\text{CV}^2-\text{mean}$ relationship is fitted for ERCC spike ins\footnote{
+ERCC spike ins are known concentrations of known RNA sequence added to experiments to both calibrate the molecular concentrations to RNA-seq counts and to infer the limit of detection.
+} to infer a null model of the variance relationship we expect in the data due to technical variation alone. A $p$-value for the coefficient of variation of endogenous (biological) genes given their mean expression can then be computed under the null model and subsequently genes ``overdispersed'' at some significance threshold can be identified. An example of this for differentiating thymic epthilelial cells can be seen in figure \ref{fig:od}, with the overdispersed genes shown in purple.
+
+In the second set of ``abundance-based'' methods there is no analytical expression for the variance of the log-counts in terms of the mean since in general $\text{Var}[\log(X + c)] \neq \log(\text{Var}[X] + c)$. An example of this for the same set of thymic epithelial cells can be seen in figure \ref{fig:od}, coloured by the overdispersion test results from \cite{Brennecke2013-xy}. This forms a characteristic ``hump'' shape, with overdispersed genes typically exhibiting moderate mean expression but high variance in log space. Differential abundance methods such as Limma Voom and Sleuth fit smoothed curves (such as LOESS curves) to obtain a nonparametric numerical approximation to the relationship. We use this formulation in chapter 3, where we note that ``interesting'' genes lie close enough to the diagonal to posit a linear mean-variance relationship in log space, i.e. $\sigma^2 = \phi \mu$.
 
 \subsubsection{Dropout}
 
+An often discussed feature of single-cell RNA-seq data is the idea of \emph{dropout} where the probability a gene is detected in a cell is dependent on the mean expression of that gene. For each mRNA there is a stochastic probability of a failure to reverse transcribe into cDNA for sequencing. If only a few mRNAs exist for a given species (in other words, if a gene is lowly expressed) then this results as zero counts for that gene, rather than a small quantity detected. Obviously the more mRNAs present to begin with, the smaller the chance that reverse transcription misses all mRNAs of that species, inducing a dependence between a gene's (true) expression level and the dropout probability. This problem is further confounded by sequencing depth - if relatively few reads for a cell are sequenced then there is a high chance that a cDNA (which was lucky to be reverse transcribed in the first place) won't subsequently be sequenced. Thus typically the lower the read depth of a dataset the sparser the resulting count matrix is.
+
+\begin{figure}
+\centering
+  \includegraphics[width=\textwidth]{gfx/ch1/thesis-dropout.png}
+  \caption{Relationship between dropout (proportion of cells not expressing a gene) and mean expression in an example single-cell dataset of thymic epithelial cells. Typically, the high variance genes lie along the right hand ``edge'' of the relationship (left). A number of models to account for dropout as a function of mean expression have been proposed, including exponential, double exponential and logistic (right).} \label{fig:intro_dropout}
+\end{figure}
+
+The characteristic pattern of proportion of cells in which a gene is expressed compared to the mean expression can be seen in figure \ref{fig:intro_dropout}A for an example dataset of thymic epithelial cells. Most single-cell datasets exhibit a set of genes that are not expressed (top-right corner), a set of housekeeping genes that are constituitively expressed at high levels, and a set of high-variance genes that contribute to heterogeneity in the dataset.
+
+Several methods have attempted to correct for droput through statistical modelling. An early example was SCDE \cite{kharchenko2014bayesian} that uses a mixture model of a point pass at zero (the dropout component) and an ``amplified'' component. Noting that whether a gene is dropout is not a constant probability but dependent on the latent expression, they used a mixture-of-experts model where the probability of being amplified was logistic on the latent expression, i.e. $p_{\text{dropout}} = \text{Logistic}(\beta_0 + \beta_1 \mu)$ where $\mu$ is the latent expression and $\beta_0$ and $\beta_1$ are free parameters. An example of the logistic regression fit can be seen in figure \ref{fig:intro_dropout}B.
+
+A different dropout model was implemented in the dimensionality reduction model ZIFA (Zero Inflated Factor Analysis, \cite{pierson2015zifa}). ZIFA models the probability of a dropout as $p_{\text{dropout}} = \exp(-\lambda x)$ for a ``dropout rate'' $\lambda$ and latent (true) expression $x$. A factor analysis model then operates on $x$ (see section \ref{sec:intr:fa}) to find a reduced dimension representation of the data accounting for dropout. A further model called M3Drop \cite{Andrews2016-ij} models dropout using Michaelis-Menten enzyme kinetics to select highly-variable, though the authors admit that their model is a specific case of SCDE.
+
+Some methods take a different approach to dropout and treat it as a missing data problem that requires imputation. MAGIC \cite{Van_Dijk2017-wn} uses a diffusion-based approach (similar to maps, see section \ref{sec:diffusion_maps}) that computes a low-dimensional graph embedding before ``imputing'' each cell's expression by a weighted sum of its neighbours. A similar method SAVER \cite{SAVER} models expression using a Poisson likelihood with a latent true expression that is dependent on similar genes in the same cell (rather than the same gene in similar cells as per MAGIC).
+
 \section{Pseudotime \& trajectories}
+
 
 \subsection{The pseudotime estimation problem}
 

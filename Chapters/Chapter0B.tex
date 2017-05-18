@@ -5,8 +5,7 @@
 %\markboth{\spacedlowsmallcaps{Appendix}}{\spacedlowsmallcaps{Appendix}}
 \chapter{Data analysis}
 
-\section{Chapter 2} \ref{app:pseudogp_data_analysis}
-
+\section{Chapter 2} \label{app:pseudogp_data_analysis}
 
 All analyses are available either as Rmarkdown notebooks or as \texttt{R} scripts at \url{http://github.com/kieranrcampbell/pseudogp-paper/}
 
@@ -30,3 +29,29 @@ The GPLVM was fitted on the Laplacian Eigenmaps embedding using \texttt{pseudogp
 The data were downloaded as supplementary data from \url{http://www.cell.com/cms/attachment/2038326541/2052521610/mmc7.xlsx}. This included the \texttt{Waterfall} pseudotime assignment, allowing us to compare as a sanity check. The PCA representation was found using the top 195 most variable genes and \texttt{scale\_features = FALSE} in the \texttt{scater} package. The shape closely resembled that from the original publication and colouring by the pseudotime assigned by \texttt{Waterfall} clearly showed this was the case. The t-SNE representation was found again using \texttt{scater} with 195 most variable genes, \texttt{scale\_features = FALSE} and a perplexity of 3. The Laplacian Eigenmaps embedding was found with \texttt{embeddr}, again using the top 195 most variable genes, a euclidean distance metric and 30 nearest neighbours.
 
 The GPLVM was fitted on the PCA embedding (as in original publication) using \texttt{pseudogp}. The MCMC chain was initialised from the first component of the PCA of the representation and smoothing hyperparameters of $\gamma_\alpha = 8$, $\gamma_\beta = 2$.
+
+\section{Chapter 5}
+
+\section{Shalek et al.} \label{sec:prepshalek}
+
+Preprocessed TPM values for all cells were retrieved from the Gene Expression Omnibus (\texttt{GSE48968}). We retained cells treated by LPS and PAM at time points 1h, 2h, 4h, and 6h, resulting in 820 cells (479 LPS and 341 PAM). We retained the 7533 genes whose variance in $\log_2(\text{TPM} + 1)$ expression was greater than 2. The first principal component of the data showed a strong dependency on the number of features expressed - previously been implicated in technical effects \cite{Hicks2015-sw}  - which we subsequently removed using the \texttt{normalizeExprs} function in \texttt{Scater} \cite{McCarthy2017-we}.
+
+\section{TCGA studies}
+
+For both COAD and BRCA studies, TPM matrices were retrieved from a recent transcript-level quantification of the entire TCGA study \cite{Tatlow2016-yo}. Clinical metadata, including the phenotypic covariates used in PhenoPath, were retrieved using the RTCGA \texttt{R} package \cite{rtcga}. Transcript level expression estimates were combined to gene level expression estimates using \texttt{Scater} \cite{McCarthy2017-we}.
+
+%\subsubsection{Quality control and removal of samples}
+
+\begin{figure}
+  \centering
+\includegraphics[width=0.7\textwidth]{gfx/chb/supplementary_technical}
+\caption{PCA representations of the COAD (\textbf{A}) and BRCA (\textbf{B}) datasets, coloured by sequenced plate and GMM cluster assignment respectively.} \label{fig:technical}
+\end{figure}
+
+\subsection{COAD}
+
+A PCA visualisation of the COAD dataset (Fig. \ref{fig:technical}A) showed two distinct clusters based on the plate of sequencing. Rather than try to correct such a large batch effect, we retained samples with a PC1 score of less than 0 and a PC3 score greater than -10, and removed any ``normal'' tumour types. For input to PhenoPath we used the 5886 genes whose variance in $\log(\text{TPM} + 1)$ expression was greater than 0.5.
+
+\subsection{BRCA}
+
+A PCA visualisation of the BRCA daatset (Fig. \ref{fig:technical}B) showed a loosely dispersed outlier population that separated on the first and third principal components. We performed Gaussian mixture model clustering using the \texttt{R} package \texttt{mclust}\cite{Fraley_undated-ug}, and removed samples designated as cluster 2 in Fig. \ref{fig:technical}B. For input to PhenoPath we used the 5665 whose variance in $\log(\text{TPM} + 1)$ expression was greater than 0.9.

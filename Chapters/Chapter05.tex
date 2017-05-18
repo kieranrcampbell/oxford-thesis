@@ -107,7 +107,7 @@ where $\tau_\alpha$, $\tau_\lambda$, $a$, $b$, $a_\beta$, $b_\beta$, $\tau_q$ ar
 
 \subsubsection{Gibbs sampling}
 
-The conditionally conjugate nature of the model in equation \ref{eq:clvm_model} makes Gibbs sampling once more possible, as explored in section \ref{sec:TODO}. The Gibbs updates for this are given in appendix \ref{app:clvm_gibbs}. However, Gibbs sampling becomes slow as the number of parameters increases, which needs particular care in this model given the number of parameters scales as $G \times P$ for $G$ genes and $P$ covariates.
+The conditionally conjugate nature of the model in equation \ref{eq:clvm_model} makes Gibbs sampling once more possible, as was explored in section \ref{sec:gibbs}. The Gibbs updates for this are given in appendix \ref{app:clvm_gibbs}. However, Gibbs sampling becomes slow as the number of parameters increases, which needs particular care in this model given the number of parameters scales as $G \times P$ for $G$ genes and $P$ covariates.
 
 \subsubsection{Co-ordinate ascent variational inference}
 
@@ -151,7 +151,7 @@ For our model in equation \ref{eq:clvm_model} we make what is known as a mean-fi
 \underbrace{q_\tau(\tau_g)}_{\text{Gamma}} \underbrace{q_\lambda(\lambda_g)}_{\text{Normal}}
 \prod_{p=1}^P \underbrace{q_\alpha (\alpha_{pg})}_{\text{Normal}}
 \underbrace{q_\beta(\beta_{pg})}_{\text{Normal}} \underbrace{q_\chi (\chi_{pg})}_{\text{Gamma}}
-\end{aligned}
+\end{aligned} \ref{eq:variational}
 \end{equation}
 
 For conditionally conjugate models it is possible to derive updates that maximise the ELBO for each parameter, conditioned on all other parameters being held constant. For a general model let $\theta_j$ denote the $j^{\text{th}}$ parameter and  $\mbtheta_{-j}$ the vector of all parameters other than $j$. The update that provides the distribution for $\theta_j$ that maximises the ELBO is given by
@@ -173,7 +173,7 @@ s_{\theta_j}^2 = \text{E}_{-j}[\tau_{\theta_j}]^{-1}
 \right)
 \end{equation}
 
-where the expectations are computed with respect to the distributions in TODO.
+where the expectations are computed with respect to the variational distributions in \ref{eq:variational}.
 
 If instead $p(\theta_j | \theta_{-j}, \mbX) = \text{Gamma}(\theta_j | a_{\theta_j}, b_{\theta_j})$ where again $a_{\theta_j}$ and $b_{\theta_j}$ are functions of the data $\mbX$ and all parameters other than $\theta_j$, then the CAVI update 	is given by
 
@@ -406,7 +406,7 @@ where $t_n = o_n$ if $\delta_n = 1$ and $t_n > o_n$ if $\delta_n = 0$. In this $
 \begin{equation}
   \begin{aligned}
 %\mbz_n & \sim \Norm(0, \mbI) \\
-\mby_n & \sim \Norm\left( \mbalpha h(t_n) + (\mblambda + \mbbeta h(t_n)) z_n, \mbsigma^2 \mbI\right).
+\mby_n & \sim \Norm\left( \mbalpha h(t_n) + (\mblambda + \mbbeta h(t_n)) z_n, \mbSigma \right).
   \end{aligned}
 \end{equation}
 
@@ -553,7 +553,7 @@ The second set contains genes associated with cell cycle - the sequence of event
 
 \subsection{Marginalising over the mapping}
 
-One limitation of the model is its linear nature, making inferred latent variables similar to those from factor analysis. We therefore propose a nonlinear, nonparametric extension similar to Gaussian Process Latent Variable Models \citep{Lawrence2005-cu} that were previously discussed in section TODO.
+One limitation of the model is its linear nature, making inferred latent variables similar to those from factor analysis. We therefore propose a nonlinear, nonparametric extension similar to Gaussian Process Latent Variable Models \citep{Lawrence2005-cu} that were previously discussed in section \ref{sec:gplvm}.
 
 %The trick is to consider the $\mbX\mbX^T$ term in the covariance matrix of the marginal distribution of $\mbY$ and replace it with any (semi-)positive definite matrix representing ``similarity'' between the elements of $\mby$, such as double-exponential kernels.
 %We previously suggested \emph{Covariate-adjusted Gaussian Process Latent Variable Models} (C-GPLVM, \cite{Campbell2016-nu}), which for a fixed covariate $\mbx \in \mathbb{R}^N$ has kernels including  $K(\mbx \odot \mbz, \mbx \odot \mbz')$ where $\odot$ denotes element-wise multiplication so $(\mbx \odot \mbz)_i = x_i z_i$.
