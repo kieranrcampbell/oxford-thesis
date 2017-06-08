@@ -1,6 +1,7 @@
 
 \chapter{Inference for covariate-adjusted latent variable models} \label{app:clvm}
 
+\section{Overview}
 
 For both Gibbs sampling and variational inference we require the conditional densities $p(\theta_n | \theta_{-i}, \bY)$.
 
@@ -170,7 +171,7 @@ and for several variables that $\Ex_{-z_n}[\theta^2] = \text{Var}_{-z_n}[\theta]
 \begin{aligned}
 \Ex_{-\alpha_{pg}}[\mu_{pg} \tau_{pg}] & =
 \frac{a_{\tau_g}}{b_{\tau_g}} \sum_n \Big (
-y_{ng} - m_{\mu_g} - m_{z_n}( m_{cg} + \sum_{p'} m_{\beta_{p'g}} x_{np} ) \\
+y_{ng} - m_{\mu_g} - m_{z_n}( m_{\lambda_g} + \sum_{p'} m_{\beta_{p'g}} x_{np} ) \\
 & - \sum_{p' \neq p} m_{\alpha_{p'g}} x_{np'}
 \Big) x_{np} \\
 \Ex_{-\alpha_{pg}}[\tau_{\alpha_{pg}}] & =
@@ -211,15 +212,22 @@ Where
 \begin{aligned}
 f_{ng}  & =  \Ex_{-\tau_g} \left[ \left(y_{ng} - \mu_g - \sum_p \alpha_{pg} x_{np} - \left( \lambda_g + \sum_p \beta_{pg} x_{np} \right) z_n
 \right)^2 \right] \\
- & =   \Ex_{-\tau_g} \Bigg[ y_{ng}^2 + \mu_g^2 + (\sum_p \alpha_{pg} x_{np})^2 + z_n^2 \lambda_g^2 + z_n^2 (\sum_p \beta_{pg}x_{np})^2  \\
-& + 2 \Big\{
--y_{ng} (\mu_g + \sum_p \alpha_{pg} x_{np} + \left( \lambda_g + \sum_p \beta_{pg} x_{np} \right) z_n )
- + \mu_g \sum_p \alpha_{pg} x_{np} + \mu_g z_n \lambda_g  \\
- & + \mu_g z_n \sum_p \beta_{pg} x_{np}
-+ z_n \lambda_g \sum_p \alpha_{pg} x_{np} \\
-& + z_n (\sum_p \alpha_{pg} x_{np})(\sum_p\beta_{pg} x_{np})
-+ z_n^2 \lambda_g \sum_p \beta_{pg} x_{np}
-\Big\}
+ & =   \Ex_{-\tau_g} \Bigg[ 
+\mu_g^2 +  % 1
+2 \mu_g \sum_p \alpha_{pg} x_{np} % 2 +
+2 \mu_g z_n \lambda_g  \\% 3
+& + 2 \mu_g z_n \sum_p \beta_{pg} x_{np} % 4
+- 2 y_{ng} \mu_g + % 5
++ (\sum_p \alpha_{pg} x_{np})^2 \\ % 6
+& 2 z_n \lambda_g \sum_p \alpha_{pg} x_{np} % 7
++ 2 z_n (\sum_p \alpha_{pg} x_{np})(\sum_p\beta_{pg} x_{np}) \\ % 8
+& - 2 y_{ng} \sum_p \alpha_{pg} x_{np}  % 9
++ z_n^2 \lambda_g^2 % 10
++ 2 \lambda_g z_n^2 \sum_p \beta_{pg} x_{np} \\ % 11
+& - 2 \lambda_g z_n y_{ng}  % 12
++ z_n^2 (\sum_p \beta_{pg}x_{np})^2  \\ % 13
+& - 2 y_{ng} z_n \sum_p \beta_{pg}x_{np} % 14
++ y_{ng}^2 % 15
 \Bigg]
 \end{aligned}
 \end{equation}
@@ -238,19 +246,23 @@ This gives
 
 \begin{equation}
 \begin{aligned}
-f_{ng}  & =  y_{ng}^2 + m_{\mu_g}^2 + s_{\mu_g}^2 +
- \sum_p (m_{\alpha_{pg}}^2 + s_{\alpha_{pg}}^2) x_{np}^2 + \sum_{p,p':p\neq p'} m_{\alpha_{pg}} m_{\alpha_{p'g}} x_{np} x_{np'} \\
-& +  (m_{z_n}^2 + s_{z_n}^2) (m_{\lambda_g}^2 + s_{\lambda_g}^2)
-+  (m_{z_n}^2 + s_{z_n}^2)   \sum_p (m_{\beta_{pg}}^2 + s_{\beta_{pg}}^2) x_{np}^2 \\
-& + \sum_{p,p':p\neq p'} m_{\beta_{pg}} m_{\beta_{p'g}} x_{np} x_{np'} \\
-& + 2 \Big(
--y_{ng} \bigg(m_{\mu_g} + \sum_p m_{\alpha_{pg}} x_{np} + ( m_{\lambda_g} + \sum_p m_{\beta_{pg}} x_{np} ) m_{z_n} \bigg) \\
-& + m_{\mu_g} \sum_p m_{\alpha_{pg}} x_{np} + m_{\mu_g} m_{z_n} m_{\lambda_g}  \\
- & + m_{\mu_g} m_{z_n} \sum_p m_{\beta_{pg}} x_{np}
-+ m_{z_n} m_{\lambda_g} \sum_p m_{\alpha_{pg}} x_{np} \\
-& + m_{z_n} (\sum_p m_{\alpha_{pg}} x_{np})(\sum_p m_{\beta_{pg}} x_{np})
-+ (m_{z_n}^2 + s_{z_n}^2) m_{\lambda_g} \sum_p m_{\beta_{pg}} x_{np}
-\Big)
+f_{ng}  & =  
+m_{\mu_g}^2 + s_{\mu_g}^2 + \\ % 1
+& + 2 m_{\mu_g} \sum_p m_{\alpha_{pg}} x_{np}  \\ % 2
+&  + 2 m_{\mu_g} m_{z_n} m_{\lambda_g} \\ % 3
+& + 2 m_{\mu_g} m_{z_n} \sum_p m_{\beta_{pg}} x_{np} \\ % 4
+& - 2 y_{ng} m_{\mu_g} \\ % 5
+& + \sum_p (m_{\alpha_{pg}}^2 + s_{\alpha_{pg}}^2) x_{np}^2 + \sum_{p,p':p\neq p'} m_{\alpha_{pg}} m_{\alpha_{p'g}} x_{np} x_{np'} \\ % 6
+& + 2 m_{z_n} m_{\lambda_g} \sum_p m_{\alpha_{pg}} x_{np} \\ % 7
+& + 2 m_{z_n} (\sum_p m_{\alpha_{pg}} x_{np})(\sum_p m_{\beta_{pg}} x_{np}) \\ % 8
+& - 2 y_{ng} \sum_p m_{\alpha_{pg}} x_{np} \\ % 9
+& +  (m_{z_n}^2 + s_{z_n}^2) (m_{\lambda_g}^2 + s_{\lambda_g}^2) \\ % 10
+& + 2 (m_{z_n}^2 + s_{z_n}^2) m_{\lambda_g} \sum_p m_{\beta_{pg}} x_{np} \\ % 11
+& -2 m_{\lambda_g} m_{z_n} y_{ng} \\ % 12
+& +(m_{z_n}^2 + s_{z_n}^2) \Big[  \sum_p (m_{\beta_{pg}}^2 + s_{\beta_{pg}}^2) x_{np}^2 \\
+& + \sum_{p,p':p\neq p'} m_{\beta_{pg}} m_{\beta_{p'g}} x_{np} x_{np'} \Big] \\ % 13
+& - 2 m_{z_n} y_{ng} \sum_p m_{\beta_{pg}} x_{np} ) \\ % 14
+& + y_{ng}^2  % 15
 \end{aligned}
 \end{equation}
 
@@ -279,7 +291,7 @@ y_{ng} - m_{\mu_g} \\
 &  - \sum_{p'} m_{\alpha_{p'g}} x_{np'} -
 \frac{m_{z_n}^2 + s_{z_n}^2}{m_{z_n}} (\sum_{p'} m_{\beta_{p'g}} x_{np'})
 \Bigg) \\
-\Ex_{-\lambda_g}[\tau_{\lambda_g}] & = \frac{a_{\tau_g}}{b_{\tau_g}} \sum_n(m_{z_n}^2 + s_{z_n}^2) + \tau_c
+\Ex_{-\lambda_g}[\tau_{\lambda_g}] & = \frac{a_{\tau_g}}{b_{\tau_g}} \sum_n(m_{z_n}^2 + s_{z_n}^2) + \tau_\lambda
 \end{aligned}
 \end{equation}
 
@@ -299,13 +311,13 @@ m_{\lambda_g} + \sum_{p'} m_{\beta_{p'g}} x_{np'})
 
 \subsection{Calculating the ELBO}
 
-To assess convergence of the CAVI algorithm we need to calculate the ELBO at every iteration (or every $n^{th}$ iteration). The ELBO is given by
+To assess convergence of the CAVI algorithm we need to calculate the evidence lower bound (ELBO) at every iteration (or every $i^{th}$ iteration). The ELBO is given by
 
 \begin{equation}
 \text{ELBO} = \Ex[\log p(\bY | \Theta)] + \Ex[\log p(\Theta)] - \Ex[\log q(\Theta)]
 \end{equation}
 
-where all expectations are taken with respect to the approximating distribution $Q(\cdot)$ and $\Theta$ denotes the full parameter set. Note that we are implicitly conditioning on the data wherever appropriate, so $p(\bY | \Theta) \equiv p(\bY | \Theta, \bX)$. For this we require the result that if $\theta \sim \text{Gamma}(a, b)$ then $\Ex[\log \theta] = \phi(a) - \log b$ where $\phi$ is the digamma function.
+where all expectations are taken with respect to the approximating distribution $Q(\cdot)$ and $\Theta$ denotes the full parameter set. Note that we are implicitly conditioning on the data wherever appropriate, so $p(\bY | \Theta) \equiv p(\bY | \Theta, \bX)$. For this we require the result that if $\theta \sim \text{Gamma}(a, b)$ then $\Ex[\log \theta] = \phi(a) - \log b$ where $\phi$ is the digamma function $\phi(x) = \frac{\Gamma'(x)}{\Gamma(x)}$.
 
 \paragraph{Derivation of $\Ex[\log p(\bY | \Theta)]$}
 
@@ -356,7 +368,7 @@ Thus the expression across all parameters up to a constant value is given by
 \begin{equation}
 \begin{aligned}
 \Ex[\log p(\Theta)] & \propto - \frac{\tau_q}{2}\sum_n (m_{z_n}^2 + s_{z_n}^2 - 2 m_{z_n} q_n) \\
-& -\frac{\tau_\mu}{2} \sum_g (m_{\mu_g}^2 +  s_{\mu_g}^2)  - \frac{\tau_c}{2} \sum_g (m_{\lambda_g}^2 + s_{\lambda_g}^2) \\
+& -\frac{\tau_\mu}{2} \sum_g (m_{\mu_g}^2 +  s_{\mu_g}^2)  - \frac{\tau_\lambda}{2} \sum_g (m_{\lambda_g}^2 + s_{\lambda_g}^2) \\
 & + \sum_g \left[ (a-1)(\phi(a_{\tau_g}) - \log b_{\tau_g}) - \frac{a_{\tau_g}}{b_{\tau_g}} b \right] \\
 & - \sum_p \sum_g \Big[ \frac{\tau_\alpha}{2} (m_{\alpha_{pg}}^2 + s_{\alpha_{pg}}^2) + \frac{a_{\chi_{pg}}}{2 b_{\chi_{pg}}} (m_{\beta_{pg}}^2 + s_{\beta_{pg}}^2) \\
 & - (a_\beta - 1) (\phi(a_{\chi_{pg}}) - \log b_{\chi_{pg}} ) - \frac{a_{\chi_{pg}}}{b_{\chi_{pg}}} b_\beta \Big]
@@ -380,8 +392,9 @@ Similarly we consider $\Ex[\log q_\tau(\tau_g)]$ which generalises to all parame
 
 \begin{equation}
 \begin{aligned}
-\Ex[\log q_\tau(\tau_g)] & \propto \Ex[(a_{\tau_g} - 1) \log \tau_g - \tau_g b_{\tau_g} ] \\
-& = (a_{\tau_g} - 1)(\phi(a_{\tau_g}) - \log b_{\tau_g}) - a_{\tau_g}
+\Ex[\log q_\tau(\tau_g)] & 
+= \Ex[a_{\tau_g} \log b_{\tau_g} + (a_{\tau_g} - 1) \log \tau_g - \tau_g b_{\tau_g} -\log \Gamma(a_{\tau_g})] \\
+& = a_{\tau_g} \log b_{\tau_g} + (a_{\tau_g} - 1)(\phi(a_{\tau_g}) - \log b_{\tau_g}) - a_{\tau_g} - \log \Gamma(a_{\tau_g})
 \end{aligned}
 \end{equation}
 
@@ -390,11 +403,74 @@ Summing this across all parameters gives
 
 \begin{equation}
 \begin{aligned}
-\Ex[\log q(\Theta)] &= -\frac{1}{2} \sum_n s_{z_n}^2 -
-\sum_g \left( \frac{1}{2} s_{\mu_g}^2 + \frac{1}{2} s_{\lambda_g}^2 -
-(a_{\tau_g} - 1)( \phi(a_{\tau_g}) - \log b_{\tau_g}) + a_{\tau_g} \right) \\
-& - \sum_g \sum_p \left(
-\frac{1}{2} s_{\alpha_{pg}}^2 + \frac{1}{2} s_{\beta_{pg}}^2 -
-(a_{\chi_{pg}} - 1)( \phi(a_{\chi_{pg}}) - \log b_{\chi_{pg}}) + a_{chi_{pg}} \right)
+\Ex[\log q(\Theta)] &= -\frac{1}{2} \sum_n s_{z_n}^2 \\
+& + \sum_g \Big(- \frac{1}{2} s_{\mu_g}^2 - \frac{1}{2} s_{\lambda_g}^2 +
+a_{\tau_g} \log b_{\tau_g} + (a_{\tau_g} - 1)(\phi(a_{\tau_g}) - \log b_{\tau_g}) - a_{\tau_g} - \log \Gamma(a_{\tau_g}) \Big) \\
+& + \sum_g \sum_p \Big(
+-\frac{1}{2} s_{\alpha_{pg}}^2 - \frac{1}{2} s_{\beta_{pg}}^2 \\
+& + a_{\chi_{pg}} \log b_{\chi_{pg}} + (a_{\chi_{pg}} - 1)(\phi(a_{\chi_{pg}}) - \log b_{\chi_{pg}}) - a_{\chi_{pg}} - \log \Gamma(a_{\chi_{pg}})\Big)
 \end{aligned}
 \end{equation}
+
+
+\section{Stan code for CGPLVM}
+
+\begin{lstlisting}[language=Stan]
+data {
+  int N; // number of samples
+  int G; // number of features
+  vector [N] Y[G]; // gene expression input
+  real x[N]; // covariate measurements
+  real z_prior[N]; // priors on t
+  real<lower = 0> z_sd;
+  
+  // CGPLVM kernel parameters (fixed)
+  real <lower = 0> delta;
+  real <lower = 0> eta;
+  real <lower = 0> nu;
+  real <lower = 0> gamma;
+  real <lower = 0> xi;
+}
+
+transformed data {
+  vector[N] mu;
+  for(i in 1:N) mu[i] = 0;
+}
+
+parameters {
+  real<lower = 0> sigma2[G]; // variance for each gene
+  real<lower = 0> lambda[G]; // interaction dependence
+  real z[N]; // pseudotimes
+}
+
+model {
+  matrix[N, N] Sigma[G];
+  
+  for(i in 1:(N-1)) {
+    for(j in (i+1):N) {
+      for(g in 1:G) {
+        Sigma[g,i,j] = nu * exp(-gamma * pow(z[i] - z[j], 2)) + 
+        xi * exp(-lambda[g] * pow(z[i] * x[i] - z[j] * x[j], 2)) +
+        delta * exp(-eta * pow(x[i] - x[j], 2));
+        
+        Sigma[g,j,i] = Sigma[g,i,j];
+      }
+    }
+  }
+  for(i in 1:N) {
+    for(g in 1:G) {
+      Sigma[g,i,i] = delta + nu + xi + sigma2[g] + 1e-6;
+    }
+  }
+  
+  for(i in 1:N) {
+    z[i] ~ normal(z_prior[i], z_sd);
+  }
+  
+  for(g in 1:G) {
+    lambda[g] ~ chi_square(1.0);
+    1 / sigma2[g] ~ gamma(0.1, 0.1);
+    Y[g] ~ multi_normal(mu, Sigma[g]);
+  }
+}
+\end{lstlisting}

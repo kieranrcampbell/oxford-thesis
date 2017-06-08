@@ -271,12 +271,6 @@ An exploratory PCA analysis of the data reveals a \emph{wishbone}-like pattern s
 
 %  We simulated RNAseq-based gene expression data\cite{Frazee2015-vy} where genes were either (1) differentially expressed, (2) modulated along a hidden pathway trajectory, (3) modulated along a pathway with covariate interactions, or (4) differentially expressed with pathway modulation and covariate interactions (Supplementary Figure \ref{fig:simulation_pca}, \ref{fig:simulation_scenarios}).
 
-\begin{figure}
-\centering
-  \includegraphics[width=0.98\textwidth]{gfx/ch5/5_simulations}
-  \caption{A comparison of Limma Voom and PhenoPath on simulated data under a range of different regimes demonstrates PhenoPath is required to identify pathway-covariate interactions.
-  } \label{fig:simulations}
-\end{figure}
 
 We then benchmarked the ability of our model to identify such interactions and whether they confounded standard differential expression analyses. Our model exhibited high specificity and sensitivity by classifying only a small number of simulated genes (2\%) as exhibiting interaction effects in cases 1-2 where there are no covariate-pathway interactions but identifies 78\% and 63\% of genes as exhibiting significant covariate-pathway interactions in cases 3 and 4 respectively (tables \ref{tbl:fdr} and \ref{tbl:nclvm} and figure \ref{fig:simulations}). For comparison, a standard DE analysis using Limma-Voom identified 47\% and 59\% of genes as differentially expressed in cases 1 and 4 respectively. In case 2 only 2\% of genes are identified as DE as expected but, in case 3, 22\% of genes are identified as DE where Limma-Voom would not be expected to report any differentially expressed genes.
 
@@ -291,12 +285,13 @@ In our simulation study, Limma Voom ``only'' detects 47\% of the genes simulated
 
 \begin{figure}
 \centering
-  \includegraphics[width=0.98\textwidth]{gfx/ch5/6_shalek_thesis}
-  \caption{\textbf{A} PhenoPath applied to the Shalek et al. dataset uncovers genes differentially regulated along pseudotime depending on the stimulant (LPS or PAM) applied.
+  \includegraphics[width=0.98\textwidth]{figures/shalek_thesis}
+  \caption{Stimulant-immune reactions single-cell RNA-sequencing data.
+  \textbf{A} PhenoPath applied to the Shalek et al. dataset uncovers genes differentially regulated along pseudotime depending on the stimulant (LPS or PAM) applied.
   \textbf{B} PhenoPath infers pseudotimes ($z$) consistent with the physical capture times.
   \textbf{C} A comparison of $p$-values obtained through a nonparametric statistical test for differential expression between LPS and PAM stimulation shows no particular relation with the interaction parameters $\beta$ inferred with PhenoPath.
   \textbf{D} A GO enrichment analysis of the genes upregulated along pseudotime whose upregulation was increased by LPS stimulation showed enrichment for immune system processes.
-  \textbf{E} Example gene expression plots of some genes identified with differential interactions by PhenoPath. For example, \emph{Oasl2} shows upregulation under LPS exposure yet only slight transient regulation under PAM exposure. }  \label{fig:shalek}
+  \textbf{E} Example gene expression plots of some genes identified with differential interactions. Strikingly, \emph{Tnf} is upregulated under PAM exposure yet downregulated under LPS stimulation.}  \label{fig:shalek}
 \end{figure}
 
 \begin{figure}
@@ -306,22 +301,22 @@ In our simulation study, Limma Voom ``only'' detects 47\% of the genes simulated
 	\label{fig:shalek_comparison}
 \end{figure}
 
-We next examined a time-series single-cell RNA-seq (scRNA-seq) data set of bone marrow derived dendritic cells responding to particular stimuli \cite{Shalek2014-cg}. Cells were exposed to LPS, a component of Gram-negative bacteria, and PAM, a synthetic mimic of bacterial lipopeptides, and scRNA-seq performed at 0, 1, 2, 4 and 6 hours after stimulation. Despite the time-series measurement, previous studies have suggested this dataset is more suited to a ``pseudotime'' analysis as the cells respond asynchronously and heterogeneity exists within the cellular populations at each time point\cite{Reid2016-yo}. To-date pseudotime inference algorithms would typically assume a common trajectory across all experimental conditions or a pseudotime analysis  performed separately for each stimulant. This might give a loss of statistical power and artifacts introduced by confounding effects. Using PhenoPath we can encode the stimulant to which the cells were exposed as a covariate and allow gene expression to evolve along pseudotime differently for either LPS or PAM exposure. This allows us to learn a single trajectory for all cells regardless of stimulant applied yet simultaneously infer which genes are differentially regulated in response. We applied this to the 820 cells exposed to LPS and PAM in the time points 1, 2, 4, and 6 hours after stimulation using the 7,533 genes whose variance in normalised log-expression exceeded a pre-set threshold (see appendix TODO).
+We next examined a time-series single-cell RNA-seq (scRNA-seq) data set of bone marrow derived dendritic cells responding to particular stimuli \cite{Shalek2014-cg}. Cells were exposed to LPS, a component of Gram-negative bacteria, and PAM, a synthetic mimic of bacterial lipopeptides, and scRNA-seq performed at 0, 1, 2, 4 and 6 hours after stimulation. Despite the time-series measurement, previous studies have suggested this dataset is more suited to a ``pseudotime'' analysis as the cells respond asynchronously and heterogeneity exists within the cellular populations at each time point\cite{Reid2016-yo}. To-date pseudotime inference algorithms would typically assume a common trajectory across all experimental conditions or a pseudotime analysis  performed separately for each stimulant. This might give a loss of statistical power and artifacts introduced by confounding effects. Using PhenoPath we can encode the stimulant to which the cells were exposed as a covariate and allow gene expression to evolve along pseudotime differently for either LPS or PAM exposure. This allows us to learn a single trajectory for all cells regardless of stimulant applied yet simultaneously infer which genes are differentially regulated in response. We applied this to the 820 cells exposed to LPS and PAM in the time points 1, 2, 4, and 6 hours after stimulation using the 7,533 genes whose variance in normalised log-expression exceeded a pre-set threshold (see appendix \ref{sec:prepclvm}).
 
 We inferred a covariate-perturbed trajectory using PhenoPath and uncovered a landscape of pseudotime-stimulant interactions (figure \ref{fig:shalek}A), unveiling genes whose regulation along pseudotime is modulated by the application of LPS or PAM. The trajectory inferred largely recapitulated the true time-series measurement (figure \ref{fig:shalek}B, $R^2 = 0.48$), despite no explicit temporal information being provided to the algorithm, though transcriptional heterogeneity at each time point is still evident. We also compared this to two commonly-used pseudotime algorithms and found that the pseudotimes inferred using PhenoPath had the best agreement with the capture times (figure \ref{fig:shalek_comparison}).
 
 
 Using PhenoPath we found a large number of stimulant-modulated interactions masked by standard differential-expression analysis (figure \ref{fig:shalek}C). A GO analysis revealed genes whose upregulation along the common trajectory was increased by LPS exposure (as opposed to PAM) were highly enriched for immune response (figure \ref{fig:shalek}D), which recapitulates previous results\cite{Shalek2014-cg,Reid2016-yo} that suggest a ``core'' module of antiviral genes upregulated at later timepoints in LPS cells but in an entirely unsupervised, integrated manner. We finally examined the individual genes most perturbed by LPS or PAM along the trajectory (figure \ref{fig:shalek}E), which identifies as yet uncharacterised expression patterns associated with LPS and PAM. For example, \emph{Oasl2} shows consistent upregulation across pseudotime under LPS exposure yet only slight transient upregulation under PAM. Further, \emph{Iftm3} is upregulated under LPS yet exhibits constant expression under PAM. These results complement previously discovered gene differences such as that of \emph{Tnf}, but in a systematic, transcriptome-wide approach.
 
-The Shalek et al. dataset of time-series dendritic cells was previously used in a pseudotime analysis where the capture times were explicitly used as priors on the latent space \cite{Reid2016-yo}. However, in PhenoPath we provide no explicit temporal information, so sought to perform a brief comparison to two popular pseudotime algorithms, Monocle 2 \cite{Qiu2017-eu} and DPT \cite{Haghverdi2016-eg}. For both methods we provided the same normalised log expression (see appendix TODO below) and ran the algorithms with the default parameters. Performance of each algorithm was assessed by regressing the inferred pseudotimes on the capture times using the \texttt{R} function \texttt{lm} and computing the $R^2$.
+The Shalek et al. dataset of time-series dendritic cells was previously used in a pseudotime analysis where the capture times were explicitly used as priors on the latent space \cite{Reid2016-yo}. However, in PhenoPath we provide no explicit temporal information, so sought to perform a brief comparison to two popular pseudotime algorithms, Monocle 2 \cite{Qiu2017-eu} and DPT \cite{Haghverdi2016-eg}. For both methods we provided the same normalised log expression (see appendix \ref{sec:prepclvm}) and ran the algorithms with the default parameters. Performance of each algorithm was assessed by regressing the inferred pseudotimes on the capture times using the \texttt{R} function \texttt{lm} and computing the $R^2$.
 
 
 \subsection{Colorectal cancer bulk RNA-seq} \label{sec:coad}
 
 \begin{figure}
 \includegraphics[width=0.98\textwidth]{gfx/ch5/8_coad_figure.png}
-\caption{Immune-microsatellite instability interactions uncovered by PhenoPath in colorectal cancer.
-\textbf{A} PhenoPath applied to Colon Adenocarcinoma (COAD) RNA-seq expression data uncovers a landscape of interactions between the inferred immune trajectory and microsatellite instability status (MSI).
+\caption{Immune-microsatellite instability interactions uncovered in colorectal adenocarcinoma.
+\textbf{A} PhenoPath applied to colorectal adenocarcinoma (COAD) RNA-seq expression data uncovers a landscape of interactions between the inferred immune trajectory and microsatellite instability status (MSI).
 \textbf{B} Expression of three T regulatory cell markers demonstrates that our pseudotime corresponds to activation of immune response pathways.
 \textbf{C} A comparison to the FDR-corrected $q$-values reported by Limma Voom demonstrates genes found interacting with MSI status and the immune pathway are found to be both DE and non-DE in standard analyses.
 \textbf{D} A GO enrichment analysis of upregulated genes implies the latent trajectory encodes immune pathway activation in each tumour.
@@ -331,7 +326,7 @@ The Shalek et al. dataset of time-series dendritic cells was previously used in 
 
 
 
-We next applied PhenoPath to the RNA-seq gene expression data from the TCGA colorectal adenocarcinoma (COAD) cohort \cite{cancer2012comprehensive} using microsatellite instability status (MSI) as a phenotypic covariate. MSI is genetic hypermutability that is present in around 15\% of colorectal tumours and is associated with differential response to chemotherapeutics and marginally improved prognosis \cite{Boland2010-mz}. Due to a significant technical effect in the dataset we removed around half of samples (see appendix TODO), applying PhenoPath to 5,886 highly variable genes across 284 samples to identify a pseudotemporal trajectory through the tumours.
+We next applied PhenoPath to the RNA-seq gene expression data from the TCGA colorectal adenocarcinoma (COAD) cohort \cite{cancer2012comprehensive} using microsatellite instability status (MSI) as a phenotypic covariate. MSI is genetic hypermutability that is present in around 15\% of colorectal tumours and is associated with differential response to chemotherapeutics and marginally improved prognosis \cite{Boland2010-mz}. Due to a significant technical effect in the dataset we removed around half of samples (see appendix \ref{sec:prepclvm}), applying PhenoPath to 5,886 highly variable genes across 284 samples to identify a pseudotemporal trajectory through the tumours.
 
 This analysis uncovered a landscape of 62 pathway-MSI interactions including known tumour suppressor genes (figure \ref{fig:coad}A).
 Patients further advanced along the trajectory exhibited higher expression of T regulatory cell (Tregs) immune markers (figure \ref{fig:coad}B) likely due to increasing T regulatory cell infiltration of the tumour.
