@@ -4,31 +4,22 @@
 
 \section{Introduction}
 
-% The advent of high-throughput single-cell technologies has revolutionised single-cell biology by allowing dense molecular profiling for studies involving 100-10,000s of cells \cite{kalisky2011single,Shapiro2013,Macaulay2014,wills2015application,linnarsson2016single,liu2016single} . The increased availability of single cell data has driven the development of novel analytical methods specifically tailored to single cell properties \cite{Stegle2015,Trapnell:2015aa}. Due to the difficulties of conducting genuine time series experiments, one important important development has been the emergence of computational techniques, known as `pseudotime ordering' algorithms, to extract temporal information from snapshot molecular profiles of individual cells. These algorithms exploit studies in which the cells captured are behaving  asynchronously and therefore each is at a different stage of some underlying temporal biological process, such as cell differentiation. In sufficient numbers, it is possible to infer an ordering of the cellular profiles that correlates with actual temporal dynamics and these approaches have promoted insights into a number of time-evolving biological systems \cite{qiu2011extracting,Bendall2014,Marco2014,Trapnell2014,Moignard2015,reid2015pseudotime,Hanchate2015,Shin2015,haghverdi2016diffusion,ji2016tscan,setty2016wishbone}
-
 A predominant feature of current pseudotime algorithms is that they  emphasise an ``unsupervised''
- approach where pseudotimes are learned using no specific prior knowledge of gene behaviour. Typically, the high-dimensional molecular profiles for each cell are projected on to a reduced dimensional space by using a (non)linear transformation of all the underlying molecular properties. In this reduced dimensional space, it is hoped that any temporal variation is sufficiently strong to cause the cells to align against a trajectory along which pseudotime can be measured. This approach is therefore subject to a number of analysis choices, e.g. the choice of dimensionality reduction technique, the trajectory fitting algorithm, etc., that could lead to considerable variation in the pseudotime estimates obtained. In order to verify that any specific set of pseudotime estimates are biologically plausible, it is typical for investigators to retrospectively examine specific marker genes or proteins to confirm that the predicted (pseudo)temporal behaviour reflects \emph{a priori} beliefs. An iterative ``semi-supervised" process maybe therefore be required to concentrate pseudotime algorithms on behaviours that are both consistent with the measured data and compliant with a limited amount of known gene behaviour.
+ approach where pseudotimes are learned using no specific prior knowledge of gene behaviour. Typically, the high-dimensional molecular profiles for each cell are projected on to a reduced dimensional space by using a (non)linear transformation provided by the manifold learning algorithms discussed in section \ref{sec:int:manifold}. In this reduced dimensional space, it is hoped that any temporal variation is sufficiently strong to cause the cells to align against a trajectory along which pseudotime can be measured. This approach is therefore subject to a number of analysis choices, e.g. the choice of dimensionality reduction technique, the trajectory fitting algorithm, etc., that could lead to considerable variation in the pseudotime estimates obtained. In order to verify that any specific set of pseudotime estimates are biologically plausible, it is typical for investigators to retrospectively examine specific marker genes or proteins to confirm that the predicted (pseudo)temporal behaviour reflects \emph{a priori} beliefs. An iterative ``semi-supervised" process maybe therefore be required to concentrate pseudotime algorithms on behaviours that are both consistent with the measured data and compliant with a limited amount of known gene behaviour.
 
-In this paper we present an orthogonal approach implemented in a latent variable model statistical framework called Ouija that can integrate prior expectations of gene behaviour along trajectories using Bayesian nonlinear factor analysis. Our approach uses known or putative marker genes directly for pseudotime estimation rather than as a device for retrospectively validating pseudotime estimates. In particular, our model focuses on switch-like expression behaviour and assumes that the marker gene expression follows a noisy switch pattern that corresponds to up- or down-regulation over time. Crucially, we explicitly model when a gene turns on or off as well as how quickly this behaviour occurs. We can then place Bayesian priors on this behaviour that allows us to learn temporal gene behaviours that are consistent with existing biological knowledge.
+In this chapter we present an orthogonal approach implemented in a latent variable model statistical framework called Ouija that can integrate prior expectations of gene behaviour along trajectories using Bayesian nonlinear factor analysis. Our approach uses known or putative marker genes directly for pseudotime estimation rather than as a device for retrospectively validating pseudotime estimates. In particular, our model focuses on switch-like expression behaviour and assumes that the marker gene expression follows a noisy switch pattern that corresponds to up- or down-regulation over time. Crucially, we explicitly model when a gene turns on or off as well as how quickly this behaviour occurs. We can then place Bayesian priors on this behaviour that allows us to learn temporal gene behaviours that are consistent with existing biological knowledge.
 
-{\color{red}
-The motivation for developing Ouija was to enable supervised pseudotime inference using small panels of marker gene expression profiles. To test this we applied Ouija to a range of previously published single-cell RNA-seq datasets and demonstrate that this model-based approach to pseudotemporal inference provides a reference approach to compare and contrast with the output of unsupervised techniques. Ouija is available as a \texttt{R} package at \url{www.github.com/kieranrcampbell/ouija}.
-}
+This chapter proceeds by explicitly framing single-cell pseudotimes as a statistical latent variable model, departing from typical approaches that employ a two stage dimensionality reduction and cell ordering process. We consider some desirable properties of such models including their mean function and mean-variance relationship. We benchmark this method on synthetic data before applying it to a range of single-cell developmental trajectories.
 
 
-
-
-
-
-
-\section{Connection between latent variable modelling and trajectories}
+\section{Connection between latent variable modelling and trajectories} \label{sec:latvar}
 
 The aim of pseudotime ordering is to associate a $G$-dimensional expression measurement $\mby_n$ of cell $n \in 1, \ldots, N$ to a latent unobserved univariate pseudotime $t_n$. Mathematically we can express this as
 \begin{align}
  \underbrace{\mby_n}_{\mathclap{\text{Expression}}} = \underbrace{\mbf_\Theta}_{\text{Mapping}}(\underbrace{t_n}_{\text{Pseudotime}}) + \underbrace{\epsilon_n}_{\text{Noise}}
  \label{eq:master_eq}
 \end{align}
-where the function $\mbf_\Theta$ maps the one-dimensional pseudotime $t_n$ to the $G$-dimensional observation space in which the data lies with (possibly output-dimension dependent) parameters $\Theta$. The challenge lies in the fact that both the mapping function $f$ and the pseudotimes are \emph{unknown}. Furthermore, it is hard to derive objective criteria to evaluate potential mapping functions - why is $f(t) = \theta t$ (factor analysis) or $f(t) = \text{nonparametric smooth functions}$ (GPLVM) necessarily ``better'' than $f(t) = \text{const}$ or $f(t) = 1 / t$?
+where the function $\mbf_\Theta$ maps the one-dimensional pseudotime $t_n$ to the $G$-dimensional observation space in which the data lies with (possibly output-dimension dependent) parameters $\Theta$. The challenge lies in the fact that both the mapping function $f$ and the pseudotimes are \emph{unknown}. Furthermore, it is hard to derive objective criteria to evaluate potential mapping functions - why is $f(t) = \theta t$ (factor analysis) or $f(t) = \text{nonparametric smooth functions}$ (GPLVM) necessarily ``better'' than $f(t) = \text{const}$ or $f(t) = 1 / t$? A key result discussed below is that $f$ corresponds to our \emph{a priori} expectation of how gene expression changes over time.
 
 % Further, the measurement noise $\epsilon_n$ must absorb \emph{all} the variation not explained by the pseudotime and mapping function
 
@@ -42,16 +33,14 @@ If the mapping functions $\mbf$ are restricted to a linear functions of $t_n$ th
 	\end{aligned}
 \end{equation}
 
-where $\tau_g^{-1}$ is the measurement precision for gene $g$ and the $G-$dimensional vector $\mbtheta$ acts as the factor loading matrix. Note that the data can always be centred making it redundant to model an intercept.
+where $\tau_g^{-1}$ is the measurement precision for gene $g$ and the $G-$dimensional vector $\mbtheta$ acts as the factor loading matrix. Note that the data can always be centred making it redundant to model an intercept\footnote{This is only true if the expectation of $t_n$ is 0. We could conceive of a model where we place priors on $t_n$ that correspond to physical capture times, in which case we would need to reintroduce gene-specific intercepts.}.
 
 The interpretation of this model is that the value of $\theta_g$ regulates the response of the gene expression $\mby_{g}$ to the cell's position along the trajectory $t_n$. Given this is necessarily linear, factor analysis assumes a linear change in expression for each gene over pseudotime.
 
 The key insight is that the functional form of $f$ necessarily corresponds to our prior expectations for how genes evolve along pseudotemporal trajectories. For linear $f$, we expect linear behaviour; for nonparametric smooth $f$ (e.g. from GPLVM), we essentially restrict such behaviour to any smooth (mean) function of pseudotemporal progression.
 
-In the model from equation \ref{eq:fa}, if we model a common precision across all genes so $\tau_g = \tau$ then then model reduces further to
+If we modify equation \ref{eq:fa} to model a common precision across all genes so $\tau_g = \tau$ then then this further reduces to
 (probabilistic) principal components analysis \cite{tipping1999probabilistic}, providing an explicit interpretation for the results of principal component analysis on single-cell data.
-
-
 
 Our objective here is to use parametric forms for the mapping function $f$ that will enable relatively fast computations whilst characterising certain gene expression temporal behaviours. Our premise is that prior knowledge might exist for a set of marker genes whose temporal behaviour is known to be approximately switch-like and therefore can be used to infer pseudo-time orderings.
 
@@ -63,7 +52,7 @@ Our objective here is to use parametric forms for the mapping function $f$ that 
 
 \begin{figure}% [!t]
 	\centering
-	\includegraphics[width=1.8\textwidth,angle=90]{gfx/ch3/main_fig}
+	\includegraphics[width=1.5\textwidth,angle=90]{gfx/ch3/main_fig}
   \caption{(Caption next page.)} \label{fig:main}
 \end{figure}
 \addtocounter{figure}{-1}
@@ -80,21 +69,25 @@ Our objective here is to use parametric forms for the mapping function $f$ that 
 
 \subsubsection{Mean function}
 
-When performing dimensionality reduction on scRNA-seq data with the aim of learning a `pseudotime' there is a direct link between the algorithm used and the assumptions of how a gene will behave along the pseudotime trajectory. For example, if a linear dimensionality reduction algorithm is used, such as PCA, ICA or FA, the assumption is that the gene will linearly increase or decrease along the trajectory\footnote{Note that if PCA is used to one dimension then reconstructing the gene expression would result in a rank one matrix. Consequently, the assumption would be that all genes are perfectly correlated or anti-correlated along the trajectory}. Conversely, non-parametric mean functions have also been proposed, such as those used in GP-LVM or smoothing spline models. In the case of GP-LVM, the only restrictions are coded in the form of the covariance matrix, which tend to have assumptions of smoothness or periodicity.
+% When performing dimensionality reduction on scRNA-seq data with the aim of learning a `pseudotime' there is a direct link between the algorithm used and the assumptions of how a gene will behave along the pseudotime trajectory. For example, if a linear dimensionality reduction algorithm is used, such as PCA, ICA or FA, the assumption is that the gene will linearly increase or decrease along the trajectory\footnote{Note that if PCA is used to one dimension then reconstructing the gene expression would result in a rank one matrix. Consequently, the assumption would be that all genes are perfectly correlated or anti-correlated along the trajectory}. Conversely, non-parametric mean functions have also been proposed, such as those used in GP-LVM or smoothing spline models. In the case of GP-LVM, the only restrictions are coded in the form of the covariance matrix, which tend to have assumptions of smoothness or periodicity.
+
+If we wish to build a generative statistical latent variable model of pseudotime we must therefore decide on a sensible set of functions $f$ that accurately characterise gene expression over (pseudo-)time. We have so far essentially considered $f$ as a linear change over time (PCA/factor analysis) and $f$ simply as smooth functions (GPLVM).
 
 However, both the linearly-restricted case and the entirely nonparametric cases are unrealistic for different reasons. The linear case assumes that the mean function must change across the entire trajectory (ie there can be no parts where the mean value is stationary), making modelling of complex processes where different genes are responsible for different parts of the trajectory impossible. Furthermore, it assumes that as the trajectory progresses the expression values will tend to $\pm \infty$ (which has the additional issue of negative expression values). While the linear case is too restrictive, the non-parametric case is overly-flexible, allowing biologically unrealistic expression patterns such as cubic polynomials or genes with multiple modes over a relatively short trajectory.
 
-Instead we opt for a `goldilocks' mean function, where we assume genes are off, undergo a period of near-linear increase and settle at a constant value (or conversely begin on then turn off)\footnote{In practice this restricts us to the class of monotonically increasing and decreasing gene expression signatures}. For this we parametrics the mean function as
+Instead we opt for a `goldilocks' mean function, where we assume genes are off, undergo a period of near-linear increase and settle at a constant value (or conversely begin on then turn off)\footnote{In practice this restricts us to the class of monotonically increasing and decreasing gene expression signatures}. A good approximation to this is the sigmoid function which parametrises the mean as
 
 \begin{equation}
 f(t; \mu_0, k, t_0) = \frac{2 \mu_0}{1 + \exp\left( -k (t - t_0) \right)}
 \end{equation}
 
-where $t$ corresponds to the pseudotime of a cell, $\mu_0$ corresponds to the mean expression of the gene, $k$ is the \emph{activation strength} and corresponds to how fast the  gene turns on or off and $t_0$ corresponds to the \emph{activation time} - where along the trajectory the gene behaviour occurs.
+where $t$ corresponds to the pseudotime of a cell, $\mu_0$ corresponds to the mean expression of the gene, $k$ is the \emph{activation strength} and corresponds to how fast the  gene turns on or off and $t_0$ corresponds to the \emph{activation time} - where along the trajectory the gene behaviour occurs. The key result here is that the activation times and strengths are highly interpretable quantities for which realistic Bayesian priors may be available. For example, a researcher may know how quickly a given gene is up or downregulated over pseudotime, providing the sign and magnitude of $k$. Furthermore, they may know whether such regulation occurs early or late in the trajectory, providing prior information for $t_0$. Crucially, by specifying a variance on the prior knowledge the researcher can encode the perceived certainty of the prior information, which leads to differing prior function draws (figure \ref{fig:main}D).
 
-We use sigmoid mapping functions that can capture ``switch-like'' behaviour over time as shown in Figure \ref{fig:main}B and are parameterised by key quantities for which estimates (and associated uncertainty) might be useful: the activation strength and the activation time. These correspond to measures of how rapidly the gene expression level changes and when the (in)activation of the gene occurs.
+% We use sigmoid mapping functions that can capture ``switch-like'' behaviour over time as shown in Figure \ref{fig:main}C and are parameterised by key quantities for which estimates (and associated uncertainty) might be useful: the activation strength and the activation time. These correspond to measures of how rapidly the gene expression level changes and when the (in)activation of the gene occurs.
 
-The approach we adopt is therefore a form of latent variable model implemented as \emph{non-linear parametric factor analysis} where the factors correspond to the pseudo-times and the factor loadings correspond to the parameters of the sigmoidal function which provides the non-linearity. In addition, we model dropouts and a strict empirically motivated mean-variance relationship (see Supplementary Information) which is required to provide constraints on the latent variable model since nothing on the right hand side of Equation \ref{eq:master_eq} is actually measured or observed.
+The approach we adopt is therefore a form of latent variable model implemented as \emph{non-linear parametric factor analysis} where the factors correspond to the pseudo-times and the factor loadings correspond to the parameters of the sigmoidal function which provides the interpretable non-linearity (figure \ref{fig:main}B). Overall, this positions our model apart from previous pseudotime approaches that all emphasise linear and nonlinear \emph{unsupervised} learning of the trajectories (figure \ref{fig:main}E).
+
+%In addition, we model dropouts and a strict empirically motivated mean-variance relationship (see Supplementary Information) which is required to provide constraints on the latent variable model since nothing on the right hand side of Equation \ref{eq:master_eq} is actually measured or observed.
 
 
 \subsubsection{Mean-variance relation}
@@ -106,15 +99,17 @@ The approach we adopt is therefore a form of latent variable model implemented a
 % }
 % \;
 
-Many authors TODO have noted that the variance for gene $g$ in sample $c$ is related to its mean via
+RNA-seq counts are commonly assumed to follow the negative binomial distribution 
+\cite{Anders2010,Love2014-lx,Robinson2010-rj}
+which for gene $g$ in sample $n$ implies a mean-variance relationship of the form
 
 \begin{equation} \label{eq:overd}
-\sigma_{cg}^2 = \mu_{cg}(1 + \phi_g \mu_{cg})
+\sigma_{ng}^2 = \mu_{ng}(1 + \phi_g \mu_{ng})
 \end{equation}
 
-where $\phi_g$ is a gene-specific dispersion factor. Such strong parametric forms are typically required since for low sample sizes the estimates of the variance can be very unstable [reference?].
+where $\phi_g$ is a gene-specific dispersion factor. Such strong parametric forms are typically required since for low sample sizes the estimates of the variance can be very unstable. % [reference?].
 
-However, typically in single-cell data there are enough measurements (ie cells) to allow robust estimation of both the mean and variance for each gene [for example MAST paper]. The exception to this is in pseudotime analyses, where we are assuming each cell represents a unique time point, and therefore the mean $\mu_{cg}$ and variance $\sigma^2_{cg}$ are effectively measured only once. Consequently we must consider a strong mean-variance relationship since assuming a constant variance per gene is akin to under-fitting while it would be impossible to fit a variance for each cell and each gene (since there is only one measurement).
+However, typically in single-cell data there are enough measurements (ie cells) to allow robust estimation of both the mean and variance for each gene\cite{Finak2015-iy}. The exception to this is in pseudotime analyses, where we are assuming each cell represents a unique time point, and therefore the mean $\mu_{cg}$ and variance $\sigma^2_{cg}$ are effectively measured only once. Consequently we must consider a strong mean-variance relationship since assuming a constant variance per gene is akin to under-fitting while it would be impossible to fit a variance for each cell and each gene (since there is only one measurement).
 
 As a solution to this we examine the mean-variance relationship for the genes across all cells and assume the same relationship approximately holds for cells as they progress along pseudotime trajectories. The relationship in \ref{eq:overd} applies to the original untransformed data (e.g. TPM or scaled counts) while we wish to model the $\log_2(\text{TPM} + 1)$ transformed relationship directly. Therefore we must examine the mean-variance relationship for the $\log_2$ data\footnote{Note for $x \gg 0$ $\log_2(x+1) \approx \log_2(x)$.}, since in general the mean-variance relationship of the log-transormed data isn't the same as (the log of) the mean-variance relationship on the untransformed data.
 
@@ -123,6 +118,9 @@ As a solution to this we examine the mean-variance relationship for the genes ac
  \includegraphics[width=\textwidth]{gfx/ch3/supp_paper_variance_2}
  \caption{The mean-variance relationship in $\log_2(\text{TPM} + 1)$ single-cell data for the three datasets studied in the main text. Red denotes the marker genes identified in the main text while blue corresponds to three house-keeping genes (\emph{LDHA}, \emph{NONO}, \emph{PGK1}) or their mouse equivalents. Both the Trapnell and Zhou datasets show consistent evidence that pseudotemporal marker genes exist on the `leading edge' of the data with medium mean expression but high variance. This suggests a linear relationship between mean and variance in $\log_2$ space. In contrast, the housekeeping genes all sit in the `tails' with high mean expression but very low variance.} \label{fig:variance}
  \end{figure}
+
+ The mean-variance relationship of $\log$ count data has been examined both in Limma Voom \cite{Law2014-tu}
+ and sleuth \cite{Pimentel2016-xz} that conclude there is no closed form mean-variance relationship for logged data. Their solution is to fit a LOESS curve between the empirical mean and variance (or standard deviation) of each gene, and use this to shrink variance estimates towards a common value given the mean expression. However, if possible we would like a fully Bayesian model that fits all parameters simultaneously, rather than pre-fitting variance estimates with LOESS. We therefore consider a parametric approximation.
 
 We examined the mean-variance relationship of the logged data for the three datasets in the main text, as seen in figure \ref{fig:variance}. The pseudotemporal marker genes identified in the original text are shown in red. For both the Trapnell and Zhou datasets these lie on the `leading edge' of the relationship, in areas of moderate mean expression but high variance. In comparison, the housekeeping genes (shown in blue) lie in the tails in regions of high mean expression but low overall variance. This makes intuitive sense, as we expect the marker genes to turn on across the trajectory, giving them a mean of around half the maximal value but maximum variance. In contrast, we expect housekeeping genes to have maximal expression across the trajectory but very low variance in keeping with the constancy of their expression. Oddly we found such a relationship not to hold in the Shin et al. dataset.
 
@@ -139,13 +137,18 @@ We therefore assumed that any genes we wish to model as pseudotemporal marker ge
 % }
 % \;
 
-It has been noted by many authors [references] that the dropout rate for a given gene is inversely proportional to the mean expression of that gene. This is typically assumed to be due to the failure of reverse transcription of lowly expressed transcripts. To account for this we assume that the probability of a dropout is logistic on the latent gene expression mean in a similar approach to Kharchenko et al 2014. The difference to previous approaches is that (1) we are working in $\log_2(\text{TPM} + 1)$ space and (2) we assume a unique mean $\mu_{cg}$ for every gene in every cell, giving a per-gene per-cell dropout probability $p(\mu_{cg})$ of
+
+As previously discussed in section \ref{sec:intro_dropout} single-cell RNA-seq data is known to exhibit substantial dropout, whereby a failure to reverse transcribe lowly expressed transcripts results in zeros in the count matrix. Note that this is distinct from \emph{true zeros} where no mRNA transcripts are truly present, due to either bursty or non-expression.
+
+To account for this we assume that the probability of a dropout is logistic on the latent gene expression mean in a similar approach to Kharchenko et al 2014. The difference to previous approaches is that (1) we are working in $\log_2(\text{TPM} + 1)$ space and (2) we assume a unique mean $\mu_{cg}$ for every gene in every cell, giving a per-gene per-cell dropout probability $p(\mu_{cg})$ of
 
 \begin{equation}
 \log\left[ \frac{p(\mu_{cg})}{1 - p(\mu_{cg})} \right] = \beta_0 + \beta_1 \mu_{cg}.
 \end{equation}
 
-During statistical inference $\beta_0$ and $\beta_1$ are assumed to be constant across all cells as the (assumed) small number of marker genes used would make per-gene inference unstable. To generate synthetic data we fit a logistic regression curve to the probability of dropout against mean $log_2$ expression for the Trapnell et al dataset (figure \ref{fig:dropout}). This gave coefficients of $\beta_0 = 1.763$ and $\beta_1 = -1.156$.
+The dropout parameters $\beta_0$ and $\beta_1$ are constant across all cells as modelling gene specific dropout parameters\footnote{Which is presumably closer to the true model due to gene-specific biases such as GC content.} would require extreme shrinkage across genes in order to make the parameters identifiable.
+
+% To generate synthetic data we fit a logistic regression curve to the probability of dropout against mean $log_2$ expression for the Trapnell et al dataset (figure \ref{fig:dropout}). This gave coefficients of $\beta_0 = 1.763$ and $\beta_1 = -1.156$.
 
 \begin{figure}
 \centering
@@ -157,7 +160,7 @@ During statistical inference $\beta_0$ and $\beta_1$ are assumed to be constant 
 
 %  \subsubsection*{Model Specification}
 
-As usual we index $N$ cells by $n \in 1, \ldots, N$ and $G$ genes by $g \in 1, \ldots, G$ and let $y_{ng} = [\bY]_{ng}$ denote the (log-transformed and suitably normalised) observed cell-by-gene expression matrix. In order to make the strength parameters comparable between genes we normalise the gene expression so the approximate half-peak expression is 1 through the transformation
+We now detail the overall specification of our nonlinear factor analysis pseudotime model. As usual we index $N$ cells by $n \in 1, \ldots, N$ and $G$ genes by $g \in 1, \ldots, G$ and let $y_{ng} = [\bY]_{ng}$ denote the (log-transformed and suitably normalised) observed cell-by-gene expression matrix. In order to make the strength parameters comparable between genes we normalise the gene expression so the approximate half-peak expression is 1 through the transformation
 
 \begin{equation}
 \mby_g \rightarrow \mby_g / s_g.
@@ -199,7 +202,8 @@ with the hierarchical prior structure
 	\mu_{ng} & =  \mO_g f(t_n, k_g, \tO), \\
 	\phi & \sim \mathrm{Gamma}(\alpha_\phi, \beta_\phi)
 \end{align}
-where $\phi$ is a dispersion parameter. This model is motivated by empirical observations of marker gene behaviour.
+where $\phi$ is a dispersion parameter. 
+%This model is motivated by empirical observations of marker gene behaviour.
 
 We define the sigmoid function as
 \begin{align}
@@ -221,7 +225,7 @@ We performed posterior inference using Markov Chain Monte Carlo (MCMC) stochasti
 
 
 
-\subsubsection{Diagnostics}
+\subsubsection{Convergence diagnostics}
 
 \begin{figure}
 \centering
@@ -229,7 +233,7 @@ We performed posterior inference using Markov Chain Monte Carlo (MCMC) stochasti
  \caption{\textbf{MCMC convergence diagnostics}. \textbf{A} For a single chain \sname contains a convenience function to plot both the trace of the log-likelihood and the log-likelihood autocorrelation. \textbf{B-E} MCMC diagnostic statistics such as posterior log-likelihood trace, effective sample size, Gelman-Rubin statistic and ratio of monte carlo standard error to posterior standard deviation show good mixing across chains.} \label{fig:mcmc}
  \end{figure}
 
-\paragraph{Convergence diagnostics} Since \sname relies on MCMC simulation for inference it is cruicial to assess model convergence before drawing statistical conclusions. \sname contains a convenience function \texttt{plot(ouija\_fit, what = "diagnostic")} to plot both the posterior log-likelihood and posterior log-likelihood autocorrelation, an example of which is in figure \ref{fig:mcmc}A. In general we found it practical to run MCMC inference on only a single chain for most models. Therefore, to check both good mixing of the chains and that the models aren't getting stuck in local maxima, we tested the models for both the Trapnell and Shin datasets across multiple chains. We then examined several diagnostics such as the log-posterior mixing, effective sample size, Gelman-Rubin statistic and ratio of monte carlo standard error to posterior standard deviation (figures \ref{fig:mcmc}B-E), all of which fell inside the acceptable range. Full analysis can be found in the Rmarkdown notebooks online at \url{www.github.com/kieranrcampbell/ouija-paper}.
+Since \sname relies on MCMC simulation for inference it is cruicial to assess model convergence before drawing statistical conclusions. \sname contains a convenience function \texttt{plot(ouija\_fit, what = "diagnostic")} to plot both the posterior log-likelihood and posterior log-likelihood autocorrelation, an example of which is in figure \ref{fig:mcmc}A. In general we found it practical to run MCMC inference on only a single chain for most models. Therefore, to check both good mixing of the chains and that the models aren't getting stuck in local maxima, we tested the models for both the Trapnell and Shin datasets across multiple chains. We then examined several diagnostics such as the log-posterior mixing, effective sample size, Gelman-Rubin statistic and ratio of monte carlo standard error to posterior standard deviation (figures \ref{fig:mcmc}B-E), all of which fell inside the acceptable range. Full analysis can be found in the Rmarkdown notebooks online at \url{www.github.com/kieranrcampbell/ouija-paper}.
 
 \subsection{Generating synthetic data}
 
