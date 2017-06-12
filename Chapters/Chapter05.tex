@@ -515,7 +515,12 @@ The censored true survival times $\mbt^{\text{cens}}$ are bounded from below by 
   \end{aligned}
 \end{equation}
 
-where $g_t(\epsilon) \in [o_n, r_n)$. Evaluation of $q(t_n | \mu_{t_n}, \sigma_{t_n}, o_n, r_n)$ is then made via $q(t_n | \mu_{t_n}, \sigma_{t_n}, o_n, r_n) = \Norm(\epsilon | 0, 1) \left| \frac{\partial g^{-1}_t(\epsilon | \mu_{t_n}, \sigma_{t_n})}{\partial \epsilon} \right|$.
+where $g_t(\epsilon) \in [o_n, r_n)$. 
+Evaluation of $q(t_n | \mu_{t_n}, \sigma_{t_n}, o_n, r_n)$ is then made via 
+
+\begin{equation}
+q(t_n | \mu_{t_n}, \sigma_{t_n}, o_n, r_n) = \Norm(\epsilon | 0, 1) \left| \frac{\partial g^{-1}_t(\epsilon | \mu_{t_n}, \sigma_{t_n})}{\partial \epsilon} \right|.
+\end{equation}
 
 The variable $k$ parametrizing the Weibull distribution is constrained to be greater than zero. It further has an intuitive interpretation: for $k < 1$ the failure rate decreases over time, for $k = 1$ the failure rate is constant, while for $k > 1$ the survival rate increases over time. For most biomedical applications (see section \ref{sec:tcga}) it is known the survival rate increases over time, so we may constrain $k > 1$. However, $k$ appears in the log-likelihood via $\sum_n t_n^k$, where $t_n$ is both the observed and censored true survival times. Thus in settings where $t_n$ may exceed orders of $10^2$ and $k$ sampled from a log-normal distribution, $t_n^k$ leads to highly unstable estimates of the log-likelihood and can easily overflow the machine precision. Thus we constrain $k$ to be on the interval $[a, b)$ via the same reparametrization as in equation \ref{eq:ttran} and  set $a = 1$ and $b = 3$.
 
@@ -661,9 +666,9 @@ The results can be seen in figure \ref{fig:cgplvm_results}. Figure \ref{fig:cgpl
 
 \section{Discussion}
 
-\begin{itemized}
+\begin{itemize}
 \item SVI instead of CAVI
 \item Hyperpars for cgplvm
 \item inducing points
 \item FA step in linear clvm
-\end{itemized}
+\end{itemize}

@@ -9,14 +9,14 @@
 
 All analyses are available either as Rmarkdown notebooks or as \texttt{R} scripts at \url{http://github.com/kieranrcampbell/pseudogp-paper/}
 
-\subsection{Trapnell}
+\subsection{Trapnell et al.} \label{sec:trapnell_preprocessing}
 The data was imported from the \texttt{HSMMSingleCell} package\footnote{\url{http://bioconductor.org/packages/release/data/experiment/html/HSMMSingleCell.html}} and $\log_{10}$ of the FPKM values with a pseudo-count of 1. Then, using genes with a transformed expression greater than 0.3 a generalized linear model was fit with $\mathrm{CV}^2 \sim a 10^{-k\mu}$ where $\mathrm{CV}^2$ is the square of the coefficient of variation and $\mu$ is the mean for a particular gene. Genes whose measured coefficient of variation was greater than four times that predicted by the model were then used for dimensionality reduction, with the reasoning that those that vary greatest will contribute most to pseudotemporal processes.
 
 The Laplacian Eigenmaps embedding was then found using the \texttt{R} package \texttt{embeddr}\footnote{\url{http://github.com/kieranrcampbell/embeddr/}} using the default parameters. The Trapnell dataset contains a differentiation trajectory of differentiating myoblasts as well as contaminating interstitial mesenchymal cells. These mesenchymal cells were discovered using Gaussian Mixture Model clustering in the reduced space (using $k=3$ components) and subseqently removed. A further four cells were removed as outliers on the manifold. This reduced the original 271 cell dataset to 155 cells. The PCA and t-SNE representations were found using the \texttt{R} package \texttt{scater}\footnote{\url{http://github.com/davismcc/scater}} using the default gene set (the 500 most variable genes) and the reduced set of 155 cells as discovered above. For the t-SNE representation a perplexity of 3 was used.
 
 The Bayesian GPLVM pseudotime trajectory was fitted on the Laplacian Eigenmaps embedding using the \texttt{R} package \texttt{pseudogp}\footnote{\url{http://kieranrcampbell.github.com/pseudogp}} using the default MCMC parameters and smoothing hyperparameters $\gamma_\alpha = 30$, $\gamma_\beta = 5$ which were chosen empirically based on the quality of the fit.
 
-\subsection{Burns}
+\subsection{Burns et al.}
 The data were downloaded from the Gene Expression Omnibus accession number 71982 (\url{http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE71982}) as the pre-processed TPM count matrix. The transformation applied to the TPM counts was performed identically to the original paper: genes with TPM expression less than 1 are set to 0 while those with TPM expression greater than 1 are set to $\log_2$ of that expression level. The original publication focussed pseudotime analyses on Utrichular cells rather than Cochlear ones. Using ``Ute\_P1'' in the column names of the cells in the data as designating Utrichular cells, we took only those forward for analysis.
 
 Then a PCA plot (similar to the original paper) was constructed once more using \texttt{scater}. The original publication states the ``top'' 195 genes were used for PCA analysis and we emailed the corresponding author asking the definition of ``top'', but received no reply so assumed it refers to ``most variable''. Using this definition we found a similarly-shaped PCA plot to that in the publication. The pseudotime trajectory identified in the paper involves only a subset of cells that represent a supporting cell to hair cell transition. We identified these cells in the PCA by plotting the intensity of the fluorescent markers measured as well as three marker genes (\emph{LFNG}, \emph{CDH4} and \emph{SOX2}) and computationally isolated these using $k$-means clustering.
@@ -25,18 +25,33 @@ The Laplacian Eigenmaps embedding of just the trajectory cells was found using t
 
 The GPLVM was fitted on the Laplacian Eigenmaps embedding using \texttt{pseudogp}. The curve was initialised from a principal curve and smoothing hyperparameters $\gamma_\alpha = 20$, $\gamma_\beta = 2$ were used.
 
-\subsection{Shin}
+\subsection{Shin et al.} \label{sec:shin_preprocessing}
 The data were downloaded as supplementary data from \url{http://www.cell.com/cms/attachment/2038326541/2052521610/mmc7.xlsx}. This included the \texttt{Waterfall} pseudotime assignment, allowing us to compare as a sanity check. The PCA representation was found using the top 195 most variable genes and \texttt{scale\_features = FALSE} in the \texttt{scater} package. The shape closely resembled that from the original publication and colouring by the pseudotime assigned by \texttt{Waterfall} clearly showed this was the case. The t-SNE representation was found again using \texttt{scater} with 195 most variable genes, \texttt{scale\_features = FALSE} and a perplexity of 3. The Laplacian Eigenmaps embedding was found with \texttt{embeddr}, again using the top 195 most variable genes, a euclidean distance metric and 30 nearest neighbours.
 
 The GPLVM was fitted on the PCA embedding (as in original publication) using \texttt{pseudogp}. The MCMC chain was initialised from the first component of the PCA of the representation and smoothing hyperparameters of $\gamma_\alpha = 8$, $\gamma_\beta = 2$.
 
+
+\section{Chapter 3}
+
+\subsection{Trapnell et al.}
+
+Data were retrieved as described in section \ref{sec:trapnell_preprocessing}. The genes \emph{CDK1}, \emph{ID1}, \emph{MYOG}, \emph{MEF2C}, and \emph{MYH3} were used as ``marker genes'' as identified in the original publication. The prior means of activation were given by the direction of regulation from the original publication via $\mbmu^{(k)} = [-10, -10, 10, 10, 10]$.
+
+\subsection{Shin et al.}
+
+Data were retreived as described in section \ref{sec:shin_preprocessing}. The genes \emph{Sox11}, \emph{Eomes}, \emph{Stmn1}, \emph{Apoe}, \emph{Aldoc}, and \emph{Gfap} were used as ``marker genes'' as identified in the original publication. The prior means of activation were given by the direction of regulation from the original publication via $\mbmu^{(k)} = [10, 10, 10, -10, -10, -10]$.
+
+\subsection{Zhou et al.}
+
+FPKM values were downloaded from the gene expression ombnibus entry \texttt{GSE67120}. Cells belonging to the original publication's clusters \texttt{Adult\_HSC} and \texttt{E11.0\_T1CD201neg} were removed. The genes \emph{Nrp1}, \emph{Hey1}, \emph{Efnb2}, \emph{Ephb4}, \emph{Nrp2}, and \emph{Nr2f2} were chosen as ``marker genes'' according to the original publication. As all marker genes should be downregulated, the prior mean vector was set to $\mbmu^{(k)} = [-10, -10, -10, -10, -10, -10]$.
+
 \section{Chapter 5} \label{sec:prepclvm}
 
-\section{Shalek et al.} \label{sec:prepshalek}
+\subsection{Shalek et al.} \label{sec:prepshalek}
 
 Preprocessed TPM values for all cells were retrieved from the Gene Expression Omnibus (\texttt{GSE48968}). We retained cells treated by LPS and PAM at time points 1h, 2h, 4h, and 6h, resulting in 820 cells (479 LPS and 341 PAM). We retained the 7533 genes whose variance in $\log_2(\text{TPM} + 1)$ expression was greater than 2. The first principal component of the data showed a strong dependency on the number of features expressed - previously been implicated in technical effects \cite{Hicks2015-sw}  - which we subsequently removed using the \texttt{normalizeExprs} function in \texttt{Scater} \cite{McCarthy2017-we}.
 
-\section{TCGA studies}
+\subsection{TCGA studies}
 
 For both COAD and BRCA studies, TPM matrices were retrieved from a recent transcript-level quantification of the entire TCGA study \cite{Tatlow2016-yo}. Clinical metadata, including the phenotypic covariates used in PhenoPath, were retrieved using the RTCGA \texttt{R} package \cite{rtcga}. Transcript level expression estimates were combined to gene level expression estimates using \texttt{Scater} \cite{McCarthy2017-we}.
 
@@ -48,10 +63,10 @@ For both COAD and BRCA studies, TPM matrices were retrieved from a recent transc
 \caption{PCA representations of the COAD (\textbf{A}) and BRCA (\textbf{B}) datasets, coloured by sequenced plate and GMM cluster assignment respectively.} \label{fig:technical}
 \end{figure}
 
-\subsection{COAD}
+\subsubsection{COAD}
 
 A PCA visualisation of the COAD dataset (Fig. \ref{fig:technical}A) showed two distinct clusters based on the plate of sequencing. Rather than try to correct such a large batch effect, we retained samples with a PC1 score of less than 0 and a PC3 score greater than -10, and removed any ``normal'' tumour types. For input to PhenoPath we used the 4801 genes whose median absolute deviation in $\log(\text{TPM} + 1)$ expression was greater than $\sqrt{\frac{1}{2}}$.
 
-\subsection{BRCA}
+\subsubsection{BRCA}
 
 A PCA visualisation of the BRCA daatset (Fig. \ref{fig:technical}B) showed a loosely dispersed outlier population that separated on the first and third principal components. We performed Gaussian mixture model clustering using the \texttt{R} package \texttt{mclust}\cite{Fraley_undated-ug}, and removed samples designated as cluster 2 in Fig. \ref{fig:technical}B. For input to PhenoPath we used the 4579 genes whose variance in $\log(\text{TPM} + 1)$ expression was greater than 1 and whose median absolute deviation was greater than 0.

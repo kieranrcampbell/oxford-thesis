@@ -234,41 +234,6 @@ Since \sname relies on MCMC simulation for inference it is cruicial to assess mo
 
 %Full analysis can be found in the Rmarkdown notebooks online at \url{www.github.com/kieranrcampbell/ouija-paper}.
 
-\subsection{Generating synthetic data}
-
-Our method for generating synthetic pseudotemporally regulated single-cell RNA-seq data representing $\log_2(\text{TPM} + 1)$ given the above considerations can be found in algorithm \ref{alg:synth}.
-
-To quantify this for generating synthetic data we fit a simple linear model with a forced zero intercept to the pseudotemporal marker genes in the Trapnell et al. dataset that gave a gradient of $3.502$. Therefore, in all our synthetic data we model $\sigma^2 = 3.5 \mu$.
-
-
-
-\begin{algorithm}                      % enter the algorithm environment
-\caption{Generate pseudotemporally regulated scRNA-seq data}          % give the algorithm a caption
-\label{alg:synth}                           % and a label for \ref{} commands later in the document
-\begin{algorithmic}[1]                    % enter the algorithmic environment
-\State \textbf{Data:} $G$ genes, $C$ cells, $\phi = 3.5$, $\beta_0 = 1.76$, $\beta_1 = -1.16$
-\State \textbf{Result:} A $C \times G$ matrix of gene expression $X$, where $[X]_{cg} = x_{cg}$
-\For{$g \in 1 \ldots G$}
-	\State Draw $k_g \sim \text{Unif(5, 10)}$
-	\State Draw $\mu_g^{(0)} \sim \text{Unif}(2, 5)$
-	\State Draw $t_g^{(0)} \sim \text{Unif}(0,1)$
-	\State Set $k_g \gets -k_g$ with probability $\frac{1}{2}$
-	\For{$c \in 1 \ldots C$}
-		\State Draw $t_c \sim \text{Unif}(0,1)$
-		\State $\mu_{cg} \gets \mu_g^{(0)} f(t_c, k_g, t_g^{(0)})$
-		\State $\sigma^2_{cg} \gets \phi \mu_{cg}$
-		\State Draw $x_{cg} \sim \norm(\mu_{cg}, \sigma_{cg}^2)$
-		\If{$x_{cg} < 0$}
-			\State $x_{cg} \gets 0$
-		\EndIf
-		\State $\theta_{cg} \gets \text{logit}^{-1}(\beta_0 + \beta_1 \mu_{cg})$
-		\State Set $x_{cg} \gets 0$ with probability $\theta_{cg}$
-	\EndFor
-\EndFor
-\end{algorithmic}
-\end{algorithm}
-
-
 
 %\section{Analyses performed}
 %
@@ -284,36 +249,8 @@ To quantify this for generating synthetic data we fit a simple linear model with
 %
 %The dataset was downloaded (11/5/2016) from \url{http://www.cell.com/cms/attachment/2038326541/2052521610/mmc7.xlsx}. The original Waterfall pseudotimes were taken from the \texttt{Pseudotime} row, with the remainder of the data representing TPM expression values. Once more the TPM values were $\log_2$ transformed with a pseudocount of 1, and \sname run with the default parameters apart from the mean vector $\bm{\mu}^{(k)} = (5, 5, 5, -5, -5, -5)$ representing prior information. MCMC convergence was assessed by examining the trace and autocorrelation of the log-likelihood.
 
-\subsection{Benchmarking against alternative pseudotime algorithms}
-
-\paragraph{Generating synthetic data}
-
-Data was generated as per algorithm \ref{alg:synth} for 100 cells and 6, 9, 12 and 15 genes, with 40 replicates each.
-
-\paragraph{\sname configuration}
-
-As discussed in the main text, \sname was benchmarked with three different prior configurations. Apart from the parameters mentioned, all others correspond to the \sname defaults. Let $k_g^*$ correspond to the true $k_g$ used in synthetic data generation. Then the prior structures were encoded as follows:
-
-\begin{enumerate}
-\item \emph{random} - $\mu^{(k)}_g \gets 8$ with probability $\frac{1}{2}$ and $\mu^{(k)}_g \gets -8$ with probability $\frac{1}{2}$. $\mu^{(t)}_g \gets 0.5$ (default).
-\item \emph{directional prior} - $\mu^{(k)}_g \gets 8 \times \text{sign}(k_g^*) $.  $\mu^{(t)}_g \gets 0.5$ (default).
-\item \emph{true prior} - $\mu^{(k)}_g \gets k_g^*$, $\mu^{(t)}_g$ set to the true value of $t_g^{(0)}$.
-\end{enumerate}
-
-
-\paragraph{Monocle 2 configuration}
-
-Monocle 2 was run with default parameters with the exception of \texttt{reduceDimension(cds, norm\_method = "none")} to account for the fact that the data already represents $\log_2(\text{TPM} + 1)$ normalised values.
-
-\paragraph{DPT configuration} The MATLAB version of DPT was run with \texttt{nsig=20} and no branch detection.
-
-\paragraph{PCA} The first principal component was calculated in \texttt{R} with \texttt{prcomp(X)\$x[,1]}.
 
 \section{Results}
-
-
-{\color{red}
-
 
 \subsection{Systematic comparison of marker-based and whole-transcriptome based pseudotime estimation}
 
@@ -356,9 +293,9 @@ Our major observation is the striking variability in pseudotime estimates across
 
 We finally compared the consistency of differential expression across pseudotime using a recently published method for detecting which genes vary across pseudotime. All p-values were corrected using Benjamini-Hochberg and an FDR threshold of 5\% used to define significance. For each algorithm and number of additional genes we computed the proportion of genes deemed significant found in (a) the differential expression test using the transcriptome-wide pseudotime and (b) the differential expression test using the marker-only pseudotime.
 
-It can be see that as the number of markers included increases the rate of overlap to the transcriptome-wide DE calls also generally increases (Fig. \ref{fig:comparisons}D). Notably, the rate is very low for DPT when the number of included markers is small, which is consistent with the low correlation to marker pseudotimes exhibited in figure xA. In contrast, as the number of included marker genes increases, the rate of overlap to the marker DE calls decreases (Figure xE) as expected. }
+It can be see that as the number of markers included increases the rate of overlap to the transcriptome-wide DE calls also generally increases (Fig. \ref{fig:comparisons}D). Notably, the rate is very low for DPT when the number of included markers is small, which is consistent with the low correlation to marker pseudotimes exhibited in figure xA. In contrast, as the number of included marker genes increases, the rate of overlap to the marker DE calls decreases (Figure xE) as expected. 
 
-\section{Incorporating prior information improves pseudotime inference}
+\subsection{Incorporating prior information improves pseudotime inference}
 
 \begin{figure}
 	\centering	
@@ -369,9 +306,52 @@ It can be see that as the number of markers included increases the rate of overl
 	\label{fig:benchmarking}
 \end{figure}
 
-To compare the performance of Ouija to other pseudotemporal ordering algorithms on small gene sets we created synthetic gene expression data with known pseudotimes then re-inferred the pseudotimes using the algorithms. Briefly, pseudotimes were generated on a uniform distribution on $[0, 1)$ and $k_g$, $\mu^{(0)}_g$ and $t^{(0)}_g$ generated for each gene. Gene expression representing $\log_2(\text{TPM + 1})$ was then generated using a Gaussian likelihood censored from below at zero. Care was taken to ensure the mean-variance and dropout relations were comparable to real single-cell RNA-seq data. Full details can be found in supplementary methods.
+To compare the performance of Ouija to other pseudotemporal ordering algorithms on small gene sets we created synthetic gene expression data with known pseudotimes then re-inferred the pseudotimes using the algorithms. Pseudotimes were generated on a uniform distribution on $[0, 1)$ and $k_g$, $\mu^{(0)}_g$ and $t^{(0)}_g$ generated for each gene. In our benchmarking we generated data for $N = 100$ cells for $G \in \{6, 9, 12, 15\}$ genes, with forty replicates of each dataset for varying values of $k$, $t_0$ and $\mu_0$. The mean-variance relationship was fitted using the dataset from \cite{Trapnell2014} by regressing the variance for each marker gene on the mean expression forcing a  zero intercept. This gave a gradient of $3.502$, so for our synthetic data the variance was generated $\sigma^2 = 3.5 \mu$.
 
-To benchmark the algorithms we generated data for $C = 100$ cells for $G \in \{6, 9, 12, 15\}$ genes, with forty replicates of each dataset for varying values of $k$, $t_0$ and $\mu_0$. We benchmarked Ouija against principal component 1 (PC1), Diffusion Pseudotime (DPT) \cite{haghverdi2016diffusion} and Monocle 2 \cite{Trapnell2014}. Ouija allows us to specify priors on 	$k$ and $t_0$ via $k_g \sim \norm(\mu^{(k)}_g, 1 / \tau^{(k)}_g)$ and $\tO_g \sim \norm(\mu^{(t)}_g, 1 / \tau^{(t)}_g)$. We benchmarked Ouija in three situations. Firstly, with \emph{random priors} on $k$ where $\mu^{(k)}_g$ is set to arbitrary values and $\mu^{(t)}_g$ is set to 0.5 (essentially non-informative) for all $g$. Secondly, \emph{directional priors} where $\mu^{(k)}_g$ is set to a constant multiplied by the sign of the true $k_g$ and $\mu^{(t)}_g = 0.5$. This situation is most likely to correspond to the real-life use case where the researcher knows the direction of change of the genes along the trajectory along with a guess of the magnitude of that change. Finally, we considered priors with \emph{true values} where $\mu^{(k)}_g$ and $\mu^{(t)}_g$ are set to the true values used in the synthetic data generation. In general it is highly unrealistic for researchers to know the true parameter values but we include this case for comparison to the more realistic scenario of directional priors. In all situations the precision parameters are set to 1.
+Ouija allows us to specify priors on 	$k$ and $t_0$ via $k_g \sim \norm(\mu^{(k)}_g, 1 / \tau^{(k)}_g)$ and $\tO_g \sim \norm(\mu^{(t)}_g, 1 / \tau^{(t)}_g)$. We benchmarked Ouija in three situations. Firstly, with \emph{random priors} on $k$ where $\mu^{(k)}_g$ is set to arbitrary values and $\mu^{(t)}_g$ is set to 0.5 (essentially non-informative) for all $g$. Secondly, \emph{directional priors} where $\mu^{(k)}_g$ is set to a constant multiplied by the sign of the true $k_g$ and $\mu^{(t)}_g = 0.5$. This situation is most likely to correspond to the real-life use case where the researcher knows the direction of change of the genes along the trajectory along with a guess of the magnitude of that change. Finally, we considered priors with \emph{true values} where $\mu^{(k)}_g$ and $\mu^{(t)}_g$ are set to the true values used in the synthetic data generation. In general it is highly unrealistic for researchers to know the true parameter values but we include this case for comparison to the more realistic scenario of directional priors. In all situations the precision parameters are set to 1.
+
+%  Let $k_g^*$ correspond to the true $k_g$ used in synthetic data generation. Then the prior structures were encoded as follows:
+
+% \begin{enumerate}
+% \item \emph{random} - $\mu^{(k)}_g \gets 8$ with probability $\frac{1}{2}$ and $\mu^{(k)}_g \gets -8$ with probability $\frac{1}{2}$. $\mu^{(t)}_g \gets 0.5$ (default).
+% \item \emph{directional prior} - $\mu^{(k)}_g \gets 8 \times \text{sign}(k_g^*) $.  $\mu^{(t)}_g \gets 0.5$ (default).
+% \item \emph{true prior} - $\mu^{(k)}_g \gets k_g^*$, $\mu^{(t)}_g$ set to the true value of $t_g^{(0)}$.
+% \end{enumerate}
+
+The full algorithm for generating synthetic pseudotemporally regulated single-cell RNA-seq data representing $\log_2(\text{TPM} + 1)$ given the above considerations can be found in algorithm \ref{alg:synth}.
+
+
+\begin{algorithm}                      % enter the algorithm environment
+\caption{Generate pseudotemporally regulated scRNA-seq data}          % give the algorithm a caption
+\label{alg:synth}                           % and a label for \ref{} commands later in the document
+\begin{algorithmic}[1]                    % enter the algorithmic environment
+\State \textbf{Data:} $G$ genes, $C$ cells, $\phi = 3.5$, $\beta_0 = 1.76$, $\beta_1 = -1.16$
+\State \textbf{Result:} A $C \times G$ matrix of gene expression $X$, where $[X]_{cg} = x_{cg}$
+\For{$g \in 1 \ldots G$}
+	\State Draw $k_g \sim \text{Unif(5, 10)}$
+	\State Draw $\mu_g^{(0)} \sim \text{Unif}(2, 5)$
+	\State Draw $t_g^{(0)} \sim \text{Unif}(0,1)$
+	\State Set $k_g \gets -k_g$ with probability $\frac{1}{2}$
+	\For{$c \in 1 \ldots C$}
+		\State Draw $t_c \sim \text{Unif}(0,1)$
+		\State $\mu_{cg} \gets \mu_g^{(0)} f(t_c, k_g, t_g^{(0)})$
+		\State $\sigma^2_{cg} \gets \phi \mu_{cg}$
+		\State Draw $x_{cg} \sim \norm(\mu_{cg}, \sigma_{cg}^2)$
+		\If{$x_{cg} < 0$}
+			\State $x_{cg} \gets 0$
+		\EndIf
+		\State $\theta_{cg} \gets \text{logit}^{-1}(\beta_0 + \beta_1 \mu_{cg})$
+		\State Set $x_{cg} \gets 0$ with probability $\theta_{cg}$
+	\EndFor
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+
+We benchmarked Ouija against principal component 1 (PC1), Diffusion Pseudotime (DPT) \cite{haghverdi2016diffusion} and Monocle 2 \cite{Trapnell2014}.
+Monocle 2 was run with default parameters with the exception of \texttt{reduceDimension(cds, norm\_method = "none")} to account for the fact that the data already represents $\log_2(\text{TPM} + 1)$ normalised values. The MATLAB version of DPT was run with \texttt{nsig=20} and no branch detection. The first principal component was calculated in \texttt{R} with \texttt{prcomp(X)\$x[,1]}.
+
+%% paste end here
 
 The results can be seen in Figure \ref{fig:benchmarking}. Performance was assessed using Pearson correlation to the true pseudotimes as well as Kendall's tau, a measure of concordance of the ordering of two sets. For both metrics three trends are obvious. Firstly, as the number of genes in the marker panel increases, the accuracy of the pseudotemporal inference also increases. Secondly, PCA, DPT, Monocle 2 and Ouija with random priors are all largely comparable in their results, with Ouija with both directional priors and true values performing significantly better. Finally, the performance of Ouija with directional priors and the true values are largely comparable, implying exact knowledge of the biological parameters isn't necessary for the inclusion of prior information to be useful.
 
