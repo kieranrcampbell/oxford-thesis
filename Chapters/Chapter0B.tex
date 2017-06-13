@@ -45,6 +45,20 @@ Data were retreived as described in section \ref{sec:shin_preprocessing}. The ge
 
 FPKM values were downloaded from the gene expression ombnibus entry \texttt{GSE67120}. Cells belonging to the original publication's clusters \texttt{Adult\_HSC} and \texttt{E11.0\_T1CD201neg} were removed. The genes \emph{Nrp1}, \emph{Hey1}, \emph{Efnb2}, \emph{Ephb4}, \emph{Nrp2}, and \emph{Nr2f2} were chosen as ``marker genes'' according to the original publication. As all marker genes should be downregulated, the prior mean vector was set to $\mbmu^{(k)} = [-10, -10, -10, -10, -10, -10]$.
 
+
+\section{Chapter 4}
+
+% Used in setty2016wishbone
+
+\subsection{Paul et al.} 
+
+Data from \cite{paul2015transcriptional} were downloaded as post-processed from the analysis from \cite{setty2016wishbone} from \url{http://www.c2b2.columbia.edu/danapeerlab/html/wishbone-data.html}. Genes expressed in at least 20\% of cells were retained. For inference with MFA, genes whose variance exceeds 5 were used.
+
+\subsection{Bendall et al.} % bendall2011single
+
+Data from \cite{bendall2011single} were downloaded as post-processed from the analysis from \cite{setty2016wishbone} from \url{http://www.c2b2.columbia.edu/danapeerlab/html/wishbone-data.html}. The entire panel of 12 marker genes were used.
+
+
 \section{Chapter 5} \label{sec:prepclvm}
 
 \subsection{Shalek et al.} \label{sec:prepshalek}
