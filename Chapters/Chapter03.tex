@@ -306,7 +306,7 @@ It can be see that as the number of markers included increases the rate of overl
 	\label{fig:benchmarking}
 \end{figure}
 
-To compare the performance of Ouija to other pseudotemporal ordering algorithms on small gene sets we created synthetic gene expression data with known pseudotimes then re-inferred the pseudotimes using the algorithms. Pseudotimes were generated on a uniform distribution on $[0, 1)$ and $k_g$, $\mu^{(0)}_g$ and $t^{(0)}_g$ generated for each gene. In our benchmarking we generated data for $N = 100$ cells for $G \in \{6, 9, 12, 15\}$ genes, with forty replicates of each dataset for varying values of $k$, $t_0$ and $\mu_0$. The mean-variance relationship was fitted using the dataset from \cite{Trapnell2014} by regressing the variance for each marker gene on the mean expression forcing a  zero intercept. This gave a gradient of $3.502$, so for our synthetic data the variance was generated $\sigma^2 = 3.5 \mu$.
+To compare the performance of Ouija to other pseudotemporal ordering algorithms on small gene sets we created synthetic gene expression data with known pseudotimes then re-inferred the pseudotimes using the algorithms. Pseudotimes were generated on a uniform distribution on $[0, 1)$ and $k_g$, $\mu^{(0)}_g$ and $t^{(0)}_g$ generated for each gene. In our benchmarking we generated data for $N = 100$ cells for $G \in \{6, 9, 12, 15\}$ genes, with forty replicates of each dataset for varying values of $k$, $t_0$ and $\mu_0$. The mean-variance relationship was fitted using the dataset from \cite{Trapnell2014} by regressing the variance for each marker gene on the mean expression forcing a  zero intercept. This gave a gradient of $3.502$, so for our synthetic data the variance was generated $\sigma^2 = 3.5 \mu$. Furthermore, realistic dropout was simulated by fitting a logistic regression model of the proportion of dropout on latent expression $p_{\text{dropout}} = \text{Logit}^{-1}(\beta_0 + \beta_1 \mu)$ which gave estimates $\beta_0 = 1.76$ and $\beta_1 = -1.16$. Counts were then set to zero given the dropout probability of the simulated mean.
 
 Ouija allows us to specify priors on 	$k$ and $t_0$ via $k_g \sim \norm(\mu^{(k)}_g, 1 / \tau^{(k)}_g)$ and $\tO_g \sim \norm(\mu^{(t)}_g, 1 / \tau^{(t)}_g)$. We benchmarked Ouija in three situations. Firstly, with \emph{random priors} on $k$ where $\mu^{(k)}_g$ is set to arbitrary values and $\mu^{(t)}_g$ is set to 0.5 (essentially non-informative) for all $g$. Secondly, \emph{directional priors} where $\mu^{(k)}_g$ is set to a constant multiplied by the sign of the true $k_g$ and $\mu^{(t)}_g = 0.5$. This situation is most likely to correspond to the real-life use case where the researcher knows the direction of change of the genes along the trajectory along with a guess of the magnitude of that change. Finally, we considered priors with \emph{true values} where $\mu^{(k)}_g$ and $\mu^{(t)}_g$ are set to the true values used in the synthetic data generation. In general it is highly unrealistic for researchers to know the true parameter values but we include this case for comparison to the more realistic scenario of directional priors. In all situations the precision parameters are set to 1.
 
@@ -325,23 +325,23 @@ The full algorithm for generating synthetic pseudotemporally regulated single-ce
 \caption{Generate pseudotemporally regulated scRNA-seq data}          % give the algorithm a caption
 \label{alg:synth}                           % and a label for \ref{} commands later in the document
 \begin{algorithmic}[1]                    % enter the algorithmic environment
-\State \textbf{Data:} $G$ genes, $C$ cells, $\phi = 3.5$, $\beta_0 = 1.76$, $\beta_1 = -1.16$
-\State \textbf{Result:} A $C \times G$ matrix of gene expression $X$, where $[X]_{cg} = x_{cg}$
+\State \textbf{Data:} $G$ genes, $N$ cells, $\phi = 3.5$, $\beta_0 = 1.76$, $\beta_1 = -1.16$
+\State \textbf{Result:} A $N \times G$ matrix of gene expression $X$, where $[X]_{ng} = x_{ng}$
 \For{$g \in 1 \ldots G$}
 	\State Draw $k_g \sim \text{Unif(5, 10)}$
 	\State Draw $\mu_g^{(0)} \sim \text{Unif}(2, 5)$
 	\State Draw $t_g^{(0)} \sim \text{Unif}(0,1)$
 	\State Set $k_g \gets -k_g$ with probability $\frac{1}{2}$
 	\For{$c \in 1 \ldots C$}
-		\State Draw $t_c \sim \text{Unif}(0,1)$
-		\State $\mu_{cg} \gets \mu_g^{(0)} f(t_c, k_g, t_g^{(0)})$
-		\State $\sigma^2_{cg} \gets \phi \mu_{cg}$
-		\State Draw $x_{cg} \sim \norm(\mu_{cg}, \sigma_{cg}^2)$
-		\If{$x_{cg} < 0$}
-			\State $x_{cg} \gets 0$
+		\State Draw $t_n \sim \text{Unif}(0,1)$
+		\State $\mu_{ng} \gets \mu_g^{(0)} f(t_c, k_g, t_g^{(0)})$
+		\State $\sigma^2_{ng} \gets \phi \mu_{ng}$
+		\State Draw $x_{ng} \sim \norm(\mu_{ng}, \sigma_{ng}^2)$
+		\If{$x_{ng} < 0$}
+			\State $x_{ng} \gets 0$
 		\EndIf
-		\State $\theta_{cg} \gets \text{logit}^{-1}(\beta_0 + \beta_1 \mu_{cg})$
-		\State Set $x_{cg} \gets 0$ with probability $\theta_{cg}$
+		\State $\theta_{ng} \gets \text{logit}^{-1}(\beta_0 + \beta_1 \mu_{ng})$
+		\State Set $x_{ng} \gets 0$ with probability $\theta_{ng}$
 	\EndFor
 \EndFor
 \end{algorithmic}

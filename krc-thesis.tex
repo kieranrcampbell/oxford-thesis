@@ -27,7 +27,7 @@
 %
 % **************************************************************************************************************
 \RequirePackage{fix-cm} % fix some latex issues see: http://texdoc.net/texmf-dist/doc/latex/base/fixltx2e.pdf
-\documentclass[ twoside,openright,titlepage,numbers=noenddot,headinclude,%1headlines,% letterpaper a4paper
+\documentclass[draft,twoside,openright,titlepage,numbers=noenddot,headinclude,%1headlines,% letterpaper a4paper
                 footinclude=true,cleardoublepage=empty,abstractoff, % <--- obsolete, remove (todo)
                 BCOR=5mm,paper=a4,fontsize=12pt,%11pt,a4paper,%
                 ngerman,american,%draft,%
@@ -105,25 +105,21 @@
 % interlingua se que. Al via multo esser specimen, campo responder que
 % da. Le usate medical addresses pro, europa origine sanctificate nos se.}
 
-% Introduction
-% \include{Chapters/Chapter01}
-
-% Pseudogp
-% \include{Chapters/Chapter02}
-
 %\addtocontents{toc}{\protect\clearpage} % <--- just debug stuff, ignore
 
-% Ouija
-\include{Chapters/Chapter03}
 
-% MFA
-% \include{Chapters/Chapter04}
 
-% CLVM
-% \include{Chapters/Chapter05}
+% \include{Chapters/Chapter01} % Introduction
 
-% Conclusion
-% \include{Chapters/Chapter06}
+% \include{Chapters/Chapter02} % Pseudogp
+
+% \include{Chapters/Chapter03} % Ouija
+
+% \include{Chapters/Chapter04} % Pseudogp
+
+\include{Chapters/Chapter05} % CLVM
+
+\include{Chapters/Chapter06} % Discussion
 
 
 %\include{multiToC} % <--- just debug stuff, ignore for your documents
@@ -135,7 +131,7 @@
 \cleardoublepage
 % \part{Appendix}
 
-% \include{Chapters/Chapter0A} % Switchde fitting
+\include{Chapters/Chapter0A} % Switchde fitting
 \include{Chapters/Chapter0B} % Data analysis
 % \include{Chapters/Chapter0C} % MFA gibbs updates
 % \include{Chapters/Chapter0D} % CLVM variational updates
