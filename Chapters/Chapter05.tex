@@ -666,9 +666,14 @@ The results can be seen in figure \ref{fig:cgplvm_results}. Figure \ref{fig:cgpl
 
 \section{Discussion}
 
-\begin{itemize}
-\item SVI instead of CAVI
-\item Hyperpars for cgplvm
-\item inducing points
-\item FA step in linear clvm
-\end{itemize}
+One weakness of our CAVI implementation of PhenoPath is the requirement of a full sweep through the data for every iteration (and indeed for every local parameter). While in practice it is unlikely for the number of features to increase\footnote{The transciptome is naturally fixed at around 20,000 genes, of which typically 5,000 to 10,000 will exhibit ``interesting'' behaviour in a dataset, typically defined as being high-variance.} the reducing cost of genomics means the number of samples - particularly in the single cell case - could easily exceed one million. In order to make this scalable, CAVI can be replaced with stochastic variational inference (SVI) \cite{hoffman2013stochastic} where the data is subsampled at each iteration. Given the conditionally conjugate nature of the model it is relatively easy to derive an SVI algorithm from CAVI.
+
+A further issue is that the number of interaction parameters grows as $PG$ for $P$ covariates and $G$ featues. Given $G$ is typically $\mathcal{O}(10^3)$, the introduction of many covariates leads to large model complexity and potentially cumbersome inference. Under the assumption that the covariates $P$ are in some way correlated, we may reduce the number of parameters in the model by introducing an intermediate factor analysis step with an additional $R \times P$ matrix $\mbxi$ for $R \ll P$ where the interaction term involved in the mean becomes
+
+\begin{equation}
+y_{ng} \propto \sum_{p=1}^{P} \sum_{r=1}^R \beta_{rg} \xi_{rp} x_{np}
+\end{equation}
+
+reducing the number of interaction parameters to $R(G + P)$.
+
+There are several issues with and extensions of the covariate-adjusted Gaussian Process Latent Variable Model. When we performed inference we assumed the kernel hyperparameters were fixed and known, which is an unlikely assumption in practice (though often made). As discussed in chapter 2, GPLVM is often too flexible without strong priors on the kernel parameters. This issue persists in CGPLVM, where the introduction of additional kernel parameters and scale dependent interaction parameters will worsen the non-identifiability. A further issue is the $\mathcal{O}(N^3)$ inversion of the covariance matrix required in order to evaluate the likelihood to perform inference. More scalable inference may be performed by combining SVI with inducing points \cite{Titsias2010}.
