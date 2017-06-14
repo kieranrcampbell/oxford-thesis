@@ -4,8 +4,21 @@
 
 \section{Single-cell RNA-sequencing}
 
+\subsection{Introduction}
+
+It is hard to overstate the impact that the introduction of single-cell whole-transcriptome expression quantification has had on recent scientific research. The first single-cell RNA-sequencing (RNA-seq) method was introduced in 2009 \cite{Tang2009-th}, and gained widespread interest around three years later with the introduction of methods such as SMART-seq \cite{Ramskold2012-wt} and SMART-seq2 \cite{Picelli2013-tm} that significantly reduced the cost of library preparation. It is quite incredible that in the space of a little over five years the technology has sufficiently advanced to move from profiling a few tens of cells to thousands and hundreds of thousands using technologies such as Dropseq \cite{Macosko2015-ek} and the 10x platform \cite{Zheng2017-vj}.
+
+Concurrently, the mass-production of single-cell data has lead to an explosion of development of methods for downstream analysis by both computational biologists and statisticians alike. There are now a wide-range of methods for common analyses such as normalisation \cite{Lun2016-oj,Bacher2017-ga}, differential expression \cite{Kharchenko2014,Delmans2016-po,Korthauer2016-iz}, dimensionality reduction \cite{Yau2015,Wang2017-dl}, and ``pseudotime'' analyses (see section \ref{sec:pseudotime}). Indeed, there are now over 100 dedicated tools for analysing single-cell data\footnote{A comprehensive spreadsheet of single-cell software can be found at \url{https://tinyurl.com/mqabyur}.}, the majority of which have been produced since 2015.
+
 \subsection{Why quantify gene expression in single-cells?}
 
+The basic logic behind quantifying gene expression in single cells is that we may expect some heterogeneity at the single cell level that is averaged over in bulk. For example, cells may undergo some biological process asychronously, where even time series analysis would average over progression at each point\footnote{Computational methods to correct for this (known as ``pseudotime ordering'') are the main focus of this thesis and are discussed in-depth in section \ref{sec:pseudotime})} \cite{Trapnell2014-xi}. Furthermore, multiple distinct cell types \cite{Kolodziejczyk2015-jd} or rare cell types \cite{Grun2015-xz} may exist within a population that a bulk assay would be unable to resolve. Some authors have even suggested that Simpson's paradox could mean that gene co-expression patterns observed in bulk are incorrect once groupings at the single-cell level are taken into account \cite{Trapnell2015-mz}.
+
+% Applications in differentiation
+
+% Identifying discrete neuronal cell types
+
+% Combining transcript with other assays
 
 
 % \subsubsection{Central dogma}
@@ -82,7 +95,7 @@ A different dropout model was implemented in the dimensionality reduction model 
 
 Some methods take a different approach to dropout and treat it as a missing data problem that requires imputation. MAGIC \cite{Van_Dijk2017-wn} uses a diffusion-based approach (similar to maps, see section \ref{sec:diffusion_maps}) that computes a low-dimensional graph embedding before ``imputing'' each cell's expression by a weighted sum of its neighbours. A similar method SAVER \cite{SAVER} models expression using a Poisson likelihood with a latent true expression that is dependent on similar genes in the same cell (rather than the same gene in similar cells as per MAGIC).
 
-\section{Pseudotime \& trajectories}
+\section{Pseudotime \& trajectories} \label{sec:pseudotime}
 
 
 \subsection{The pseudotime estimation problem}
@@ -131,7 +144,7 @@ Following this was the introduction of \emph{Sample Progression Discovery} (SPD)
 \subsubsection{Overview}
 
 Ordering bulk microarray samples was arguably a niche area, with the three studies discussed above constituting the main work in the field. However, the advent of single-cell sequencing lead to an explosion of interest in the field, mostly due to the higher inter-sample heterogeneity present in single-cell data. The first single-cell pseudotime algorithm was published in March 2014 \cite{trapnell2014dynamics}; at time of writing (May 2017) there are now approximately 33 single-cell pseudotime inference algorithms that have at least been preprinted\footnote{
-A comprehensive spreadsheet of single-cell software can be found at \url{https://tinyurl.com/mqabyur}.
+Taken from the spreadsheet mentioned previously at \url{https://tinyurl.com/mqabyur}.
 }, a rate of roughly one per month.
 
 \begin{sidewaystable}
