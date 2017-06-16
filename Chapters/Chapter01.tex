@@ -8,7 +8,8 @@
 
 It is hard to overstate the impact that the introduction of single-cell whole-transcriptome expression quantification has had on recent scientific research. The first single-cell RNA-sequencing (RNA-seq) method was introduced in 2009 \cite{Tang2009-th}, and gained widespread interest around three years later with the introduction of methods such as SMART-seq \cite{Ramskold2012-wt} and SMART-seq2 \cite{Picelli2013-tm} that significantly reduced the cost of library preparation. It is quite incredible that in the space of a little over five years the technology has sufficiently advanced to move from profiling a few tens of cells to thousands and hundreds of thousands using technologies such as Dropseq \cite{Macosko2015-ek} and the 10x platform \cite{Zheng2017-vj}.
 
-Concurrently, the mass-production of single-cell data has lead to an explosion of development of methods for downstream analysis by both computational biologists and statisticians alike. There are now a wide-range of methods for common analyses such as normalisation \cite{Lun2016-oj,Bacher2017-ga}, differential expression \cite{Kharchenko2014,Delmans2016-po,Korthauer2016-iz}, dimensionality reduction \cite{Yau2015,Wang2017-dl}, and ``pseudotime'' analyses (see section \ref{sec:pseudotime}). Indeed, there are now over 100 dedicated tools for analysing single-cell data\footnote{A comprehensive spreadsheet of single-cell software can be found at \url{https://tinyurl.com/mqabyur}.}, the majority of which have been produced since 2015.
+Concurrently, the mass-production of single-cell data has lead to an explosion of methods development for downstream analysis by both computational biologists and statisticians. There are now a wide-range of methods for common analyses such as normalisation \cite{Lun2016-oj,Bacher2017-ga}, differential expression \cite{Kharchenko2014,Delmans2016-po,Korthauer2016-iz}, dimensionality reduction \cite{Yau2015,Wang2017-dl}, and ``pseudotime'' analyses (see section \ref{sec:pseudotime}). Indeed, there are now over 100 dedicated tools for analysing single-cell data, %\footnote{A comprehensive spreadsheet of single-cell software can be found at \url{https://tinyurl.com/mqabyur}.}, 
+the majority of which have been produced since 2015.
 
 \subsection{Why quantify gene expression in single-cells?}
 
@@ -16,16 +17,16 @@ The basic logic behind quantifying gene expression in single cells is that we ma
 
 % Applications in differentiation
 
-% Identifying discrete neuronal cell types
+Arguably one of the most popular applications of single-cell RNA-sequencing has been to differentiating cells, tracking the changes in gene regulation as the cells progress. Early examples include tracking the differentiation of primary human myoblasts \cite{Trapnell2014-xi}, which revealed switch-like changes in expression of key regulatory factors, and tracking the differentiation of alveolar cells in mice that allowed for the identification of bipotent progenitor cells \cite{Treutlein2014-ob}. Such ideas have been extended to many biological systems, such as differentiating hematopoietic stem cells \cite{zhou2016tracing,Kowalczyk2015-li}, sensory epithelial cells from the inner ear \cite{Burns2015}, and more exotic examples such as the differentiation of zebrafish thrombocytes \cite{Macaulay2016-vv} and neural stem cells in planarians (flatworms) \cite{molinaro2016silico}.
 
-% Combining transcript with other assays
+A further popular application of single-cell RNA-seq has been identifying subtypes of neurons (see e.g. \cite{Poulin2016-bl} for a full review). Possibly the first to do so was Usoskin et al. \cite{Usoskin2015-gp} who profiled 622 single mouse neurons from the dorsal root ganglion involved in the primary sensory system. Through a basic iterative PCA and clustering-by-eye procedure they identified 11 functionally distinct subtypes of primary sensory neurons. Shortly after Zeisel et al. \cite{Zeisel2015-cv} performed single-cell RNA-seq on 3005 cells from the mouse cerebral cortex. Rather than rely on the ad-hoc procedure of clustering-by-eye, they developed an iterative biclustering algorithm called BackSPIN. This suggested 9 major distinct cell types, which was further partitioned into 47 by repeating the clustering on each major cell type. When attempting to identify novel cell types based on gene expression it is obviously advantageous to sequence as many cells as possible. Not content with the poor scalability of existing procedures, Macosko et al. \cite{Macosko2015-ek} developed an entirely new library preparation procedure termed Dropseq (see section \ref{sec:sc_lib_prep}) to cheaply profile thousands of cells at once. This allowed for the expression quantification of a staggering 44,808 cells from the mouse retina that were clustered into 39 transcriptionally distinct cell types using density-based clustering on a t-SNE projection. Although identifying cellular subtypes is a popular and intuitive idea, several issues remain. Surprisingly, there is no strict definition of a ``cell type'', a challenge to be tackled by the Human Cell Atlas \cite{Regev2017-sl}. Furthermore, practically every clustering algorithm - even those that choose the number of clusters ``automatically'' - have tunable parameters that leave the  final number of cell types discovered open to subjectivity.
 
-
-% \subsubsection{Central dogma}
-% \subsubsection{Heterogeneity at the single-cell level}
-
+An recent development in single-cell technologies has been the ability to simultaneously profile ``omics'' other than gene expression alone (see \cite{Macaulay2017-nn} for a full review). For example, G\&T-seq \cite{Macaulay2015-ok} allows for combined measurement of the genome and transcriptome in a single-cell. There are clear uses of such methods in cancer genomics, where the combined measurement of DNA mutations and RNA expression would allow for the quantification of clonality on gene expression and subsequently cellular regulation. Further methods have been used to jointly profile the methylation states of DNA at the single-cell level along with gene expression, known as scM\&T-seq 
+\cite{Angermueller2016-ll,Hu2016-bz}. A recent publication has extended this to simultaneously measure chromatin accessibility, DNA methylation, and gene expression in single-cells \cite{Clark2017-pc}.
 
 \subsection{Bulk expression quantification}
+
+Same after library preparation - chemistry details differ
 
 \subsubsection{rt-qpcr}
 
@@ -38,7 +39,9 @@ Microarrays preceded RNA sequencing as the transcriptome-wide quantification met
 \subsubsection{RNA sequencing}
 
 
-\subsection{Single-cell expression quantification methods}
+\subsection{Single-cell library preparation} \label{sec:sc_lib_prep}
+
+Introduction - physical sequencing the same, library preparation not
 
 Microfluidics - C1
 
