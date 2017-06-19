@@ -250,9 +250,9 @@ Since \sname relies on MCMC simulation for inference it is cruicial to assess mo
 %The dataset was downloaded (11/5/2016) from \url{http://www.cell.com/cms/attachment/2038326541/2052521610/mmc7.xlsx}. The original Waterfall pseudotimes were taken from the \texttt{Pseudotime} row, with the remainder of the data representing TPM expression values. Once more the TPM values were $\log_2$ transformed with a pseudocount of 1, and \sname run with the default parameters apart from the mean vector $\bm{\mu}^{(k)} = (5, 5, 5, -5, -5, -5)$ representing prior information. MCMC convergence was assessed by examining the trace and autocorrelation of the log-likelihood.
 
 
-\section{Results}
+% \section{Results}
 
-\subsection{Systematic comparison of marker-based and whole-transcriptome based pseudotime estimation}
+\section{Systematic comparison of marker-based and whole-transcriptome based pseudotime estimation}
 
 We investigated the use of limited marker gene panels for pseudotime inference using three single cell expression datasets: (i) adult hippocampal quiescent neural stem cells (Shin) \cite{Shin2015}, (ii) differentiating myoblasts (Trapnell) \cite{Trapnell2014} and (iii) embryonic precursor cells into haematopoietic stem cells \cite{zhou2016tracing}. We began by computing pseudotimes using a selection of pseudotime algorithms for each dataset using the small set of 5-6 marker genes identified in the respective studies. We compared marker-based pseudotimes estimated using Ouija, a reference pseudotime based on the first principal component (PC1), TSCAN  \cite{ji2016tscan}, Monocle 2 \cite{qiu2017reversed}, and DPT \cite{haghverdi2016diffusion}. Monocle and TSCAN were run with default parameter settings. For DPT, white noise with standard deviation of $10^{-6}$ of each gene’s standard deviation was added to the expression data to avoid errors concerning cells with identical expression.
 
@@ -295,70 +295,102 @@ We finally compared the consistency of differential expression across pseudotime
 
 It can be see that as the number of markers included increases the rate of overlap to the transcriptome-wide DE calls also generally increases (Fig. \ref{fig:comparisons}D). Notably, the rate is very low for DPT when the number of included markers is small, which is consistent with the low correlation to marker pseudotimes exhibited in figure xA. In contrast, as the number of included marker genes increases, the rate of overlap to the marker DE calls decreases (Figure xE) as expected. 
 
-\subsection{Incorporating prior information improves pseudotime inference}
+\section{Incorporating prior information improves pseudotime inference}
 
-\begin{figure}
-	\centering	
-	\includegraphics[width=\textwidth]{gfx/Ch3/traj_comparison.png} 
-	\caption{{\bf Comparison with alternative pseudotime algorithms using synthetic data.} 
-	\textbf{A} Example plots of synthetic gene expression across pseudotime for four genes. The algorithm for generating synthetic pseudotemporally regulated gene expression data may be found in supplementary methods.
-	\textbf{B} We compared Ouija against three alternative pseudotemporal methods (principal component 1, Monocle 2 and DPT). We generated synthetic data as described in supplementary methods for gene expression matrices of different sizes ($ G = 6, 9, 12, 15$) with forty replicates in each and attempted to re-infer the pseudotimes. We used both Pearson correlation and Kendall's tau as measures of accuracy compared to the true values. Results show that PC1, Monocle 2, DPT and Ouija with non-informative priors perform comparably. Ouija with priors given by directional and true priors are significantly more accurate in all cases.}
-	\label{fig:benchmarking}
+\subsection{Simulating switch-like pseudotime regulation}
+
+\begin{figure}%[!t]
+	\centering
+	\includegraphics[width=\textwidth]{gfx/ch3/sims.png}
+	\caption{Incorporating prior information improves pseudotime inference of switch-like genes. Four mean functions were considered in simulations (top), each corresponding to different switch-like behaviour across pseudotime. We then reinferred the pseudotimes for four different gene set sizes with 40 replications each, for PC1, DPT, and Ouija with and without informative priors. In each case, increasing the number of genes improves pseudotime inference, as does incorporating prior information.}
+	\label{fig:simulated_comparison}
 \end{figure}
 
-To compare the performance of Ouija to other pseudotemporal ordering algorithms on small gene sets we created synthetic gene expression data with known pseudotimes then re-inferred the pseudotimes using the algorithms. Pseudotimes were generated on a uniform distribution on $[0, 1)$ and $k_g$, $\mu^{(0)}_g$ and $t^{(0)}_g$ generated for each gene. In our benchmarking we generated data for $N = 100$ cells for $G \in \{6, 9, 12, 15\}$ genes, with forty replicates of each dataset for varying values of $k$, $t_0$ and $\mu_0$. The mean-variance relationship was fitted using the dataset from \cite{Trapnell2014} by regressing the variance for each marker gene on the mean expression forcing a  zero intercept. This gave a gradient of $3.502$, so for our synthetic data the variance was generated $\sigma^2 = 3.5 \mu$. Furthermore, realistic dropout was simulated by fitting a logistic regression model of the proportion of dropout on latent expression $p_{\text{dropout}} = \text{Logit}^{-1}(\beta_0 + \beta_1 \mu)$ which gave estimates $\beta_0 = 1.76$ and $\beta_1 = -1.16$. Counts were then set to zero given the dropout probability of the simulated mean.
+% \subsection{Overview}
 
-Ouija allows us to specify priors on 	$k$ and $t_0$ via $k_g \sim \norm(\mu^{(k)}_g, 1 / \tau^{(k)}_g)$ and $\tO_g \sim \norm(\mu^{(t)}_g, 1 / \tau^{(t)}_g)$. We benchmarked Ouija in three situations. Firstly, with \emph{random priors} on $k$ where $\mu^{(k)}_g$ is set to arbitrary values and $\mu^{(t)}_g$ is set to 0.5 (essentially non-informative) for all $g$. Secondly, \emph{directional priors} where $\mu^{(k)}_g$ is set to a constant multiplied by the sign of the true $k_g$ and $\mu^{(t)}_g = 0.5$. This situation is most likely to correspond to the real-life use case where the researcher knows the direction of change of the genes along the trajectory along with a guess of the magnitude of that change. Finally, we considered priors with \emph{true values} where $\mu^{(k)}_g$ and $\mu^{(t)}_g$ are set to the true values used in the synthetic data generation. In general it is highly unrealistic for researchers to know the true parameter values but we include this case for comparison to the more realistic scenario of directional priors. In all situations the precision parameters are set to 1.
+We performed large scale simulations to assess both the utility of prior information in pseudotime inference and the robustness of Ouija to model misspecification in how the genes are regulated. Pseudotimes were simulated for $N=100$ cells from a $\text{Unif(0,1)}$ distribution. One of four mean functions (see below) was used to simulate the regulation of expression across pseudotime at various levels of misspecification with respect to the Ouija model.
 
-%  Let $k_g^*$ correspond to the true $k_g$ used in synthetic data generation. Then the prior structures were encoded as follows:
+Subsequently, an identical noise model was placed on top of the mean function motivated by empirical observations of single-cell RNA-seq data. If $\mu_{ng}$ is the mean expression value for cell $n$ and gene $g$ under a given mean function, a variance $\sigma^2_{ng} = \gamma \mu_{ng}$ is calculated in line with previous observations, where we take $\gamma = 3.5$ as the result of regressing the variance on mean expression in key marker genes from cite trapnell. Following this a latent expression value $y^*_{ng} \sim \Norm(\mu_{ng}, \sigma_{ng}^2)$ is generated, from which the observed expression values are constructed. Firstly, any values of $y^* < 0$ are set to 0 (though these are typically small in number as the variance of the observations approaches zero as the latent values do so). Secondly, a zero inflation step is applied to $y^*$ to simulate dropout ubiquitous in single-cell RNA-seq data. For each observation a dropout probability $p^{\text{dropout}}_{ng} = \text{Logit}^{-1}(\beta_0 + \beta_1 \mu_{ng})$ is calculated, where $\beta_0 = 1.76$ and $\beta_1 = -1.16$ are calculated using the same dataset as before. Each observation is subsequently set to zero with probability $p^{\text{dropout}}_{ng}$.
 
-% \begin{enumerate}
-% \item \emph{random} - $\mu^{(k)}_g \gets 8$ with probability $\frac{1}{2}$ and $\mu^{(k)}_g \gets -8$ with probability $\frac{1}{2}$. $\mu^{(t)}_g \gets 0.5$ (default).
-% \item \emph{directional prior} - $\mu^{(k)}_g \gets 8 \times \text{sign}(k_g^*) $.  $\mu^{(t)}_g \gets 0.5$ (default).
-% \item \emph{true prior} - $\mu^{(k)}_g \gets k_g^*$, $\mu^{(t)}_g$ set to the true value of $t_g^{(0)}$.
-% \end{enumerate}
+\subsubsection{Mean functions}
 
-The full algorithm for generating synthetic pseudotemporally regulated single-cell RNA-seq data representing $\log_2(\text{TPM} + 1)$ given the above considerations can be found in algorithm \ref{alg:synth}.
+We sought to simulated switch-like behaviour from three link functions commonly used in generalized linear regression, along with a modified version that leads to further mis-specification.
 
+\paragraph{Sigmoidal}
 
-\begin{algorithm}                      % enter the algorithm environment
-\caption{Generate pseudotemporally regulated scRNA-seq data}          % give the algorithm a caption
-\label{alg:synth}                           % and a label for \ref{} commands later in the document
-\begin{algorithmic}[1]                    % enter the algorithmic environment
-\State \textbf{Data:} $G$ genes, $N$ cells, $\phi = 3.5$, $\beta_0 = 1.76$, $\beta_1 = -1.16$
-\State \textbf{Result:} A $N \times G$ matrix of gene expression $X$, where $[X]_{ng} = x_{ng}$
-\For{$g \in 1 \ldots G$}
-	\State Draw $k_g \sim \text{Unif(5, 10)}$
-	\State Draw $\mu_g^{(0)} \sim \text{Unif}(2, 5)$
-	\State Draw $t_g^{(0)} \sim \text{Unif}(0,1)$
-	\State Set $k_g \gets -k_g$ with probability $\frac{1}{2}$
-	\For{$c \in 1 \ldots C$}
-		\State Draw $t_n \sim \text{Unif}(0,1)$
-		\State $\mu_{ng} \gets \mu_g^{(0)} f(t_c, k_g, t_g^{(0)})$
-		\State $\sigma^2_{ng} \gets \phi \mu_{ng}$
-		\State Draw $x_{ng} \sim \norm(\mu_{ng}, \sigma_{ng}^2)$
-		\If{$x_{ng} < 0$}
-			\State $x_{ng} \gets 0$
-		\EndIf
-		\State $\theta_{ng} \gets \text{logit}^{-1}(\beta_0 + \beta_1 \mu_{ng})$
-		\State Set $x_{ng} \gets 0$ with probability $\theta_{ng}$
-	\EndFor
-\EndFor
-\end{algorithmic}
-\end{algorithm}
+The sigmoidal mean function corresponds to that used by Ouija. Given the pseudotime $t_n$ the mean is calculated via
 
+\begin{equation}
+    \mu_{ng} = \frac{2 \mu^{(0)}_g}{1 + \exp(-k_g (t_n - t^{(0)}_g))}
+\end{equation}
 
-We benchmarked Ouija against principal component 1 (PC1), Diffusion Pseudotime (DPT) \cite{haghverdi2016diffusion} and Monocle 2 \cite{Trapnell2014}.
-Monocle 2 was run with default parameters with the exception of \texttt{reduceDimension(cds, norm\_method = "none")} to account for the fact that the data already represents $\log_2(\text{TPM} + 1)$ normalised values. The MATLAB version of DPT was run with \texttt{nsig=20} and no branch detection. The first principal component was calculated in \texttt{R} with \texttt{prcomp(X)\$x[,1]}.
+for which we draw $\mu^{(0)}_g \sim \text{Unif}(3,4)$, $t^{(0)}_g \sim \text{Unif}(0.1, 0.9)$ and $k_g \sim \text{Unif}(5, 20)$ and negated with probability $\frac{1}{2}$. Given an assumed scale of $\log_2{(\text{TPM}+1)}$ this selection of parameters, combined with the noise model, provides a reasonable range of observed expression values.
 
-%% paste end here
+\paragraph{Complementary log-log}
 
-The results can be seen in Figure \ref{fig:benchmarking}. Performance was assessed using Pearson correlation to the true pseudotimes as well as Kendall's tau, a measure of concordance of the ordering of two sets. For both metrics three trends are obvious. Firstly, as the number of genes in the marker panel increases, the accuracy of the pseudotemporal inference also increases. Secondly, PCA, DPT, Monocle 2 and Ouija with random priors are all largely comparable in their results, with Ouija with both directional priors and true values performing significantly better. Finally, the performance of Ouija with directional priors and the true values are largely comparable, implying exact knowledge of the biological parameters isn't necessary for the inclusion of prior information to be useful.
+The complementary log-log (\emph{cloglog}) acts as a link function in logistic regression, modelling the probability of success $\pi$ in terms of regressors $\mbx$ and coefficients $\mbbeta$ via $\log(-\log(1 - \pi_n)) = \mbx_n^T \mbbeta$. Therefore, we use it to generate a mean via
+
+\begin{equation}
+    \mu_{ng} = 2 \mu^{(0)}_g \left(1 - \exp(-e^{k_g (t_n - t^{(0)}_{g})}) \right)
+\end{equation}
+
+for which we draw the parameters identically to the sigmoidal case.
+
+\paragraph{Probit}
+
+The probit link models the probability of success as $\pi_n = \Phi(\mbx_n^T \mbbeta)$, where $\Phi$ is the cumulative distribution function of the standard normal distribution. Thus we use
+
+\begin{equation}
+    \mu_{ng} = 2 \mu_g^{(0)} \Phi\left(k_g (t_n - t^{(0)}_{g})\right).
+\end{equation}
+
+$ \mu_g^{(0)}$ and $t^{(0)}_{g}$ are drawn as before, while $k_g \sim \text{Unif}(10, 50)$ to take into account the differing curvature compared to sigmoid and cloglog (and negated with probability $\frac{1}{2}$ as before). 
 
 
+\paragraph{Threshold}
+
+We sought to create a further switch-like mean function that would be maximally mis-specified with respect to Ouija. This follows a two part process and requires a sign variable $|k_g|$ that describes whether the gene is up or down regulated along pseudotime. Firstly, a probit variable is generated by drawing $m_g \sim |k_g| \times \text{Unif}(1,2)$ and $c_g = -m_g t^{(0)}_g$. Then draw $\mu^*_{ng} \sim \Norm(m_g t_n + c_g, 0.1)$. The mean function is given by
+
+\begin{equation}
+    \mu_{ng} = 
+    \begin{cases}
+        2 \mu_g^{(0)} & \text{if } \mu^*_{ng} > 0 \\
+        0 & \text{otherwise}
+    \end{cases}
+\end{equation}
+
+In this situation we draw $ \mu_g^{(0)}$ and $t^{(0)}_{g}$ as before and $|k_g|$ is positive or negative with equal probability.
+
+Examples for the four different mean functions can be seen in figure \ref{fig:simulated_comparison}.
+
+\subsection{Pseudotime inference}
+
+For each mean function we re-inferred the pseudotimes with PCA (first principal component), diffusion pseudotime, and Ouija in two configurations - noninformative and informative. For the noninformative case, default settings are used which consists of $k \sim \Norm(0, 1)$ and $t^{(0)} \sim \Norm(0.5, 1)$. For the informative case, the prior mean on $t^{(0)}_{g}$ was set to its true value and the prior standard deviation 0.1.
+
+For the informative case the prior on $k$ varied slightly depending on the simulation condition, but in each case the standard deviation was reduced to 0.1. For the sigmoidal and cloglog mean function regimes, the prior means were set to the true values of the generated data. For the probit and threshold datasets, the prior was set to $50$ multiplied by the sign of the true $k$. In otherwords, we declare the direction of regulation, and that strong switch-like behaviour is exhibited, but nothing more.
+
+We included a further two settings for Ouija on the sigmoidal dataset only. In the ``switch midpoint'' setting, the prior mean on $t^{(0)}$ is set to 0.5, while in ``switch uncertainty'' the prior mean on $t^{(0)}$ is set to the true value plus a $\Norm(0, 0.1)$ random variable. In both cases, all other parameters are the same as the Ouija informative setting.
+
+This data was simulated for $G = 6, 9, 12, 15$ ``marker'' genes with 40 replications per gene set and mean function.
+
+\subsection{Results}
+
+The results can be seen in figure \ref{fig:simulated_comparison}, in which a few trends are obvious. Across all algorithms, correlation with the ``true'' pseudotimes increases as the number of genes increases, which makes sense as we expect more data to increase the accuracy of inference. In general, Ouija with noninformative priors has better concordance with the ground truth pseudotimes, which again makes sense as Ouija explicitly models switch-like expression in comparison to PCA which models linear changes and DPT that models smooth changes. The exception to this is the threshold model, where Ouija with noninformative priors performs comparatively with PCA and DPT. This is perhaps the most challenging situation as there is virtually no information in the gene expression pre- and post- switch point to guide inference.
+
+A further trend is that incorporating prior information improves pseudotime inference across all mean functions. For example, with a probit mean function and $ G = 12$, the average person correlation without prior information is $\rho = 0.91$ while incorporating prior information gives $\rho = 0.97$. The results also implies that Ouija's performance is agnostic to the precise form of the switching function, with no obvious degradation in accuracy in moving from sigmoidal to alternative mean parameterisations. Intruigingly competitive performance is maintained using the threshold mean function, which contains virtually no pseudotime information pre- and post- switch point for each gene.
+
+We subsequently sought to test the dependency of Ouija's accuracy on how the priors on the switching times are specified. As mentioned above, Ouija was run in two additional modes for the sigmoidal mean function - ``switch midpoint'', where the prior means on the switch times are set to 0.5, and ``switch unceratinty'', where the prior means on the switch times are set to the true values plus a $\Norm(0, 0.1)$ variable. The results of this can be seen in figure \ref{fig:ouija_only}. It can be seen that incorporating any information on the switch strength ($k$) improves the correlation with the true pseudotimes, even if the prior on $t^{(0)}$ is noninformative. In other words, the incorporation of prior information is fairly robust to uncertainty in prior knowledge of the switch times. Furthermore, as the prior knowledge in the switch times approaches the ``truth'' (ie as we move from specifying the switch time to be the midpoint of pseudotime, to near the true values, to the true values), the correlation to the true pseudotimes increases.
 
 
-\subsection{Ouija clusters cell types based on pseudotime continuity}
+\begin{figure}%[!t]
+	\centering
+	\includegraphics[width=0.8\textwidth]{gfx/ch3/logit-only-ouija.png}
+	\caption{Correlation to true pseudotime across four gene set sizes and 40 replications for the sigmoidal mean function. Ouija was benchmarked with four configurations: noninformative priors, noninformative on the switch time but informative on activation strength (\emph{switch midpoint}), informative on activation strength and weakly informative on switch time (\emph{switch uncertainty}), and informative on both parameters. As the priors converge to the true values the accuracy of pseudotime inference increases.}
+	\label{fig:ouija_only}
+\end{figure}
+
+
+\section{Ouija clusters cell types based on pseudotime continuity}
 
 We further investigated the single cell expression data from a study tracking the differentiation of embryonic precursor cells into haematopoietic stem cells (HSCs) \cite{zhou2016tracing}. The cells begin as haemogenic endothelial cells (ECs) before successively transforming  into pre-HSC and finally HSC cells. The authors identified six marker genes that would be down-regulated along the differentiation trajectory, with early down-regulation of \emph{Nrp2} and \emph{Nr2f2} as the cells transform from ECs into pre-HSCs, and late down-regulation of \emph{Nrp1}, \emph{Hey1}, \emph{Efnb2} and \emph{Ephb4} as the cells emerge from pre-HSCs to become HSCs. The study investigated a number of distinct cell types at different stages of differentiation: EC cells, T1 cells ($CDK45^-$ pre-HSCs), T2 cells ($CDK45^+$ pre-HSCs) and HSC cells at the E12 and E14 developmental stages.
 
@@ -380,7 +412,7 @@ When examining the inferred pseudotime progression of each marker gene (Fig. \re
 \end{figure}
 
 
-\subsection{Cell cycle prediction as a pseudotime estimation problem}
+\section{Cell cycle prediction as a pseudotime estimation problem}
 
 We wanted to consider a study composed of a large panel of marker genes and identified a single-cell RNA-seq study \cite{kowalczyk2015single} that examined variation between individual hematopoietic stem and progenitor cells from two mouse strains (C57BL/6 and DBA/2) as they age. Principal component analysis for each cell type and age showed a striking association of the top principal components with cell cycle-related genes (Fig. \ref{fig:regev}A), indicating that transcriptional heterogeneity was dominated by cell cycle status. They scored each cell for its likely cell cycle phase using signatures based on functional annotations \cite{reference2009gene} and profiles from synchronized HeLa cells\cite{whitfield2002identification} for the G1/S, S, G2, and G2/M phases.
 
@@ -395,7 +427,7 @@ This investigation indicates that although Ouija makes strong assumptions about 
 \end{figure}
 
 
-\subsection{Robustness to transient gene behaviour}
+\section{Robustness to transient gene behaviour}
 
 Finally, a potential limitation of our switch behaviour model is that it assumes that all selected marker genes follow a strict monotonically increasing (or decreasing) behaviour and there exists a smooth, non-transient transition from an initial cell expression state to a final resting state at the end of the pseudotemporal period. In selecting a marker gene panel the investigator may not always be fully certain of the quantitative behaviour of all genes and some may indeed exhibit a transient rather than switch behaviour. In order to test of the impact of such genes on Ouija we performed a simulation study to assess the effect of genes exhibiting transient behaviour on pseudotime estimation. We did this by simulating panels of single cell expression values that mimic the zero-inflated properties observed in real data for a variety of genes containing mixed numbers of switch-like and transient gene behaviours (Fig. \ref{fig:switch-transient-simulation}A). Specifically we considered two scenarios, the first in which the numbers of switch-like and transient genes are equal and the second in which three-quarters of the gene panels were switch-like genes and the reminder transient (Figure \ref{fig:switch-transient-simulation}B). Our simulation study showed that if the switch-like genes remained the dominant class of genes in the simulated marker gene panels, it remained possible to accurately infer pseudotime in the presence of transient genes (Fig. \ref{fig:switch-transient-simulation}C). Furthermore, as the size of the panel increases, the absolute number of switch genes was a greater determinant of pseudotime estimation accuracy than the proportion of the marker gene panel that was truly switch-like.
 

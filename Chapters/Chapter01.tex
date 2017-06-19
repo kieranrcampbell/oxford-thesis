@@ -26,17 +26,17 @@ An recent development in single-cell technologies has been the ability to simult
 
 \subsection{Bulk expression quantification}
 
-Same after library preparation - chemistry details differ
-
-\subsubsection{rt-qpcr}
 
 
-\subsubsection{Microarrays}
+% \subsubsection{Gene expression microarrays}
 
+The first mass-produced technology able to quantify transcriptome-wide gene expression was DNA microarrays. To infer nucleic acid abundance, DNA fragments (after reverse transcription from mRNA transcripts for gene expression quantification) bind to ``probes'' of known nucleic acid sequence and fluoresce strongly if a large quantity of nucleic acid with the correct complementary sequence is present.
 
-Microarrays preceded RNA sequencing as the transcriptome-wide quantification method of choice. To infer nucleic acid abundance, DNA fragments (after reverse transcription from mRNA transcripts for gene expression quantification) bind to ``probes'' of known nucleic acid sequence and fluoresce strongly if a large quantity of nucleic acid with the correct complementary sequence is present.
+However, gene expression microarrays suffer several disadvantages. The requirement of cDNAs to bind to probes of known sequence precludes de novo transcriptome construction, quantification of differential splicing, and any somatic variant calling. Furthermore, DNA microarrays are known to suffer from technical artefacts, such as positional effects where the spatial position of the probe affects the expression estimate\footnote{
+This leads to the joke, ``what's the difference between white noise and microarrays? White noise doesn't contain artefacts.''
+} (see e.g. \cite{petri2012detection,yu2006positional})
 
-\subsubsection{RNA sequencing}
+To overcome these issues researchers began direct sequencing of the cDNA fragments in a process known as RNA-sequencing (RNA-seq), which appeared in a trio of papers around the summer of 2008 \cite{mortazavi2008mapping,nagalakshmi2008transcriptional,lister2008highly}. RNA-seq normally begins with isolation of the RNA and depletion of any DNA using deoxyribonuclease to avoid genomic contamination. Optional enrichment of mRNAs may be performed using filtering for polyadenylation, before reverse transcription to cDNA and high-throughput (``next generation'') typically short read sequencing.
 
 
 \subsection{Single-cell library preparation} \label{sec:sc_lib_prep}
