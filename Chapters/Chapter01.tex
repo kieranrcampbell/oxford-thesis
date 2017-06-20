@@ -6,9 +6,9 @@
 
 \subsection{Introduction}
 
-It is hard to overstate the impact that the introduction of single-cell whole-transcriptome expression quantification has had on recent scientific research. The first single-cell RNA-sequencing (RNA-seq) method was introduced in 2009 \cite{Tang2009-th}, and gained widespread interest around three years later with the introduction of methods such as SMART-seq \cite{Ramskold2012-wt} and SMART-seq2 \cite{Picelli2013-tm} that significantly reduced the cost of library preparation. It is quite incredible that in the space of a little over five years the technology has sufficiently advanced to move from profiling a few tens of cells to thousands and hundreds of thousands using technologies such as Dropseq \cite{Macosko2015-ek} and the 10x platform \cite{Zheng2017-vj}.
+It is hard to overstate the impact of single-cell whole-transcriptome expression quantification on recent scientific research. The first single-cell RNA-sequencing (RNA-seq) method was introduced in 2009 \cite{Tang2009-th}, and gained widespread interest around three years later with the introduction of methods such as Smart-seq \cite{Ramskold2012-wt} and Smart-seq2 \cite{Picelli2013-tm} that significantly reduced the cost of library preparation. It is quite incredible that in the space of a little over five years the technology has sufficiently advanced to move from profiling a few tens of cells to thousands and hundreds of thousands using technologies such as Drop-seq \cite{Macosko2015-ek} and the 10x platform \cite{Zheng2017-vj}.
 
-Concurrently, the mass-production of single-cell data has lead to an explosion of methods development for downstream analysis by both computational biologists and statisticians. There are now a wide-range of methods for common analyses such as normalisation \cite{Lun2016-oj,Bacher2017-ga}, differential expression \cite{Kharchenko2014,Delmans2016-po,Korthauer2016-iz}, dimensionality reduction \cite{Yau2015,Wang2017-dl}, and ``pseudotime'' analyses (see section \ref{sec:pseudotime}). Indeed, there are now over 100 dedicated tools for analysing single-cell data, %\footnote{A comprehensive spreadsheet of single-cell software can be found at \url{https://tinyurl.com/mqabyur}.}, 
+This mass-production of single-cell data has lead to an explosion of methods development for downstream analysis by both computational biologists and statisticians. There are now a wide-range of methods specific to single-cell data for common analyses such as normalisation \cite{Lun2016-oj,Bacher2017-ga}, differential expression \cite{Kharchenko2014,Delmans2016-po,Korthauer2016-iz}, dimensionality reduction \cite{Yau2015,Wang2017-dl}, and ``pseudotime'' analyses (see section \ref{sec:pseudotime}). Indeed, there are now over 100 dedicated tools for analysing single-cell data, %\footnote{A comprehensive spreadsheet of single-cell software can be found at \url{https://tinyurl.com/mqabyur}.}, 
 the majority of which have been produced since 2015.
 
 \subsection{Why quantify gene expression in single-cells?}
@@ -19,9 +19,9 @@ The basic logic behind quantifying gene expression in single cells is that we ma
 
 Arguably one of the most popular applications of single-cell RNA-sequencing has been to differentiating cells, tracking the changes in gene regulation as the cells progress. Early examples include tracking the differentiation of primary human myoblasts \cite{Trapnell2014-xi}, which revealed switch-like changes in expression of key regulatory factors, and tracking the differentiation of alveolar cells in mice that allowed for the identification of bipotent progenitor cells \cite{Treutlein2014-ob}. Such ideas have been extended to many biological systems, such as differentiating hematopoietic stem cells \cite{zhou2016tracing,Kowalczyk2015-li}, sensory epithelial cells from the inner ear \cite{Burns2015}, and more exotic examples such as the differentiation of zebrafish thrombocytes \cite{Macaulay2016-vv} and neural stem cells in planarians (flatworms) \cite{molinaro2016silico}.
 
-A further popular application of single-cell RNA-seq has been identifying subtypes of neurons (see e.g. \cite{Poulin2016-bl} for a full review). Possibly the first to do so was Usoskin et al. \cite{Usoskin2015-gp} who profiled 622 single mouse neurons from the dorsal root ganglion involved in the primary sensory system. Through a basic iterative PCA and clustering-by-eye procedure they identified 11 functionally distinct subtypes of primary sensory neurons. Shortly after Zeisel et al. \cite{Zeisel2015-cv} performed single-cell RNA-seq on 3005 cells from the mouse cerebral cortex. Rather than rely on the ad-hoc procedure of clustering-by-eye, they developed an iterative biclustering algorithm called BackSPIN. This suggested 9 major distinct cell types, which was further partitioned into 47 by repeating the clustering on each major cell type. When attempting to identify novel cell types based on gene expression it is obviously advantageous to sequence as many cells as possible. Not content with the poor scalability of existing procedures, Macosko et al. \cite{Macosko2015-ek} developed an entirely new library preparation procedure termed Dropseq (see section \ref{sec:sc_lib_prep}) to cheaply profile thousands of cells at once. This allowed for the expression quantification of a staggering 44,808 cells from the mouse retina that were clustered into 39 transcriptionally distinct cell types using density-based clustering on a t-SNE projection. Although identifying cellular subtypes is a popular and intuitive idea, several issues remain. Surprisingly, there is no strict definition of a ``cell type'', a challenge to be tackled by the Human Cell Atlas \cite{Regev2017-sl}. Furthermore, practically every clustering algorithm - even those that choose the number of clusters ``automatically'' - have tunable parameters that leave the  final number of cell types discovered open to subjectivity.
+A further popular application of single-cell RNA-seq has been identifying subtypes of neurons (see e.g. \cite{Poulin2016-bl} for a full review). Possibly the first to do so was Usoskin et al. \cite{Usoskin2015-gp} who profiled 622 single mouse neurons from the dorsal root ganglion involved in the primary sensory system. Through a basic iterative PCA and clustering-by-eye procedure they identified 11 functionally distinct subtypes of primary sensory neurons. Shortly after Zeisel et al. \cite{Zeisel2015-cv} performed single-cell RNA-seq on 3005 cells from the mouse cerebral cortex. Rather than rely on the ad-hoc procedure of clustering-by-eye, they developed an iterative biclustering algorithm called BackSPIN. This suggested 9 major distinct cell types, which was further partitioned into 47 by repeating the clustering on each major cell type. When attempting to identify novel cell types based on gene expression it is obviously advantageous to sequence as many cells as possible. Not content with the poor scalability of existing procedures, Macosko et al. \cite{Macosko2015-ek} developed an entirely new library preparation procedure termed Drop-seq (see section \ref{sec:sc_lib_prep}) to cheaply profile thousands of cells at once. This allowed for the expression quantification of a staggering 44,808 cells from the mouse retina that were clustered into 39 transcriptionally distinct cell types using density-based clustering on a t-SNE projection. Although identifying cellular subtypes is a popular and intuitive idea, several issues remain. Surprisingly, there is no strict definition of a ``cell type'', a challenge to be tackled by the Human Cell Atlas \cite{Regev2017-sl}. Furthermore, practically every clustering algorithm - even those that choose the number of clusters ``automatically'' - have tunable parameters and modelling assumptions that leave the  final number of cell types discovered open to subjectivity.
 
-An recent development in single-cell technologies has been the ability to simultaneously profile ``omics'' other than gene expression alone (see \cite{Macaulay2017-nn} for a full review). For example, G\&T-seq \cite{Macaulay2015-ok} allows for combined measurement of the genome and transcriptome in a single-cell. There are clear uses of such methods in cancer genomics, where the combined measurement of DNA mutations and RNA expression would allow for the quantification of clonality on gene expression and subsequently cellular regulation. Further methods have been used to jointly profile the methylation states of DNA at the single-cell level along with gene expression, known as scM\&T-seq 
+A recent development in single-cell technologies has been the ability to simultaneously profile ``omics'' other than gene expression alone (see \cite{Macaulay2017-nn} for a full review). For example, G\&T-seq \cite{Macaulay2015-ok} allows for combined measurement of the genome and transcriptome in a single-cell. There are clear uses of such methods in cancer genomics, where the combined measurement of DNA mutations and RNA expression would allow for the quantification of clonality on gene expression and subsequently cellular regulation. Further methods have been used to jointly profile the methylation states of DNA at the single-cell level along with gene expression, known as scM\&T-seq 
 \cite{Angermueller2016-ll,Hu2016-bz}. A recent publication has extended this to simultaneously measure chromatin accessibility, DNA methylation, and gene expression in single-cells \cite{Clark2017-pc}.
 
 \subsection{Bulk expression quantification}
@@ -41,15 +41,18 @@ To overcome these issues researchers began direct sequencing of the cDNA fragmen
 
 \subsection{Single-cell library preparation} \label{sec:sc_lib_prep}
 
-Introduction - physical sequencing the same, library preparation not
+Single-cell library preparation - the process of converting each cell's mRNA to barcoded cDNAs ready for sequencing - has come a long way since the manual isolation of Tang et al. in 2009 \cite{Tang2009-th}. The most popular methods - such as 
+STRT-seq \cite{islam2011characterization}, 
+Smart-seq \cite{ramskold2012full}, 
+Smart-seq2 \cite{picelli2013smart} and 
+CEL-Seq \cite{hashimshony2012cel},
+all follow similar principles. Cells are (typically FACS) sorted into 96 (and more recently 384) well plates. In each well cells are lysed to release the RNA, which is then reverse transcribed to cDNA. There is then typically some amount of amplification to increase the overall quantity of cDNA for more reliable sequencing. Next, each cell is uniquely barcoded by appending a known sequence of nucleic acid to each cDNA molecule. This step greatly increased the throughput of single-cell RNA-seq by allowing multiplexed sequencing of all cells at once. Finally, the individual libraries are ready for sequencing.
 
-Microfluidics - C1
 
-Plate based
 
-Droplets
+A popular commercial solution in the early days of single-cell RNA-seq was the Fluidigm C1 system that attempted to automate as far as possible the library preparation process. By using microfluidics, the C1 could prepare libraries using nanolitre reaction volumes which reduced reagent costs and improved the accuracy of expression quantification \cite{pollen2014low}. However, the C1 system notably suffered from low capture rates and ``doublets'' whereby two cells were captured and sequenced rather than one.
 
-10x
+While such plate-based and microfluidic assays were incredibly successful, the single-cell isolation and barcoding steps precluded the majority of studies exceeding 1000 cells. However, this changed in 2015 with the introduction of ``droplet'' based technologies, namely Drop-seq \cite{Macosko2015-ek} and inDrop \cite{klein2015droplet}. In such assays cells are encapsulated in nanolitre droplets along with distinctly barcoded beads that allow for multiplexed sequencing. This allows for an incredible increase in the number of cells - the original Drop-seq publication sequenced 44,808 - and is currently being commercialised through companies such as 10x genomics \cite{Zheng2017-vj}.
 
 \subsection{Features of scRNA-seq data}
 
@@ -74,11 +77,11 @@ In the case of the count-based methods, RNA-seq data are  be well-approximated b
 
 where $\alpha$ is a dispersion parameter and in the limit $\alpha \rightarrow 0$ a Poisson noise model is recovered. In other words the variance in expression increases quadratically with the mean number of counts for a particular gene. A common quantity to examine in such cases in the squared coefficient of variation $\text{CV}^2 = \frac{\sigma^2}{\mu^2}$ which for the negative binomial model implies $\text{CV}^2 = \alpha + \frac{1}{\mu}$. This relationship can be seen for a dataset of differentiating thymic epthilelial cells in figure \ref{fig:od}.
 
-This relationship between the squared coefficient of variation and mean expression was exploited in a seminal single-cell RNA-seq paper \cite{Brennecke2013-xy} to identify genes that varied more than can be expected at random due to technical noise in the dataset. First a $\text{CV}^2-\text{mean}$ relationship is fitted for ERCC spike ins\footnote{
-ERCC spike ins are known concentrations of known RNA sequence added to experiments to both calibrate the molecular concentrations to RNA-seq counts and to infer the limit of detection.
+This relationship between the squared coefficient of variation and mean expression was exploited in a seminal single-cell RNA-seq paper \cite{Brennecke2013-xy} to identify genes that varied more than can be expected at random due to technical noise in the dataset. First a $\text{CV}^2-\text{mean}$ relationship is fitted for ERCC spike-ins\footnote{
+ERCC spike-ins are known concentrations of known RNA sequence added to experiments to both calibrate the molecular concentrations to RNA-seq counts and to infer the limit of detection.
 } to infer a null model of the variance relationship we expect in the data due to technical variation alone. A $p$-value for the coefficient of variation of endogenous (biological) genes given their mean expression can then be computed under the null model and subsequently genes ``overdispersed'' at some significance threshold can be identified. An example of this for differentiating thymic epthilelial cells can be seen in figure \ref{fig:od}, with the overdispersed genes shown in purple.
 
-In the second set of ``abundance-based'' methods there is no analytical expression for the variance of the log-counts in terms of the mean since in general $\text{Var}[\log(X + c)] \neq \log(\text{Var}[X] + c)$. An example of this for the same set of thymic epithelial cells can be seen in figure \ref{fig:od}, coloured by the overdispersion test results from \cite{Brennecke2013-xy}. This forms a characteristic ``hump'' shape, with overdispersed genes typically exhibiting moderate mean expression but high variance in log space. Differential abundance methods such as Limma Voom and Sleuth fit smoothed curves (such as LOESS curves) to obtain a nonparametric numerical approximation to the relationship. We use this formulation in chapter 3, where we note that ``interesting'' genes lie close enough to the diagonal to posit a linear mean-variance relationship in log space, i.e. $\sigma^2 = \phi \mu$.
+In the second set of ``abundance-based'' methods there is no analytical expression for the variance of the log-counts in terms of the mean since in general $\text{Var}[\log(X + c)] \neq \log(\text{Var}[X] + c)$. An example of this for the same set of thymic epithelial cells can be seen in figure \ref{fig:od}, coloured by the overdispersion test results from \cite{Brennecke2013-xy}. This forms a characteristic ``hump'' shape, with overdispersed genes typically exhibiting moderate mean expression but high variance in log space. Differential abundance methods such as Limma Voom \cite{Law2014-tu} and Sleuth \cite{Pimentel2016-xz} fit smoothed curves (such as LOESS curves) to obtain a nonparametric numerical approximation to the relationship. We use this formulation in chapter 3, where we note that ``interesting'' genes lie close enough to the diagonal to posit a linear mean-variance relationship in log space, i.e. $\sigma^2 = \phi \mu$.
 
 \subsubsection{Dropout} \label{sec:intro_dropout}
 
@@ -147,7 +150,7 @@ Following this was the introduction of \emph{Sample Progression Discovery} (SPD)
 \subsubsection{Overview}
 
 Ordering bulk microarray samples was arguably a niche area, with the three studies discussed above constituting the main work in the field. However, the advent of single-cell sequencing lead to an explosion of interest in the field, mostly due to the higher inter-sample heterogeneity present in single-cell data. The first single-cell pseudotime algorithm was published in March 2014 \cite{trapnell2014dynamics}; at time of writing (May 2017) there are now approximately 33 single-cell pseudotime inference algorithms that have at least been preprinted\footnote{
-Taken from the spreadsheet mentioned previously at \url{https://tinyurl.com/mqabyur}.
+A useful spreadsheet of single-cell software is maintained at \url{https://tinyurl.com/mqabyur}.
 }, a rate of roughly one per month.
 
 \begin{sidewaystable}
@@ -216,7 +219,7 @@ Published just a month after Monocle was Wanderlust \cite{Bendall2014}, an algor
 
 Wanderlust begins by constructing a $k$-nearest neighbour graph between all cells using euclidean distance and selects a small random subset of cells as ``waypoints''. It then creates a random ensembl of graphs by subsampling cells to mitigate the impact of ``short circuits'' on the trajectory construction\footnote{
 Short circuits are defined as ``spurious edges between distant cells'' - two cells distant in pseudotime are connected due to random fluctuations in their gene expression. In theory such a problem will be worse in the ~40 dimensional mass cytometry data than 1000+ dimensional single-cell RNA-seq.
-}. Wanderlust then assigns each cell an initial time as the shortest path through the graph from a manually chosen ``early'' cell, and performs an iterative procedure where each cells pseudotime is a weighted average of the distances to the waypoint cells, which is repeated until convergence. The overall pseudotime for each celll is taken as the average over   the ensembl of graphs.
+}. Wanderlust then assigns each cell an initial time as the shortest path through the graph from a manually chosen ``early'' cell, and performs an iterative procedure where each cells pseudotime is a weighted average of the distances to the waypoint cells, which is repeated until convergence. The overall pseudotime for each cell is taken as the average over   the ensembl of graphs.
 
 \subsubsection{DeLorean}
 
@@ -251,7 +254,7 @@ are calculated where $\bar{\mby}$ is the sample mean of $\mby_n$. The $Q$ princi
 PCA is frequently used in computational genomics. It is commonly used for visualisation of genomic variation data such as single nucleotide polymorphism (SNP) datasets, where it has an elegant interpretation in terms of the underlying genealogical history of samples \cite{mcvean2009genealogical}.
 It is often applied to microarray gene expression data for tasks such as data visualisation (see e.g. \cite{ringner2008principal}) and for clustering samples \cite{yeung2001principal}.
 
-Since the advent of single-cell RNA-sequencing, PCA has been the go-to dimensionality reduction algorithm for exploratory data analysis\footnote{Though faces stiff competition from t-Stochastic Neighbour Embedding (tSNE)}. Examples include latent space projections to understand cell types and hierarchies in the developing lung \cite{treutlein2014reconstructing} and the transcriptional states defining differentiation of embryonic stem cells under different serums \cite{kolodziejczyk2015single}. PCA is also used for clustering cells, either as a preprocessing step prior to clustering algorithms like $k-$means or as part of likelihood-based clustering \cite{yau2016pcareduce}.
+Since the advent of single-cell RNA-sequencing, PCA has been the go-to dimensionality reduction algorithm for exploratory data analysis\footnote{Though faces stiff competition from t-Stochastic Neighbour Embedding (tSNE).}. Examples include latent space projections to understand cell types and hierarchies in the developing lung \cite{treutlein2014reconstructing} and the transcriptional states defining differentiation of embryonic stem cells under different serums \cite{kolodziejczyk2015single}. PCA is also used for clustering cells, either as a preprocessing step prior to clustering algorithms like $k-$means or as part of likelihood-based clustering \cite{yau2016pcareduce}.
 
 PCA also forms an initial step in many pseudotime algorithms such as in TSCAN \cite{ji2016tscan} and Waterfall \cite{shin2015single}. However, no studies have actually considered that a principal component of the data itself could \emph{be} the pseudotemporal trajectory. Intuitively such an idea is appealing since we would expect the pseudotemporal process to be the dominant source of variation within the data.
 
@@ -268,7 +271,7 @@ The generative model for PPCA is given by
   \end{aligned}
 \end{equation}
 
-where $\mbmu$ is the expectation of $\mby$ and $\sigma^2$ is the measurement variance. In other words, if we centre $\mby$ so that $\text{E}[\mby] = 0$ then PPCA corresponds to a Gaussian noise model with a mean given by standard PCA and isotropic covariance. Tipping and Bishop futher derived closed form expressions for the maximum likelihood estimates (MLEs) of $\mbLambda$ and $\sigma^2$ along with the conditional distribution of the latent variables $p(\mbz_n | \mbLambda, \mby_n)$. They demonstrated that in the limit $\sigma^2 \rightarrow 0$ the MLE estimate of $\mbLambda$ is identical (up to arbitrary rotation) to that of standard PCA. Furthermore, the MLE estimate of $\sigma^2$ is given by
+where $\mbmu$ is the expectation of $\mby$ and $\sigma^2$ is the isotropic measurement variance. In other words, if we centre $\mby$ so that $\text{E}[\mby] = 0$ then PPCA corresponds to a Gaussian noise model with a mean given by standard PCA and isotropic covariance. Tipping and Bishop futher derived closed form expressions for the maximum likelihood estimates (MLEs) of $\mbLambda$ and $\sigma^2$ along with the conditional distribution of the latent variables $p(\mbz_n | \mbLambda, \mby_n)$. They demonstrated that in the limit $\sigma^2 \rightarrow 0$ the MLE estimate of $\mbLambda$ is identical (up to arbitrary rotation) to that of standard PCA. Furthermore, the MLE estimate of $\sigma^2$ is given by
 
 \begin{equation}
   \sigma^2_{\text{MLE}} = \frac{1}{G-Q} \sum_{j = Q + 1}^G \zeta_j
@@ -323,7 +326,8 @@ C & 6 & 6 & 8 \\
 D & 4 & 2 & 7 \\
 \hline
 \end{tabular}}
-\caption{Spearman noted that children's test scores were correlated across subjects (a). Cells' expression of genes in biological pathways is likewise correlated (b).} \label{tbl:fa}
+\caption{Children's test scores across subjects are correlated due to latent factors (a) in a similar 
+way to the gene expression of key markers during differentiation (b).} \label{tbl:fa}
 \end{table}
 
 Factor analysis was first introduced by Spearman in 1904 \cite{spearman1904general} by considering children's test scores in subjects such as that in table \ref{tbl:fa}(a). He noticed that the scores are correlated - for example, if a child has a high score in physics they are more likely to have a high score in maths, and vice versa. Spearman's insight was that rather than the scores being correlated with each other, they were correlated with an underlying (one-dimensional) hidden factor he termed \emph{general intelligence}. Mathematically this can be expressed as
@@ -336,7 +340,7 @@ where $\mby_n$ is the vector of child $n$'s test scores, $\mblambda$ is a vector
 Of course the idea of a single ``general intelligence'' goes against common sense. If there truly is a single latent factor it is possible to form the \emph{tetrad equations}. Later studies showed that deviations in the tetrad equations could not be explained by sampling noise alone. For an overview see \url{https://www.stat.cmu.edu/~cshalizi/350/lectures/12/lecture-12.pdf}.
 }.
 
-One can see in hindight the parallels to the pseudotime estimation problem: we measure some high-dimensional quantity $\mby_n$ over various subjects and have a hazy and somewhat under-defined one-dimensional generating process $z_n$. In the context of psychology, this process is intelligence: something unmeasurable that we use to make sense of observations in life such as performance in tests. Similarly in biology we have the concept of differentiation trajectories: something equally unmeasurable but which we indirectly observe through molecular measurements such as gene expression quantification.
+One can see in hindight the parallels to the pseudotime estimation problem: we measure some high-dimensional quantity $\mby_n$ over various samples and have a hazy and somewhat under-defined one-dimensional generating process $z_n$. In the context of psychology, this process is intelligence: something unmeasurable that we use to make sense of observations in life such as performance in tests. Similarly in biology we have the concept of differentiation trajectories: something equally unmeasurable but which we indirectly observe through molecular measurements such as gene expression quantification (table \ref{tbl:fa}(b)).
 
 Given the parallels between the original interpretation of factor analysis and differentiation trajectories we may suspect that it is particularly suited to the pseudotime inference. Indeed, chapters 3-5 are devoted to various modifications of factor analysis to infer such trajectories.
 
@@ -347,7 +351,7 @@ Given the parallels between the original interpretation of factor analysis and d
 
 \subsection{Manifold learning} \label{sec:int:manifold}
 
-While not strictly a class of statistical latent variable model, manifold learning has found much success in single-cell genomics. While methods such as PCA and FA attempt to infer low-dimensional \textbf{linear} subspaces embedded in high-dimensional space, the field of manifold learning extends this to the nonlinear setting. Several manifold learning algorithms applied to single-cell genomics are reviewed below and utilised in chapter 2.
+While not strictly a class of statistical latent variable model, manifold learning has found much success in single-cell genomics. While methods such as PCA and FA attempt to infer low-dimensional linear subspaces embedded in high-dimensional space, the field of manifold learning extends this to the nonlinear setting. Several manifold learning algorithms applied to single-cell genomics are reviewed below and utilised in chapter 2.
 
 \subsubsection{Laplacian eigenmaps}
 
@@ -359,7 +363,7 @@ Laplacian eigenmaps \cite{Belkin2003} are part of a larger class of \emph{spectr
 
 subject to the constrain that $\mbz_q^T \mbz_q = 1 \; \forall q$ where $\mbz_q$ are the column vectors of $\mbz$.
  $\mbW$ is an $N \times N$ similarity matrix between the samples (cells) with the intuition that if
-$W_{n,n'}$ is large then the distance between $\mbz_n$ and $\mbz_{n'}$ is heavily penalised placing them close together in the reduced space. Conversely, if $W_{n,n'}$ is small then large distances between them does not affect the optimisation problem. Solutions for $\mbZ$ can readily be found by solving an eigenvalue equation. % KC check + reference
+$W_{n,n'}$ is large then the distance between $\mbz_n$ and $\mbz_{n'}$ is heavily penalised placing them close together in the reduced space. Conversely, if $W_{n,n'}$ is small then a large distance between $\mbz$ and $\mbz_{n'}$ has little effect on the optimisation problem. Solutions for $\mbZ$ can readily be found by solving an eigenvalue equation. % KC check + reference
 Laplacian eigenmaps were used for pseudotime inference in the \texttt{embeddr} package \cite{campbell2015laplacian} using a symmetrised $k$-nearest neighbour graph for $\mbW$.
 
 
@@ -380,7 +384,7 @@ implying that retaining eigenvectors for the first $k$ ordered eigenvalues captu
 Multidimensional scaling (MDS) has previously been used for the visualisation of large genomic datasets \cite{tzeng2008multidimensional} and more recently was used as the initial dimensionality reduction step for the pseudotime algorithm \texttt{SCORPIUS} \cite{cannoodt2016scorpius}. It is motivated by the problem of trying to place cities on points on a map if we are given the distances between them. Given an $N \times N$ distance matrix $\mbD$ MDS attempts to minimise the quantity
 
 \begin{equation}
-  \texttt{Stress}(\mbZ) = \left(
+  \text{Stress}(\mbZ) = \left(
   \sum_{n \neq n' = 1}^N (d_{nn'} - \lvert \lvert \mbz_n - \mbz_{n'} \rvert \rvert)^2
   \right)^{\frac{1}{2}}
 \end{equation}
@@ -389,7 +393,7 @@ where $\mbz_n$ is the low dimensional embedding of sample $n$. The intuition is 
 
 \subsubsection{Locally linear embedding} \label{sec:lle}
 
-Locally linear embedding (LLE) was used successfully by \emph{SLICER} \cite{welch2016slicer} as a nonlinear dimensionality step after variable gene selection. LLE begins by defining an $N \times N$ weight matrix $\mbW$ where $W_{nn'}$ represents how useful sample $n'$ is for reconstructing $n$. An optimal $\mbW$ is found by minimising
+Locally linear embedding (LLE) was used successfully by \texttt{SLICER} \cite{welch2016slicer} as a nonlinear dimensionality step after highly-variable gene selection. LLE begins by defining an $N \times N$ weight matrix $\mbW$ where $W_{nn'}$ represents how useful sample $n'$ is for reconstructing $n$. An optimal $\mbW$ is found by minimising
 
 \begin{equation}
   \sum_{n} \lvert \lvert \mby_n - \sum_{n'} W_{nn'} \mby_{n'} \rvert \rvert^2
