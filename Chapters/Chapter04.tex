@@ -42,18 +42,18 @@ The pseudotime $t_n$ is a surrogate measure of a cell's progression along a traj
 The likelihood of a given cell's gene expression measurement conditional on all the parameters is then given by % a normal with a mean formed of the product of the pseudotime with the factor loading gradient summed with the factor loading intercept specific to the cell's branch:
 
 \begin{equation}
-\by_n | \gamma_n, \Lambda_{\gamma_n}, t_n, \btau  \sim \norm(\cgi + \kgi t_n, \btau^{-1} \mathbb{1}_G)
+\by_n | \gamma_n, \Lambda_{\gamma_n}, t_n, \btau  \sim \norm(\cgi + \kgi t_n, \mbSigma)
 \end{equation}
 
-where $\mathbb{1}_G$ is the $G \times G$ identity matrix and $\btau$ is a $G$-length vector of measurement precisions\footnote{We denote $\btau^{-1}$ as the element-wise inverse of $\btau$.}.
+where $\mbSigma = \text{diag}(\tau_1, \ldots, \tau_G)$ and $\btau$ is a $G$-length vector of measurement precisions.
 
 We seek a prior structure on the loading matrix that (a) encourages the behaviour of genes to be identical across branches while (b) identifying the subset of genes that deviate from this and are differentially regulated across the branches. It is therefore reasonable that the factor loading gradients $\bk_\gamma$ should be similar to each other unless the data suggests otherwise. We therefore place a prior of the form
 
 \begin{equation}
-\kgi \sim \norm(\bm \theta, \bm \chi^{-1} \mathbb{1}_G)
+[\kgi]_g \sim \norm(\theta_g,  \chi^{-1}_g)
 \end{equation}
 
-where $\bm \theta$ denotes a common factor gradient across branches. This has similar elements to Automatic Relevance Determination (ARD) models % (also known as Sparse Bayesian Learning)
+where $\mbtheta = (\theta_1, \ldots, \theta_g)$ denotes a common factor gradient across branches. This has similar elements to Automatic Relevance Determination (ARD) models % (also known as Sparse Bayesian Learning)
 with the difference that rather than shrinking regression coefficients to zero to induce sparsity we shrink factor loading gradients towards a common value to induce similar behaviour between mixture components. We can then inspect the posterior precision %similar to ARD
 to identify genes involved in the bifurcation: if $\chi_g$ is very large then the model is sure that $k_{0g} \approx k_{1g}$ and gene $g$ is not involved in the bifurcation; however, if $\chi_g$ is relatively small then $|k_{0g} - k_{1g}| \gg 0$ and the model indicates that $g$ is involved in the bifurcation\footnote{Note that we only place this prior structure on $k$ as the intercepts $c$ can be identical but the genes still exhibit differential regulation through different $k$s.}.
 
@@ -76,11 +76,9 @@ t_n & \sim \norm(0, 1) \\
 
 where $\tilde{\eta}$, $\tilde{\theta}$, $\tau_\eta$, $\tau_\theta$, $\tau_c$, $\alpha_\chi$, $\beta_\chi$, $\alpha$ and $\beta$ are hyperparameters fixed by the user. By default we set the noninformative prior $\alpha_\chi = \beta_\chi = 10^{-2}$ to maximise how informative the posterior of $\bm \chi$ is in identifying genes that show differential expression across the branches.
 
-\subsection{Inference} \ref{sec:gibbs}
+\subsection{Inference} \label{sec:gibbs}
 
-As the model exhibits complete conditional conjugacy, inference was performed using Gibbs sampling.
-
-Briefly, Gibbs sampling is a Markov Chain Monte-Carlo (MCMC) algorithm for drawing a sequence of samples $\btheta^1, \ldots, \bm \theta^T$ that approximate some target distribution $p(\btheta | x)$ that is analytically intractable, i.e. for which we cannot write down an exact expression. Given the parameter vector $\btheta = (\theta_1, \ldots, \theta_P)$, Gibbs sampling requires analytical expressions (or at least the ability to quickly generate samples from) the conditional distributions $p(\theta_p | \btheta_{-p}, x)$ where $\btheta_{-p}$ is the set of parameters other than $p$. Gibbs sampling then proceeds by consecutively drawing
+As the model exhibits complete conditional conjugacy, inference was performed using Gibbs sampling. Briefly, Gibbs sampling is a Markov Chain Monte-Carlo (MCMC) algorithm for drawing a sequence of samples $\btheta^1, \ldots, \bm \theta^T$ that approximate some target distribution $p(\btheta | x)$ that is analytically intractable, i.e. for which we cannot write down an exact expression. Given the parameter vector $\btheta = (\theta_1, \ldots, \theta_P)$, Gibbs sampling requires analytical expressions (or at least the ability to quickly generate samples from) the conditional distributions $p(\theta_p | \btheta_{-p}, x)$ where $\btheta_{-p}$ is the set of parameters other than $p$. Gibbs sampling then proceeds by consecutively drawing
 
 \begin{equation}
 	%\begin{aligned}
@@ -99,7 +97,7 @@ Single-cell RNA-seq data is known to exhibit \emph{dropout}, where lowly express
 As a solution to this, several methods model a dropout probability dependent on the latent expression. For example, SCDE \cite{kharchenko2014bayesian} is a statistical model for single-cell differential expression which models the dropout probability of a gene as a logistic regression on the latent expression as part of a mixture-of-experts model.
 In a further example, ZIFA \cite{pierson2015zifa} proposes a double-exponential dropout model where $p(\text{dropout}) \propto \exp(-\lambda x^2)$ and $x$ is the latent expression and $\lambda$ is a constant dropout parameter.
 
-Therefore, accounting for zero-inflation in our mixture-of-factor analysers model is equivalent ot modifying the likelihood to a mixture of an amplified component and dropout component depending on the latent expression. However, the difficulty here is that we must sample from the conditional distribution $p(\lambda | \cdot)$ (where $\cdot$ is all parameters and data other than $\lambda$), which to the best of our knowledge does not exist analytically.
+Therefore, accounting for zero-inflation in our mixture-of-factor analysers model is equivalent to modifying the likelihood to a mixture of an amplified component and dropout component depending on the latent expression. However, the difficulty here is that we must sample from the conditional distribution $p(\lambda | \cdot)$ (where $\cdot$ is all parameters and data other than $\lambda$), which to the best of our knowledge does not exist analytically.
 
 \begin{figure}%[h]
 	\centering
@@ -107,7 +105,7 @@ Therefore, accounting for zero-inflation in our mixture-of-factor analysers mode
 	\caption{Dropout relationships in single-cell RNA-seq data for two scRNA-seq datasets. An exponential dropout model (blue) empirically fits the data better than double exponential (red).} \label{fig:dropout}
 \end{figure}
 
-As a solution to this we propose an Empirical-Bayes like procedure to estimate $\lambda$ globally then infer the latent expression $x$ through further Gibbs updates. First we note that a single exponential dropout empirically fits the dropout relations in single-cell RNA-seq datasets better than the double exponential dropout (figure \ref{fig:dropout} and noted in KCTODO).
+As a solution to this we propose an Empirical-Bayes like procedure to estimate $\lambda$ globally then infer the latent expression $x$ through further Gibbs updates. First we note that a single exponential dropout empirically fits the dropout relations in single-cell RNA-seq datasets better than the double exponential dropout (figure \ref{fig:dropout}).
 
 We subsequently modify the likelihood to give a per-gene dropout probability of
 
@@ -119,7 +117,7 @@ p(\text{dropout in gene $g$}) = \exp(-\lambda \sum_{n=1}^N x_{ng})
 
 \begin{equation}
 \begin{aligned}
-\bx_n & \sim \norm(\cgi + \kgi t_n, \btau^{-1} \mathbbm{1}_G) \\
+\bx_n & \sim \norm(\cgi + \kgi t_n,\mbSigma) \\
 h_{ng} & \sim \mathrm{Bernoulli}(\exp\left(-\frac{\lambda}{N} \sum_{n'} x_{n'g} \right)) \\
 y_{ng} & = \begin{cases} x_{ng} &\mbox{if $h_{ng} = 0$}  \\
 0 & \mbox{if $h_{ng} = 1$} \end{cases}
@@ -176,7 +174,7 @@ While in algorithms such as Wishbone and DPT this non-identifiability is solved 
 
 Synthetic datasets were generated for various simulations throughout the analysis. Rather than simply generating data from the model we attempted to create synthetic data that was as close to real single-cell data as feasible, meaning \emph{the synthetic data is severely misspecified with respect to our model}. The full details can be found in algorithm \ref{alg:synth} but summarise the procedure below.
 
-The first consideration is the functional form of gene expression along pseudotime. A linear assumption is fundamentally unrealistic as the gene expression cannot go to $\pm \infty$ as pseudotime progresses. Consequently we adopt sigmoidal expression across pseudotime (previously suggested in \cite{campbell2016order,campbell2016switchde} and discussed in chapters 2-3), parameterised\footnote{We depart from the previous notation here to avoid index hell when referencing multiple branches} by the half-peak expression $\phi$, the \emph{switch-time} $\delta$ and the switch-strength $k$:
+The first consideration is the functional form of gene expression along pseudotime. A linear assumption is fundamentally unrealistic as the gene expression cannot go to $\pm \infty$ as pseudotime progresses. Consequently we adopt sigmoidal expression across pseudotime (previously suggested in \cite{campbell2016order,campbell2016switchde} and discussed in chapters 2-3), parameterised\footnote{We depart from the previous notation here to avoid index hell when referencing multiple branches.} by the half-peak expression $\phi$, the \emph{switch-time} $\delta$ and the switch-strength $k$:
 \begin{equation}\label{eq:sigmoid}
       \text{Sigmoid}(t, k, \phi, \delta)  = \frac{2 \phi}{1 + \exp(-k(t - \delta))}
 \end{equation}
@@ -212,18 +210,21 @@ Our synthetically generated data is mildly mis-specified with respect to our mod
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch4/fig1_toy}
-	\caption{Probabilistic inference of bifurcations in synthetic data. { \normalfont
+ \caption{Caption next page.}\label{fig:toy}
+\end{figure}
+\addtocounter{figure}{-1}
+\begin{figure}
+\caption{Probabilistic inference of bifurcations in synthetic data. 
 \textbf{A} PCA representation of a toy dataset for 300 cells and 60 genes, coloured by the maximum aposteriori (MAP) pseudotime estimates.
 \textbf{B} Equivalent representation as \textbf{(A)} colour by the MAP branch estimate.
 \textbf{C} Equivalent representation showing whether each branch was assigned correctly. Due to the non-identifiability of mixture components, we map component indices from true to inferred such that the agreement is maximised.
 \textbf{D} The inverse MAP estimates of $\chi$ largely identify which genes in the dataset exhibit different behaviour across the two branches.
 \textbf{E} Comparison of different pseudotime inference algorithms to the ground truth pseudotime on this particular dataset. The algorithms MFA, PC1 (principal component 1), Moncole and DPT had correlations of 0.98, 0.98, 0.98, 0.99 (to 1 s.f.) respectively.
-\textbf{F} The correlation of inferred pseudotimes to ground truth depending on the proportion of genes in the dataset exhibiting transient behaviour. MFA shows competetive performance up to around 40\% of genes begin transient despite an inherent linear assumption.
-	}} \label{fig:toy}
+\textbf{F} The correlation of inferred pseudotimes to ground truth depending on the proportion of genes in the dataset exhibiting transient behaviour. MFA shows competetive performance up to around 40\% of genes begin transient despite an inherent linear assumption.}
 \end{figure}
 
 % PCA plots, comparison to true values and chi
-Pseudotimes were inferred using Gibbs sampling (supplementary text) for $10^5$ iterations. PCA representations of the synthetic data can be seen in figures \ref{fig:toy}A\&B showing the characteristic \emph{Y} shape associated with bifurcating data, coloured by both maximum aposteriori (MAP) pseudotime and branch assignment estimates respectively. We compared the Pearson correlation of the estimated pseudotimes to the true pseudotimes (figure \ref{fig:toy}C) for both MFA, PC1 (the first principal component of the data), Monocle and Diffusion Pseudotime, giving values of 0.98, 0.98, 0.98 and 0.99 (to 2 s.f.) respectively. Broad benchmarking of pseudotime algorithms to ``ground-truth'' data is difficult due to the inherent assumptions that are neccessary about how genes expression evolves along trajectories. However, such toy examples demonstrates the consistency of multiple algorithms on our toy dataset.
+Pseudotimes were inferred using Gibbs sampling for $10^5$ iterations. PCA representations of the synthetic data can be seen in figures \ref{fig:toy}A\&B showing the characteristic \emph{Y} shape associated with bifurcating data, coloured by both maximum aposteriori (MAP) pseudotime and branch assignment estimates respectively. We compared the Pearson correlation of the estimated pseudotimes to the true pseudotimes (figure \ref{fig:toy}C) for both MFA, PC1 (the first principal component of the data), Monocle and Diffusion Pseudotime, giving values of 0.98, 0.98, 0.98 and 0.99 (to 2 s.f.) respectively. Broad benchmarking of pseudotime algorithms to ``ground-truth'' data is difficult due to the inherent assumptions that are neccessary about how genes expression evolves along trajectories. However, such toy examples demonstrates the consistency of multiple algorithms on our toy dataset.
 
 \subsubsection{Impact of transient expression}
 
@@ -243,33 +244,36 @@ One notable difference between MFA and existing bifurcation inference algorithms
 \textbf{A} Zero counts observed in single-cell RNA-seq data may be attributed to either \emph{true zeros} where no mRNA of a given gene is produced in a cell, or \emph{dropout} where there is a failure to reverse-transcribe the low levels of starting material. Alternatively, a count is registered and the gene is \emph{amplified}. In theory not accounting for dropouts will reduce the accuracy of pseudotime inference - the two red counts at pseudotimes of 4 and 6 would be ordered with the blue counts. However, in practice it is impossible to distinguish between \emph{dropouts} and \emph{true zeros}.
 \textbf{B} The percentage of counts with zero expression across 50 replicates for each value of $\lambda$ used in dropout simulations.
 \textbf{C} The pearson correlation to true pseudotime using both the non-zero-inflated and zero-inflated variants of MFA as a function of $\lambda$ used to generate the dataset. Accounting for zero-inflation shows marginal benefits if only a small percentage counts are dropouts. However, for high dropout percentages ($>80\%$) the algorithm has to ``impute'' such a large percentage of the data that correlations to the true pseudotime reduce to near-zero.
-	}} \label{fig:dropout}
+	}} \label{fig:dropout_results}
 \end{figure}
 
 Single-cell RNA-seq data is known to exhibit \emph{dropout}, where a failure to reverse transcribe lowly-expressed mRNA results in zero counts. We have created a variant of MFA that employs an Empirical-Bayes like approach to account for such dropout (see \emph{methods}). However, a zero count for a particular gene in a particular cell may also be a \emph{true zero} where no mRNA in the cell is present.
 
-We expect such true zeros to be useful for pseudotime inference. Figure \ref{fig:dropout}A shows a conceptual model where a gene is upregulated along pseudotime with two cells exhibiting dropout. The true zeros (in blue) help pseudotime inference as the low-expression implies they are at the beginning of pseudotime. However, the cells exhibiting dropout (in red) would potentially impede pseudotime inference as MFA would order them with the true zero cells at the beginning of the trajectory.
+We expect such true zeros to be useful for pseudotime inference. Figure \ref{fig:dropout_results}A shows a conceptual model where a gene is upregulated along pseudotime with two cells exhibiting dropout. The true zeros (in blue) help pseudotime inference as the low-expression implies they are at the beginning of pseudotime. However, the cells exhibiting dropout (in red) would potentially impede pseudotime inference as MFA would order them with the true zero cells at the beginning of the trajectory.
 
-Accounting for such dropouts involves modifying the model so that zero counts are likely if the underlying latent expression is low. Therefore, the red dropout cells in figure \ref{fig:dropout}A would be effectively imputed (via Gibbs updates) upwards towards the mean expression line, increasing the accuracy of pseudotime inference. However, as there is no way to distinguish between true zeros and dropouts, we also ``impute'' the expression of the true zeros, which may itself decrease the accuracy of pseudotime inference.
+Accounting for such dropouts involves modifying the model so that zero counts are likely if the underlying latent expression is low. Therefore, the red dropout cells in figure \ref{fig:dropout_results}A would be effectively imputed (via Gibbs updates) upwards towards the mean expression line, increasing the accuracy of pseudotime inference. However, as there is no way to distinguish between true zeros and dropouts, we also ``impute'' the expression of the true zeros, which may itself decrease the accuracy of pseudotime inference.
 
-We sought to quantify the benefits of modelling zero inflation against the drawbacks of losing the information contained in ``true zeros''. We created multiple synthetic datasets (supplementary text) while varying the dropout parameter $\lambda \in \{0.02, 0.05, 0.1, 1, 10, \infty\}$, where $\lambda = 0.02$ has the largest levels of dropout while $\lambda = \infty$ has no dropout, only true zeros. This was repeated 50 times for each $\lambda$, and the proportion of zero counts in each dataset can be seen in figure \ref{fig:dropout}B. We subsequently re-inferred the pseudotimes using MFA with both the zero-inflated and standard variants.
+We sought to quantify the benefits of modelling zero inflation against the drawbacks of losing the information contained in ``true zeros''. We created multiple synthetic datasets while varying the dropout parameter $\lambda \in \{0.02, 0.05, 0.1, 1, 10, \infty\}$, where $\lambda = 0.02$ has the largest levels of dropout while $\lambda = \infty$ has no dropout, only true zeros. This was repeated 50 times for each $\lambda$, and the proportion of zero counts in each dataset can be seen in figure \ref{fig:dropout_results}B. We subsequently re-inferred the pseudotimes using MFA with both the zero-inflated and standard variants.
 
-The resulting correlations with the true pseudotimes across the range of $\lambda$ and MFA variants can be seen in figure \ref{fig:dropout}C. At very high levels of dropout ($\lambda = 0.02$, where $>80\%$ of counts are zeros) the zero-inflated variant performs considerably worse than the non-zero-inflated variant, with virtually no correspondance to the true pseudotimes compared to $\rho \approx 0.75$. We suggest this is due to the inference procedure effectively imputing such a large proportion of the data that there are too many degrees of freedom to effectively infer the trajectory. For the remaining values of $\lambda$ the zero-inflated variant infers pseudotimes largely comparable to those of the non-zero inflated version, with marginal improvements in accuracy when there is moderate dropout ($\lambda = 1, 10$). We conclude that incorporating zero-inflation into such pseudotime inference is possible, but the variable quality across the (unknown in practice) dropout range along with considerable additional computational cost render it unneccesary for practical purposes.
+The resulting correlations with the true pseudotimes across the range of $\lambda$ and MFA variants can be seen in figure \ref{fig:dropout_results}C. At very high levels of dropout ($\lambda = 0.02$, where $>80\%$ of counts are zeros) the zero-inflated variant performs considerably worse than the non-zero-inflated variant, with virtually no correspondance to the true pseudotimes compared to $\rho \approx 0.75$. We suggest this is due to the inference procedure effectively imputing such a large proportion of the data that there are too many degrees of freedom to effectively infer the trajectory. For the remaining values of $\lambda$ the zero-inflated variant infers pseudotimes largely comparable to those of the non-zero inflated version, with marginal improvements in accuracy when there is moderate dropout ($\lambda = 1, 10$). We conclude that incorporating zero-inflation into such pseudotime inference is possible, but the variable quality across the (unknown in practice) dropout range along with considerable additional computational cost render it unneccesary for practical purposes.
 
 \subsection{Application to single-cell RNA-seq data}
 
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch4/scrnaseq_fig}
-	\caption{Inference of bifurcations in scRNA-seq data of 4,423 Hematopoietic progenitor/stem cells (HSPCs) differentiating into myeloid and erythroid precursors.
-	{\normalfont
+	\caption{Caption next page.}
+	 \label{fig:scrnaseq}
+\end{figure}
+\addtocounter{figure}{-1}
+\begin{figure}
+\caption{Inference of bifurcations in scRNA-seq data of 4,423 Hematopoietic progenitor/stem cells (HSPCs) differentiating into myeloid and erythroid precursors.
 \textbf{A} tSNE representation from \cite{setty2016wishbone} coloured by the maximum aposteriori (MAP) pseudotime.
 \textbf{B} Equivalent plot as \textbf{A} coloured by MAP $\gamma$ (branch assignment).
 \textbf{C} Inverse map $\chi$ showing both the 20 largest and 20 smallest values indicating which genes do and do not show differential behaviour across the bifurcation.
 \textbf{D} tSNE representation of the dataset coloured by gene expression. Both \emph{ELANE} and \emph{CAR2} were predicted by the inverse $\chi$ values to show differing expression across the branches, while \emph{RPL26} was predicted to show similar expression.
 \textbf{E} Scatter plots of pseudotime values compared to those inferred by PC2, Wishbone, Monocle, and DPT. These had pearson correlations of 0.54, 0.83, 0.01, and 0.78 respectively.
-\textbf{F} tSNE representations of the dataset coloured by branch allocation of alternative algorithms shows good agreement with Wishbone and DPT.
-	}} \label{fig:scrnaseq}
+\textbf{F} tSNE representations of the dataset coloured by branch allocation of alternative algorithms shows good agreement with Wishbone and DPT.}
 \end{figure}
 
 
@@ -300,13 +304,16 @@ We subsequently compared the inferred pseudotimes and branching to those found u
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch4/masscyto_fig}
+	\caption{Caption next page.} \label{fig:masscyto}
+\end{figure}
+\addtocounter{figure}{-1}
+\begin{figure}
 	\caption{Inference of bifurcations in single-cell mass cytometry data of a subsample of 2,000 HPSCs differentiating into monocyte and erythrocyte progenitors.
-	{\normalfont
 	\textbf{A} tSNE representation from \cite{setty2016wishbone} coloured by the maximum aposteriori (MAP) pseudotime.
 	\textbf{B} Equivalent plot as \textbf{A} coloured by MAP $\gamma$ (branch assignment).
 	\textbf{C} Scatter plots of MFA pseudotime compared to PC2, Wishbone, Monocle, and DPT, with pearson correlations of 0.84, 0.86, 0.80 and 0.69 respectively.
 	\textbf{D} tSNE representation coloured by branch assignment of Wishbone, Monocle, and DPT. As of version 2, Monocle does not allow for the number of branches to be selected \emph{a priori} and typically returns a large number. For the convenience of visualisation we therefore only display the 30\% most frequent states and group the remaining infrequent ones into ``Other''. The figures suggest a good agreement of branch assignment of MFA with Wishbone and DPT, and moderate agreement with Monocle.
-	}} \label{fig:masscyto}
+	}
 \end{figure}
 
 
@@ -319,7 +326,7 @@ In this paper we have presented a Bayesian hierarchical mixture of factor analys
 % Some comparisons
 \subsection{Trade off between model expressivity and practicality}
 
-There is a natural trade-off in designing such models between flexibility and practicality. The implicit assumption of MFA that gene expression develops linearly across pseudotime allows for fast MCMC sampling and joint inference of branch structure. However, it is highly mis-specified: the predicted expression can easily become negative leading to erronous inference (see supplementary text). A solution to this would be to not explicitly assume a strongly parametric form of gene expression and consider nonparametric methods. However, such methods are often overly flexible, requiring either additional capture information to correctly infer pseudotimes \cite{reid2016pseudotime} or hard-setting the pseudotimes prior to inferring the branching structure \cite{lonnberg2016temporal}. As such there is a natural trade-off between the expressivity of such models and being able to perform valid statistical inference that fully incorporates parameter variation without additional constraints or
+There is a natural trade-off in designing such models between flexibility and practicality. The implicit assumption of MFA that gene expression develops linearly across pseudotime allows for fast MCMC sampling and joint inference of branch structure. However, it is highly mis-specified: the predicted expression can easily become negative leading to erronous inference. A solution to this would be to not explicitly assume a strongly parametric form of gene expression and consider nonparametric methods. However, such methods are often overly flexible, requiring either additional capture information to correctly infer pseudotimes \cite{reid2016pseudotime} or hard-setting the pseudotimes prior to inferring the branching structure \cite{lonnberg2016temporal}. As such there is a natural trade-off between the expressivity of such models and being able to perform valid statistical inference that fully incorporates parameter variation without additional constraints or
  \emph{tweaking}.
 
 
@@ -355,7 +362,7 @@ A further limitation of our model is the requirement to specify the number of br
 
 One method to choose the number of branches is to construct a finite set of (non-zero) integers and choose the number that best explains the data by some measure. We can view this as the classic Bayesian model selection problem where we wish to compute the marginal likelihood of the data given a pre-specified number of branches.
 
-Without loss of generality consider two numbers of branche, $B_1$ and $B_2$. We can compute the marginal likelihood of the data $\bY$ given the number of branches $B$ via
+Without loss of generality consider two numbers of branches, $B_1$ and $B_2$. We can compute the marginal likelihood of the data $\bY$ given the number of branches $B$ via
 
 \begin{equation}
 	p(\bY | B) = \int_{\bm \Theta} p(\bY | \bm \Theta, B) p (\bm \Theta | B) d \bm\Theta
@@ -371,4 +378,24 @@ which provides the relative evidence for $B_1$ over $B_2$.
 
 \subsubsection{Nonparametric mixture of factor analysers}
 
-Discuss stick breaking priors referenced in \cite{lonnberg2016temporal}.
+An alternative approach to choosing the number of branches would be to use a nonparametric mixture of factor analysers through the use of dirichlet process (DP) priors on the loading matrix. To define a DP we require a \emph{base distribution} $H$ defined on $\mbtheta$ and a positive number $\alpha$. Then $G$ is a DP ($G \sim \text{DP}(\alpha, H)$) if for any finite partition $\theta_1, \ldots, \theta_n$ of $\mbtheta$ we have $(G(\theta_1), \ldots, G\left(\theta_n)\right) \sim \text{Dirichlet}(\alpha H(\theta_1), \ldots, \alpha H(\theta_n))$. DPs can easily be sampled from by drawing a sample $x_1$ from the base distribution $H$ and for the remaining $2, \ldots, N$ samples resampling from $H$ with probability $\frac{\alpha}{\alpha + n - 1}$ and sampling $x_n$ from the existing $x_1, \ldots, x_{n-1}$ otherwise. In other words, $\alpha$ can be thought of as controlling the probability of adding a new value, which in the case of a mixture of factor analysers would add an additional branch. An example draws of a DP for a standard normal distribution for varying values of $\alpha$ can be seen in figure \ref{fig:dp}.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{gfx/ch4/dp_sn_base_dist.png}
+	\caption{100 draws from a dirichlet process with $\alpha = 0.5, 1, 2, 5$ with a standard normal base distribution.} \label{fig:dp}
+\end{figure}
+
+Nonparametric mixtures of factor analysers have previously been considered for compressed sensing \cite{chen2010compressive} and applied to NMR metabolomic data \cite{murphy2017infinite}. Such models typically consider a nonparametric prior on the number of latent dimensions allowing the model to ``automatically decide'' the dimensionality of the latent space, though in pseudotemporal applications this can be fixed to 1. A nonparametric mixture of overlapping Gaussian Processes was considered in \cite{lonnberg2016temporal}, though they found that in practice this typically overestimated the number of branches.
+
+The use of DP priors in this context has other drawbacks too. Though often sold as ``inferring the number of components [of a mixture model] automatically'' there is still the requirement to tune the parameter $\alpha$ that affects the eventual number of components. Furthermore, it is known that DP mixture models typically overestimate the number of components and are in fact inconsistent for the number of components \cite{miller2013simple}. In other words, even if we had an infinite amount of data a DP mixture model will not estimate the correct number of mixture components. Therefore, other approaches (such as model selection above) may be more suitable for inferring the number of branches in such settings.
+
+\subsection{Accounting for technical effects}
+
+Single-cell RNA-seq data are known to substatially suffer from technical batch effects \cite{tung2017batch,hicks2017missing}, particularly if multiple cells are sequenced across different plates or microfluidic devices. To account for this our model could be modified to take the form of a linear mixed model as
+
+\begin{equation}
+	\mby_n = \mbalpha x_n + \mbc_{\gamma_n} + \mbk_{\gamma_n} t_n + \mbepsilon_n
+\end{equation}
+
+where $x_n$ indicates to which batch cell $n$ belongs and $\mbalpha$ is a vector of gene-specific intercepts that account for global expression shifts due to technical effects.

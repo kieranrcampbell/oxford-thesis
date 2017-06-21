@@ -389,6 +389,16 @@ We subsequently sought to test the dependency of Ouija's accuracy on how the pri
 	\label{fig:ouija_only}
 \end{figure}
 
+\section{Robustness to transient gene behaviour}
+
+Finally, a potential limitation of our switch behaviour model is that it assumes that all selected marker genes follow a strict monotonically increasing (or decreasing) behaviour and there exists a smooth, non-transient transition from an initial cell expression state to a final resting state at the end of the pseudotemporal period. In selecting a marker gene panel the investigator may not always be fully certain of the quantitative behaviour of all genes and some may indeed exhibit a transient rather than switch behaviour. In order to test of the impact of such genes on Ouija we performed a simulation study to assess the effect of genes exhibiting transient behaviour on pseudotime estimation. We did this by simulating panels of single cell expression values that mimic the zero-inflated properties observed in real data for a variety of genes containing mixed numbers of switch-like and transient gene behaviours (Fig. \ref{fig:switch-transient-simulation}A). Specifically we considered two scenarios, the first in which the numbers of switch-like and transient genes are equal and the second in which three-quarters of the gene panels were switch-like genes and the reminder transient (Figure \ref{fig:switch-transient-simulation}B). Our simulation study showed that if the switch-like genes remained the dominant class of genes in the simulated marker gene panels, it remained possible to accurately infer pseudotime in the presence of transient genes (Fig. \ref{fig:switch-transient-simulation}C). Furthermore, as the size of the panel increases, the absolute number of switch genes was a greater determinant of pseudotime estimation accuracy than the proportion of the marker gene panel that was truly switch-like.
+
+\begin{figure}
+	\includegraphics[width=\textwidth]{gfx/ch3/switch-transient-simulation.png}
+	\caption{{\bf Impact of marker genes exhibiting transient rather than switch-like gene behaviours.} (A) Examples of simulated switch and transient expression genes. (B) Example 24-gene panel with 12 switch and 12 transient genes. (C) Correlation between true and estimated pseudotime as a function of the gene panel size and proportion of switch genes for ten replicates.}
+	\label{fig:switch-transient-simulation}
+\end{figure}
+
 
 \section{Ouija clusters cell types based on pseudotime continuity}
 
@@ -427,15 +437,7 @@ This investigation indicates that although Ouija makes strong assumptions about 
 \end{figure}
 
 
-\section{Robustness to transient gene behaviour}
 
-Finally, a potential limitation of our switch behaviour model is that it assumes that all selected marker genes follow a strict monotonically increasing (or decreasing) behaviour and there exists a smooth, non-transient transition from an initial cell expression state to a final resting state at the end of the pseudotemporal period. In selecting a marker gene panel the investigator may not always be fully certain of the quantitative behaviour of all genes and some may indeed exhibit a transient rather than switch behaviour. In order to test of the impact of such genes on Ouija we performed a simulation study to assess the effect of genes exhibiting transient behaviour on pseudotime estimation. We did this by simulating panels of single cell expression values that mimic the zero-inflated properties observed in real data for a variety of genes containing mixed numbers of switch-like and transient gene behaviours (Fig. \ref{fig:switch-transient-simulation}A). Specifically we considered two scenarios, the first in which the numbers of switch-like and transient genes are equal and the second in which three-quarters of the gene panels were switch-like genes and the reminder transient (Figure \ref{fig:switch-transient-simulation}B). Our simulation study showed that if the switch-like genes remained the dominant class of genes in the simulated marker gene panels, it remained possible to accurately infer pseudotime in the presence of transient genes (Fig. \ref{fig:switch-transient-simulation}C). Furthermore, as the size of the panel increases, the absolute number of switch genes was a greater determinant of pseudotime estimation accuracy than the proportion of the marker gene panel that was truly switch-like.
-
-\begin{figure}
-	\includegraphics[width=\textwidth]{gfx/ch3/switch-transient-simulation.png}
-	\caption{{\bf Impact of marker genes exhibiting transient rather than switch-like gene behaviours.} (A) Examples of simulated switch and transient expression genes. (B) Example 24-gene panel with 12 switch and 12 transient genes. (C) Correlation between true and estimated pseudotime as a function of the gene panel size and proportion of switch genes for ten replicates.}
-	\label{fig:switch-transient-simulation}
-\end{figure}
 
 \section{Discussion}
 
