@@ -172,7 +172,78 @@ While in algorithms such as Wishbone and DPT this non-identifiability is solved 
 
 \subsubsection{Generating of synthetic datasets}
 
-Synthetic datasets were generated for various simulations throughout the analysis. Rather than simply generating data from the model we attempted to create synthetic data that was as close to real single-cell data as feasible, meaning \emph{the synthetic data is severely misspecified with respect to our model}. The full details can be found in algorithm \ref{alg:synth} but summarise the procedure below.
+Synthetic datasets were generated for various simulations throughout the analysis. Rather than simply generating data from the model we attempted to create synthetic data that was as close to real single-cell data as feasible, meaning \emph{the synthetic data is severely misspecified with respect to our model}. 
+
+% The full details can be found in algorithm \ref{alg:synth} but summarise the procedure below.
+
+
+
+% \begin{algorithm}                      % enter the algorithm environment
+% %\algsetup{linenosize=\tiny}
+% \scriptsize
+% \caption{Generate pseudotemporally regulated bifurcating scRNA-seq data}          % give the algorithm a caption
+% \label{alg:synth}                           % and a label for \ref{} commands later in the document
+% \begin{algorithmic}[1]                    % enter the algorithmic environment
+% \State \textbf{Data:} $G$ genes, $C$ cells, proportion of genes exhibiting transient expression $p_{\text{transient}}$
+% \State \textbf{Result:} A $C \times G$ matrix of gene expression $X$, where $[X]_{cg} = x_{cg}$
+% \For{$g \in 1 \ldots G$}
+%   \State Sample $1 / \sigma^2_g \sim \text{Gamma(2,2)}$
+%   \For{$b \in \{1,2\}$}
+% 	  \State Draw $k_{gb} \sim \text{Unif(5, 10)}$
+% 	  \State Draw $\phi_{g\cdot} \sim \text{Unif(5,10)}$
+% 	  \State Draw $\delta_{g\cdot} \sim \text{Unif(a, b)}$ where $a = 0, b = 0.5$ if $g < G/2$ and $a=0.5, b=1$ if $G \geq G/2$
+% 	  \State Set $k_{bg} \gets -k_{bg}$ with probability $\frac{1}{2}$
+%   \EndFor
+% \EndFor
+% \For{$g \in G/2, \ldots, G$}
+%     \State Set $b \gets 1 \text{ or } 2$ each with probability $\frac{1}{2}$
+%     \State Set $k_{gb} \gets 0$
+%     \State Set $b_0 = b' : k_{gb'} = 0, b_1 = b' : k_{gb'} \neq 0$
+%     \If{$k_{b_1g} > 0$}
+%       \State $\phi_{gb_0} \gets 0$
+%     \Else
+%       \State $\phi_{gb_0} \gets 2 \phi_{gb_1}$
+%     \EndIf
+% \EndFor
+% \For{$c \in 1, \ldots, C$}
+% \State Sample $t_c \sim \text{Unif(0,1)}$
+% \State Sample $\gamma_c$ from $\{1,2\}$ each with probability $\frac{1}{2}$
+%   \For{$g \in 1, \ldots, G$}
+%     \State Set $\mu \gets \text{Sigmoid}(t_c, k_{g\gamma_c}, \phi_{g\gamma_c}, \delta_{g\gamma_c})$
+%     \State Sample $x_{cg} \sim \text{N}(\mu, \sigma^2_g)$
+%   \EndFor
+% \EndFor
+% \State Set $T$ as the set of randomly sampled indicies such that $|T| \approx p_{\text{transient}}G$
+% \For{$t \in T$}
+%   \If{$t < G/2}$
+%     \State Sample $s_t \sim \text{LogNormal}(\log(0.05), 0.5)$
+%     \For{$c \in 1, \ldots, C$}
+%       \State $\mu \gets \text{Transient}(t_c, 0.5, s_t)$
+%       \State $\mu \gets 1 - \mu$ with probability $\frac{1}{2}$
+%       \State Sample $x_{ct} \sim \norm(2 \phi_{t1} \mu, \sigma_t^2)$
+%     \EndFor
+%   \Else
+%     \State Set $b_0 = b' : k_{tb'} = 0, b_1 = b' : k_{tb'} \neq 0$
+%     \State Sample $s_t \sim \text{LogNormal}(\log(0.05), 0.3)$
+%     \For{$c \in 1, \ldots, C$}
+%       \State $\mu \gets \text{Transient}(t_c, 0.75, s_t)$
+%       \If{$k_{tb_1} < 0$}
+%         \State $\mu \gets 1 - \mu$
+%       \EndIf
+%       \If{$\gamma_c = b_1$}
+%         \State Sample $x_{ct} \sim \norm(\mu, \sigma_t^2)$
+%       \EndIf
+%     \EndFor
+%   \EndIf
+% \EndFor
+% \For{$g \in 1, \ldots, G$, $c \in 1, \ldots, C$}
+% \If{$x_{cg} < 0$}
+%   \State Set $x_{cg} \gets 0$
+% \EndIf
+% \EndFor
+% \end{algorithmic}
+% \end{algorithm}
+
 
 The first consideration is the functional form of gene expression along pseudotime. A linear assumption is fundamentally unrealistic as the gene expression cannot go to $\pm \infty$ as pseudotime progresses. Consequently we adopt sigmoidal expression across pseudotime (previously suggested in \cite{campbell2016order,campbell2016switchde} and discussed in chapters 2-3), parameterised\footnote{We depart from the previous notation here to avoid index hell when referencing multiple branches.} by the half-peak expression $\phi$, the \emph{switch-time} $\delta$ and the switch-strength $k$:
 \begin{equation}\label{eq:sigmoid}

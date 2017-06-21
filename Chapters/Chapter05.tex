@@ -151,7 +151,7 @@ For our model in equation \ref{eq:clvm_model} we make what is known as a mean-fi
 \underbrace{q_\tau(\tau_g)}_{\text{Gamma}} \underbrace{q_\lambda(\lambda_g)}_{\text{Normal}}
 \prod_{p=1}^P \underbrace{q_\alpha (\alpha_{pg})}_{\text{Normal}}
 \underbrace{q_\beta(\beta_{pg})}_{\text{Normal}} \underbrace{q_\chi (\chi_{pg})}_{\text{Gamma}}
-\end{aligned} \ref{eq:variational}
+\end{aligned} \label{eq:variational}
 \end{equation}
 
 For conditionally conjugate models it is possible to derive updates that maximise the ELBO for each parameter, conditioned on all other parameters being held constant. For a general model let $\theta_j$ denote the $j^{\text{th}}$ parameter and  $\mbtheta_{-j}$ the vector of all parameters other than $j$. The update that provides the distribution for $\theta_j$ that maximises the ELBO is given by
@@ -522,7 +522,7 @@ Evaluation of $q(t_n | \mu_{t_n}, \sigma_{t_n}, o_n, r_n)$ is then made via
 q(t_n | \mu_{t_n}, \sigma_{t_n}, o_n, r_n) = \Norm(\epsilon | 0, 1) \left| \frac{\partial g^{-1}_t(\epsilon | \mu_{t_n}, \sigma_{t_n})}{\partial \epsilon} \right|.
 \end{equation}
 
-The variable $k$ parametrizing the Weibull distribution is constrained to be greater than zero. It further has an intuitive interpretation: for $k < 1$ the failure rate decreases over time, for $k = 1$ the failure rate is constant, while for $k > 1$ the survival rate increases over time. For most biomedical applications (see section \ref{sec:tcga}) it is known the survival rate increases over time, so we may constrain $k > 1$. However, $k$ appears in the log-likelihood via $\sum_n t_n^k$, where $t_n$ is both the observed and censored true survival times. Thus in settings where $t_n$ may exceed orders of $10^2$ and $k$ sampled from a log-normal distribution, $t_n^k$ leads to highly unstable estimates of the log-likelihood and can easily overflow the machine precision. Thus we constrain $k$ to be on the interval $[a, b)$ via the same reparametrization as in equation \ref{eq:ttran} and  set $a = 1$ and $b = 3$.
+The variable $k$ parametrizing the Weibull distribution is constrained to be greater than zero. It further has an intuitive interpretation: for $k < 1$ the failure rate decreases over time, for $k = 1$ the failure rate is constant, while for $k > 1$ the survival rate increases over time. For most biomedical applications it is known the survival rate increases over time, so we may constrain $k > 1$. However, $k$ appears in the log-likelihood via $\sum_n t_n^k$, where $t_n$ is both the observed and censored true survival times. Thus in settings where $t_n$ may exceed orders of $10^2$ and $k$ sampled from a log-normal distribution, $t_n^k$ leads to highly unstable estimates of the log-likelihood and can easily overflow the machine precision. Thus we constrain $k$ to be on the interval $[a, b)$ via the same reparametrization as in equation \ref{eq:ttran} and  set $a = 1$ and $b = 3$.
 
 
 \subsection{Application to breast cancer bulk RNA-seq}
@@ -654,7 +654,7 @@ As a small proof-of-concept we created a synthetic dataset (figure \ref{fig:cgpl
   \centering
 \includegraphics[width=0.9\textwidth]{gfx/ch5/cgplvm_results}
 \caption{Black-box inference for CGPLVM on synthetic data.
-\textbf{A} Comparison of posterior mean inferred $z$ from CGPLVM vs. true $z$.% has $\rho_{Pearson} = 0.998$.
+\textbf{A} Comparison of posterior mean inferred $z$ from CGPLVM vs. true $z$. % has $\rho_{Pearson} = 0.998$.
 \textbf{B} Same comparison with first principal component of the data. % has $\rho_{Pearson} = 0.971$.
 \textbf{C} Traceplot of the posterior log-likelihood suggests good convergence of the model.
 \textbf{D} Posterior boxplot of $\mblambda$ identifies interactions for the odd-numbered features.
