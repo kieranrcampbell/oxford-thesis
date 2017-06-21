@@ -219,14 +219,14 @@ If available, user-supplied prior beliefs can be encoded in these priors by spec
 
 \subsection{Inference}
 
-We performed posterior inference using Markov Chain Monte Carlo (MCMC) stochastic simulation algorithms, specifically the No U-Turn Hamiltonian Monte Carlo approach \cite{homan2014no} implemented in the STAN probabilistic programming language \cite{carpenter2015stan} (see section \ref{sec:stan}). The parameter $\epsilon = 0.01$ is used to avoid numerical issues in MCMC computation. For larger marker gene panels, such as in the cell cycle analysis section, we used the automatic differentiation variational inference (ADVI) implemented in STAN to perform approximate Bayesian inference.
+We performed posterior inference using Markov Chain Monte Carlo (MCMC) stochastic simulation algorithms, specifically the No U-Turn Hamiltonian Monte Carlo approach \cite{homan2014no} implemented in the STAN probabilistic programming language \cite{carpenter2015stan} (see section \ref{sec:stan}). The parameter $\epsilon = 0.01$ is used to avoid numerical issues in MCMC computation. For larger marker gene panels, such as in the cell cycle analysis section, we used the automatic differentiation variational inference (ADVI) implemented in STAN to perform approximate Bayesian inference. The STAN code can be found in appendix \ref{app:ouijastan}.
 
 
 \subsubsection{Convergence diagnostics}
 
 \begin{figure}
 \centering
- \includegraphics[width=0.9\textwidth]{gfx/ch3//mcmc}
+ \includegraphics[width=0.9\textwidth]{gfx/ch3/mcmc}
  \caption{\textbf{MCMC convergence diagnostics}. \textbf{A} For a single chain \sname contains a convenience function to plot both the trace of the log-likelihood and the log-likelihood autocorrelation. \textbf{B-E} MCMC diagnostic statistics such as posterior log-likelihood trace, effective sample size, Gelman-Rubin statistic and ratio of monte carlo standard error to posterior standard deviation show good mixing across chains.} \label{fig:mcmc}
  \end{figure}
 
@@ -252,24 +252,22 @@ Since \sname relies on MCMC simulation for inference it is cruicial to assess mo
 
 % \section{Results}
 
-\section{Systematic comparison of marker-based and whole-transcriptome based pseudotime estimation}
+\section{Comparison of marker and whole-transcriptome pseudotimes}
 
 We investigated the use of limited marker gene panels for pseudotime inference using three single cell expression datasets: (i) adult hippocampal quiescent neural stem cells (Shin) \cite{Shin2015}, (ii) differentiating myoblasts (Trapnell) \cite{Trapnell2014} and (iii) embryonic precursor cells into haematopoietic stem cells \cite{zhou2016tracing}. We began by computing pseudotimes using a selection of pseudotime algorithms for each dataset using the small set of 5-6 marker genes identified in the respective studies. We compared marker-based pseudotimes estimated using Ouija, a reference pseudotime based on the first principal component (PC1), TSCAN  \cite{ji2016tscan}, Monocle 2 \cite{qiu2017reversed}, and DPT \cite{haghverdi2016diffusion}. Monocle and TSCAN were run with default parameter settings. For DPT, white noise with standard deviation of $10^{-6}$ of each gene’s standard deviation was added to the expression data to avoid errors concerning cells with identical expression.
 
 %\floatsetup[figure]{style=plain,subcapbesideposition=top}
 
-%\begin{figure}[!t]
-%	\sidesubfloat[]{\includegraphics[width=0.8\textwidth]{gfx/ch3/trapnell.png} \label{fig:correlation-a}}
-%
-%	\sidesubfloat[]{
-%		\includegraphics[width=0.8\textwidth]{gfx/ch3/trapnell-fit.png}
-%		\label{fig:correlation-b}}
-%
-%	\caption{\textbf{Comparison of marker gene-based pseudotime estimates across five algorithms.} (A) Pseudotimes reported by the five algorithms do not exhibit strong correlation. (B) Expression level fits reported by each algorithm qualitatively reflect their intrinsic modelling assumptions. Blue line shows a smoothing curve fitted to the pseudotemporally ordered expression values.}
-%	\label{fig:correlation}
-%\end{figure}
+\begin{figure}%[!t]
+\centering
+	\subfloat[a][Pseudotimes reported by the five algorithms do not exhibit strong correlation.]{\includegraphics[width=0.65\textwidth]{gfx/ch3/trapnell.png}}
 
-Fig. \ref{fig:correlation}A shows the correlation between pseudotimes obtained for the Trapnell data set whilst equivalent results for the Shin and Zhou data sets can be found in Supp. Fig. 1A and Supp. Fig. 2A respectively. Our analysis shows that pseudotime estimates obtained from marker gene panels differed between pseudotime algorithms with many showing only weak correlation between inferred pseudotimes. However, qualitatively, all algorithms produced plausible gene expression variation over the inferred pseudotimes (Fig. \ref{fig:correlation}B, Supp. Fig. 1B and Supp. Fig. 2B).
+	\subfloat[b][Expression level fits reported by each algorithm qualitatively reflect their intrinsic modelling assumptions. Blue line shows a smoothing curve fitted to the pseudotemporally ordered expression values.]{\includegraphics[width=0.65\textwidth]{gfx/ch3/trapnell-fit.png}}
+	\caption{Comparison of marker gene-based pseudotime estimates across five algorithms.}
+	\label{fig:trapnell-correlations}
+\end{figure}
+
+Figure \ref{fig:trapnell-correlations}(a) shows the correlation between pseudotimes obtained for the Trapnell data set whilst equivalent results for the Shin and Zhou data sets can be found in appendix C figures \ref{fig:shin-correlations}(a) and \ref{fig:zhou-correlations}(a) respectively. Our analysis shows that pseudotime estimates obtained from marker gene panels differed between pseudotime algorithms with many showing only weak correlation between inferred pseudotimes. However, qualitatively, all algorithms produced plausible gene expression variation over the inferred pseudotimes (figures \ref{fig:trapnell-correlations}(b), appendix C \ref{fig:shin-correlations}(b), and \ref{fig:zhou-correlations}(b)).
 
 
 \begin{figure}%[!t]
@@ -282,7 +280,7 @@ Fig. \ref{fig:correlation}A shows the correlation between pseudotimes obtained f
 We investigated further by examining the relationship between pseudotimes obtained from marker gene panels, whole transcriptomes and gene set sizes falling between these two extrema. We computed a transcriptome-wide pseudotime where genes retained had a variance in log-expression (TPM/FPKM) greater than 1 and were expressed in at least one cell at log-expression greater than $1$. Furthermore, for each dataset and algorithm combination, we generated additional gene sets that consisted of the marker genes and $N = 1, 5, 10, 20, 50, 100, 500, 1000$ randomly chosen genes from the full transcriptome-wide gene set. In doing so we were able to investigate the continuum between marker-based and whole-transcriptome pseudotime estimation. This was performed for 50 replicates for each $N$. We then compared the results on three metrics: (Pearson) correlation to the marker pseudotimes and correlation to the global pseudotimes.
 
 Our major observation is the striking variability in pseudotime estimates across data sets, gene sets and replicates for all algorithms
-(Fig. \ref{fig:comparisons}). As the number of additional genes included in each data set increases, the correlation of the estimated pseudotimes to the reference marker-based pseudotimes typically decreases (Fig. \ref{fig:comparisons}A) whilst the correlation with global pseudotime increases respectively (Fig. \ref{fig:comparisons}B). Note that Ouija is not included in the latter analysis since it is not intended to be applied to whole transcriptome analyses. This behaviour is expected since the forms of variation encoded in the larger gene set are likely to differ from that encoded within the marker genes. However, it is evident that depending on the dataset and genes chosen there is large variability in the consistency of pseudotime algorithm fitting. In other words, there is no one global solution that consistently fits the same pseudotime that will recapitulate the desired behaviour of marker genes.
+(figure \ref{fig:comparisons}). As the number of additional genes included in each data set increases, the correlation of the estimated pseudotimes to the reference marker-based pseudotimes typically decreases (figure \ref{fig:comparisons}A) whilst the correlation with global pseudotime increases respectively (figure \ref{fig:comparisons}B). Note that Ouija is not included in the latter analysis since it is not intended to be applied to whole transcriptome analyses. This behaviour is expected since the forms of variation encoded in the larger gene set are likely to differ from that encoded within the marker genes. However, it is evident that depending on the dataset and genes chosen there is large variability in the consistency of pseudotime algorithm fitting. In other words, there is no one global solution that consistently fits the same pseudotime that will recapitulate the desired behaviour of marker genes.
 
 \begin{figure}%[!t]
 	\centering
@@ -293,7 +291,7 @@ Our major observation is the striking variability in pseudotime estimates across
 
 We finally compared the consistency of differential expression across pseudotime using a recently published method for detecting which genes vary across pseudotime. All p-values were corrected using Benjamini-Hochberg and an FDR threshold of 5\% used to define significance. For each algorithm and number of additional genes we computed the proportion of genes deemed significant found in (a) the differential expression test using the transcriptome-wide pseudotime and (b) the differential expression test using the marker-only pseudotime.
 
-It can be see that as the number of markers included increases the rate of overlap to the transcriptome-wide DE calls also generally increases (Fig. \ref{fig:comparisons}D). Notably, the rate is very low for DPT when the number of included markers is small, which is consistent with the low correlation to marker pseudotimes exhibited in figure xA. In contrast, as the number of included marker genes increases, the rate of overlap to the marker DE calls decreases (Figure xE) as expected. 
+It can be see that as the number of markers included increases the rate of overlap to the transcriptome-wide DE calls also generally increases (figure \ref{fig:de_results}A). Notably, the rate is very low for DPT when the number of included markers is small, which is consistent with the low correlation to marker pseudotimes exhibited in figure \ref{fig:comparisons}. In contrast, as the number of included marker genes increases, the rate of overlap to the marker DE calls decreases (figure \ref{fig:de_results}B) as expected. 
 
 \section{Incorporating prior information improves pseudotime inference}
 
