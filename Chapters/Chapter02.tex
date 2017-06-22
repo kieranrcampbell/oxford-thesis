@@ -176,7 +176,7 @@ Many covariance or \emph{kernel} functions have been studied in the context of G
  	k_{\text{SE}}(\bx, \bx') = \sigma_f^2 \exp(-\frac{1}{2l^2}|\bx - \bx'|^2)
  \end{equation}
 
- where $\sigma_f^2$ is the \emph{signal variance} and $l$ the \emph{length scale} \cite{rasmussen2006gaussian}. An interpretation of the squared exponential kernel is that we maximise the covariance between observations when $\bx$ is close to $\bx'$ and minimise it when they are far apart. Variants of this kernel exist, such as that incorporating an automatic relevance dermination (ARD) structure by allowing different length scales for each input dimension.
+ where $\sigma_f^2$ is the \emph{signal variance} and $l$ the \emph{length scale} \cite{rasmussen2006gaussian}. An interpretation of the squared exponential kernel is that we maximise the covariance between observations when $\bx$ is close to $\bx'$ and minimise it when they are far apart. Variants of this kernel exist, such as that incorporating an automatic relevance determination (ARD) structure by allowing different length scales for each input dimension.
 
  We can think of the GPs described so far as analogous to non-parametric regression where we observe some (possibly noisy) one-dimensional output $y$ at a collection of $Q$-dimensional input points $\bx_1, \ldots, \bx_N$. However, provided the output dimensionality $D > 1$ and $Q < D$, GPs can also be used to infer the input points in a latent variable formulation termed Gaussian Process Latent Variable Models (GPLVM) \cite{Lawrence2005-cu}.
 
@@ -243,11 +243,11 @@ The overall workflow can be seen in figure \ref{fig:workflow}. We begin by reduc
 
 \subsection{Inference} \label{sec:stan}
 
-The model definied in equation \ref{eq:pseudogp_model} is not conditionally conjugate, meaning we cannot use Gibbs sampling for inference. An alternative would be to use a Metropolis-Hastings algorithm\footnote{
+The model defined in equation \ref{eq:pseudogp_model} is not conditionally conjugate, meaning we cannot use Gibbs sampling for inference. An alternative would be to use a Metropolis-Hastings algorithm\footnote{
 Our initial implementation used exactly this.
 } that can perform Bayesian posterior inference on any model for which the likelihood can be evaluated. However, Metropolis-Hastings requires manual tuning of proposal distributions in order to explore the posterior space efficiently and can exhibit poor mixing in high-dimensional spaces.
 
-In order to sidestep these issues we turn to the probabilistic programming language (PPL) Stan \cite{gelman2015stan} that performs efficient inference on arbirarty (non-conjugate) Bayesian models. PPLs have become increasingly popular in the past few years with examples such as Stan, PyMC3 \cite{salvatier2016probabilistic}, Infer.net \cite{wang2011using} and Edward \cite{Tran2016-ml}. They describe probabilistic models and perform inference in a (semi-) automated manner, taking much of the work out of statistical modelling and to some extent freeing models from assumptions that lead to easier inference.
+In order to sidestep these issues we turn to the probabilistic programming language (PPL) Stan \cite{gelman2015stan} that performs efficient inference on arbitrary (non-conjugate) Bayesian models. PPLs have become increasingly popular in the past few years with examples such as Stan, PyMC3 \cite{salvatier2016probabilistic}, Infer.net \cite{wang2011using} and Edward \cite{Tran2016-ml}. They describe probabilistic models and perform inference in a (semi-) automated manner, taking much of the work out of statistical modelling and to some extent freeing models from assumptions that lead to easier inference.
 
 We use Stan for the majority of the statistical inference in both chapters 2 \& 3 so describe briefly how it works. Stan uses Hamiltonian Monte Carlo (HMC, see e.g. \cite{neal2011mcmc}), a form of monte carlo sampling that leverages gradient information to quickly traverse through ``flat'' regions of posterior probability to more effectively explore the space.
 
