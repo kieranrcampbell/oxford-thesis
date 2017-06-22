@@ -1,23 +1,24 @@
-Bendall2014a -> bendall2014single
-Haghverdi2016-eg -> haghverdi2016diffusion
-haghverdi2015diffusion -> Haghverdi2015
-homan2014no -> Hoffman2014-pl
-ji2015tscan,ji2016tscan -> Ji2016-gx
-kharchenko2014bayesian -> Kharchenko2014
-kowalczyk2015single -> Kowalczyk2015-li
-lawrence2005probabilistic -> Lawrence2005-cu
-van2008visualizing -> maaten2008visualizing
-macaulay2016single -> macaulay2016single
-Marco2014 -> Marco2014-ug
-scater -> McCarthy2017-we
-Picelli2013,picelli2013smart -> Picelli2013-tm
-qiu2017single -> Qiu2017-eu
-ramskold2012full -> Ramskold2012-wt
-reid2015pseudotime,reid2016pseudotime -> Reid2016-yo
-shin2015single -> Shin2015
-tatlow2016cloud -> Tatlow2016-yo
-tran2016edward -> Tran2016-ml
-trapnell2014dynamics,Trapnell2014,trapnell2014pseudo -> Trapnell2014-xi
-Treutlein2014,treutlein2014reconstructing -> Treutlein2014-ob
-Yau2015 -> pierson2015zifa
+Bendall2014a,bendall2014single/Bendall2014-rc
+Haghverdi2016-eg/haghverdi2016diffusion
+haghverdi2015diffusion/Haghverdi2015
+homan2014no/Hoffman2014-pl
+ji2015tscan,ji2016tscan/Ji2016-gx
+kharchenko2014bayesian/Kharchenko2014
+kowalczyk2015single/Kowalczyk2015-li
+lawrence2005probabilistic/Lawrence2005-cu
+van2008visualizing/maaten2008visualizing
+macaulay2016single/macaulay2016single
+Marco2014/Marco2014-ug
+scater/McCarthy2017-we
+Picelli2013,picelli2013smart/Picelli2013-tm
+qiu2017single/Qiu2017-eu
+ramskold2012full/Ramskold2012-wt
+reid2015pseudotime,reid2016pseudotime/Reid2016-yo
+shin2015single/Shin2015
+tatlow2016cloud/Tatlow2016-yo
+tran2016edward/Tran2016-ml
+trapnell2014dynamics,Trapnell2014,trapnell2014pseudo/Trapnell2014-xi
+Treutlein2014,treutlein2014reconstructing/Treutlein2014-ob
+Yau2015/pierson2015zifa
 
+test-one

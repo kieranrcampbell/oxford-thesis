@@ -8,7 +8,7 @@
 
 It is hard to overstate the impact of single-cell whole-transcriptome expression quantification on recent scientific research. The first single-cell RNA-sequencing (RNA-seq) method was introduced in 2009 \cite{Tang2009-th}, and gained widespread interest around three years later with the introduction of methods such as Smart-seq \cite{Ramskold2012-wt} and Smart-seq2 \cite{Picelli2013-tm} that significantly reduced the cost of library preparation. It is quite incredible that in the space of a little over five years the technology has sufficiently advanced to move from profiling a few tens of cells to thousands and hundreds of thousands using technologies such as Drop-seq \cite{Macosko2015-ek} and the 10x platform \cite{Zheng2017-vj}.
 
-This mass-production of single-cell data has lead to an explosion of methods development for downstream analysis by both computational biologists and statisticians. There are now a wide-range of methods specific to single-cell data for common analyses such as normalisation \cite{Lun2016-oj,Bacher2017-ga}, differential expression \cite{Kharchenko2014,Delmans2016-po,Korthauer2016-iz}, dimensionality reduction \cite{Yau2015,Wang2017-dl}, and ``pseudotime'' analyses (see section \ref{sec:pseudotime}). Indeed, there are now over 100 dedicated tools for analysing single-cell data, %\footnote{A comprehensive spreadsheet of single-cell software can be found at \url{https://tinyurl.com/mqabyur}.}, 
+This mass-production of single-cell data has lead to an explosion of methods development for downstream analysis by both computational biologists and statisticians. There are now a wide-range of methods specific to single-cell data for common analyses such as normalisation \cite{Lun2016-oj,Bacher2017-ga}, differential expression \cite{Kharchenko2014,Delmans2016-po,Korthauer2016-iz}, dimensionality reduction \cite{pierson2015zifa,Wang2017-dl}, and ``pseudotime'' analyses (see section \ref{sec:pseudotime}). Indeed, there are now over 100 dedicated tools for analysing single-cell data, %\footnote{A comprehensive spreadsheet of single-cell software can be found at \url{https://tinyurl.com/mqabyur}.}, 
 the majority of which have been produced since 2015.
 
 \subsection{Why quantify gene expression in single-cells?}
@@ -43,8 +43,8 @@ To overcome these issues researchers began direct sequencing of the cDNA fragmen
 
 Single-cell library preparation - the process of converting each cell's mRNA to barcoded cDNAs ready for sequencing - has come a long way since the manual isolation of Tang et al. in 2009 \cite{Tang2009-th}. The most popular methods - such as 
 STRT-seq \cite{islam2011characterization}, 
-Smart-seq \cite{ramskold2012full}, 
-Smart-seq2 \cite{picelli2013smart} and 
+Smart-seq \cite{Ramskold2012-wt}, 
+Smart-seq2 \cite{Picelli2013-tm} and 
 CEL-Seq \cite{hashimshony2012cel},
 all follow similar principles. Cells are (typically FACS) sorted into 96 (and more recently 384) well plates. In each well cells are lysed to release the RNA, which is then reverse transcribed to cDNA. There is then typically some amount of amplification to increase the overall quantity of cDNA for more reliable sequencing. Next, each cell is uniquely barcoded by appending a known sequence of nucleic acid to each cDNA molecule. This step greatly increased the throughput of single-cell RNA-seq by allowing multiplexed sequencing of all cells at once. Finally, the individual libraries are ready for sequencing.
 
@@ -95,7 +95,7 @@ An often discussed feature of single-cell RNA-seq data is the idea of \emph{drop
 
 The characteristic pattern of proportion of cells in which a gene is expressed compared to the mean expression can be seen in figure \ref{fig:intro_dropout}A for an example dataset of thymic epithelial cells. Most single-cell datasets exhibit a set of genes that are not expressed (top-right corner), a set of housekeeping genes that are constituitively expressed at high levels, and a set of high-variance genes that contribute to heterogeneity in the dataset.
 
-Several methods have attempted to correct for droput through statistical modelling. An early example was SCDE \cite{kharchenko2014bayesian} that uses a mixture model of a point pass at zero (the dropout component) and an ``amplified'' component. Noting that whether a gene is dropout is not a constant probability but dependent on the latent expression, they used a mixture-of-experts model where the probability of being amplified was logistic on the latent expression, i.e. $p_{\text{dropout}} = \text{Logistic}(\beta_0 + \beta_1 \mu)$ where $\mu$ is the latent expression and $\beta_0$ and $\beta_1$ are free parameters. An example of the logistic regression fit can be seen in figure \ref{fig:intro_dropout}B.
+Several methods have attempted to correct for droput through statistical modelling. An early example was SCDE \cite{Kharchenko2014} that uses a mixture model of a point pass at zero (the dropout component) and an ``amplified'' component. Noting that whether a gene is dropout is not a constant probability but dependent on the latent expression, they used a mixture-of-experts model where the probability of being amplified was logistic on the latent expression, i.e. $p_{\text{dropout}} = \text{Logistic}(\beta_0 + \beta_1 \mu)$ where $\mu$ is the latent expression and $\beta_0$ and $\beta_1$ are free parameters. An example of the logistic regression fit can be seen in figure \ref{fig:intro_dropout}B.
 
 A different dropout model was implemented in the dimensionality reduction model ZIFA (Zero Inflated Factor Analysis, \cite{pierson2015zifa}). ZIFA models the probability of a dropout as $p_{\text{dropout}} = \exp(-\lambda x)$ for a ``dropout rate'' $\lambda$ and latent (true) expression $x$. A factor analysis model then operates on $x$ (see section \ref{sec:intr:fa}) to find a reduced dimension representation of the data accounting for dropout. A further model called M3Drop \cite{Andrews2016-ij} models dropout using Michaelis-Menten enzyme kinetics to select highly-variable, though the authors admit that their model is a specific case of SCDE.
 
@@ -149,7 +149,7 @@ Following this was the introduction of \emph{Sample Progression Discovery} (SPD)
 
 \subsubsection{Overview}
 
-Ordering bulk microarray samples was arguably a niche area, with the three studies discussed above constituting the main work in the field. However, the advent of single-cell sequencing lead to an explosion of interest in the field, mostly due to the higher inter-sample heterogeneity present in single-cell data. The first single-cell pseudotime algorithm was published in March 2014 \cite{trapnell2014dynamics}; at time of writing (May 2017) there are now approximately 33 single-cell pseudotime inference algorithms that have at least been preprinted\footnote{
+Ordering bulk microarray samples was arguably a niche area, with the three studies discussed above constituting the main work in the field. However, the advent of single-cell sequencing lead to an explosion of interest in the field, mostly due to the higher inter-sample heterogeneity present in single-cell data. The first single-cell pseudotime algorithm was published in March 2014 \cite{Trapnell2014-xi}; at time of writing (May 2017) there are now approximately 33 single-cell pseudotime inference algorithms that have at least been preprinted\footnote{
 A useful spreadsheet of single-cell software is maintained at \url{https://tinyurl.com/mqabyur}.
 }, a rate of roughly one per month.
 
@@ -164,12 +164,12 @@ MST\footnote{Minimum spanning tree (cells are projected onto the longest path th
 Wanderlust & \cite{Bendall2014-rc} & N/A & KNN-graph\footnote{$k$-nearest neighbour graph. Trajectory inferred by an ensembl of random walks.} & No & No \\
 Monocle 2 & \cite{Qiu2017-eu} & DDR-tree & Distance from root cell & No & Yes \\
 Scuba & \cite{Marco2014-ug} & t-SNE\footnote{See section \ref{sec:tsne}} & Principal curves & No & Yes \\
-Diffusion pseudotime & \cite{Haghverdi2016-eg} & N/A & Diffusion distance from root cell &
+Diffusion pseudotime & \cite{haghverdi2016diffusion} & N/A & Diffusion distance from root cell &
 Interpretation\footnote{DPT has an interpretation in terms of the probability of one cell state transitioning into the other. However, it does not define a generative probabilistic model.} & Yes \\
 SLICER & \cite{welch2016slicer} & LLE\footnote{See section \ref{sec:lle}} & Principal curves & No & Yes \\
-DeLorean & \cite{reid2016pseudotime} & N/A & GPLVM\footnote{See section \ref{sec:gplvm}} & Yes & No \\
+DeLorean & \cite{Reid2016-yo} & N/A & GPLVM\footnote{See section \ref{sec:gplvm}} & Yes & No \\
 TSCAN & \cite{Ji2016-gx} & PCA & Cluster-based MST & No & Yes \\
-Waterfall & \cite{shin2015single} & PCA & Cluster-based distances & No & No \\
+Waterfall & \cite{Shin2015} & PCA & Cluster-based distances & No & No \\
 \rowcolor{Gray}
 Ouija & \cite{Campbell2016-ys} & N/A & Nonlinear factor analysis & Yes & No \\
 \rowcolor{Gray}
@@ -179,7 +179,7 @@ MFA & \cite{campbell2017probabilistic} & N/A & Mixture of factor analysers & Yes
 \caption{An overview of some pseudotime algorithms. Most involve a dimensionality reduction step followed by pseudotime assignment (``cell ordering'') in the reduced space, though arguably this constitutes a single dimensionality reduction step. Methods shaded in grey are introduced in this thesis.} \label{tbl:pseudotimecomparison}
 \end{sidewaystable}
 
-This renaissance was largely spurred by the development of \texttt{Monocle} \cite{trapnell2014dynamics}, discussed in detail in section \ref{tbl:monocle}. Monocle's two step procedure - an initial dimensionality reduction step using independent component analysis followed by a ``cell ordering'' step to order the cells using MSTs - greatly influenced the algorithms that followed. Examples include \texttt{TSCAN} that uses PCA for dimensionality reduction followed by clustering and MSTs for cell ordering; \texttt{embeddr} that uses laplacian eigenmaps for dimensionality reduction and principal curves for cell ordering; and \texttt{Waterfall} that uses PCA for dimensionality reduction followed by connecting clusters in the reduced space for cell ordering. An overview of some pseudotime algorithms is given in table \ref{tbl:pseudotimecomparison} with several important contributions discussed in detail in the following sections.
+This renaissance was largely spurred by the development of \texttt{Monocle} \cite{Trapnell2014-xi}, discussed in detail in section \ref{tbl:monocle}. Monocle's two step procedure - an initial dimensionality reduction step using independent component analysis followed by a ``cell ordering'' step to order the cells using MSTs - greatly influenced the algorithms that followed. Examples include \texttt{TSCAN} that uses PCA for dimensionality reduction followed by clustering and MSTs for cell ordering; \texttt{embeddr} that uses laplacian eigenmaps for dimensionality reduction and principal curves for cell ordering; and \texttt{Waterfall} that uses PCA for dimensionality reduction followed by connecting clusters in the reduced space for cell ordering. An overview of some pseudotime algorithms is given in table \ref{tbl:pseudotimecomparison} with several important contributions discussed in detail in the following sections.
 
 \subsubsection{Monocle} \label{tbl:monocle}
 
@@ -215,7 +215,7 @@ However, the Monocle algorithm proceeds with a secondary cell ordering step in t
 
 \subsubsection{Wanderlust}
 
-Published just a month after Monocle was Wanderlust \cite{Bendall2014}, an algorithm developed to uncover human B cell lymphopoiesis using single-cell mass cytometry data. Compared to transcriptome wide RNA sequencing, mass cytometry measures a smaller number of markers. In this study, a custom panel of 44 makers designed to characterise B-cells were measured, including ``phenotypic proteins, transcription factors, regulatory enzymes, cell-state indicators, and activation of regulatory signaling molecules''.
+Published just a month after Monocle was Wanderlust \cite{Bendall2014-rc}, an algorithm developed to uncover human B cell lymphopoiesis using single-cell mass cytometry data. Compared to transcriptome wide RNA sequencing, mass cytometry measures a smaller number of markers. In this study, a custom panel of 44 makers designed to characterise B-cells were measured, including ``phenotypic proteins, transcription factors, regulatory enzymes, cell-state indicators, and activation of regulatory signaling molecules''.
 
 Wanderlust begins by constructing a $k$-nearest neighbour graph between all cells using euclidean distance and selects a small random subset of cells as ``waypoints''. It then creates a random ensembl of graphs by subsampling cells to mitigate the impact of ``short circuits'' on the trajectory construction\footnote{
 Short circuits are defined as ``spurious edges between distant cells'' - two cells distant in pseudotime are connected due to random fluctuations in their gene expression. In theory such a problem will be worse in the ~40 dimensional mass cytometry data than 1000+ dimensional single-cell RNA-seq.
@@ -223,10 +223,10 @@ Short circuits are defined as ``spurious edges between distant cells'' - two cel
 
 \subsubsection{DeLorean}
 
-DeLorean \cite{reid2016pseudotime} was published approximately two years after Monocle and Wanderlust and is mentioned here as an example of an entirely different method. DeLorean departs from previous approaches in using a probabilistic model called a Gaussian Process Latent Variable Model (GPLVM, discussed in section \ref{sec:gplvm} and the subject of most of chapter 2).
+DeLorean \cite{Reid2016-yo} was published approximately two years after Monocle and Wanderlust and is mentioned here as an example of an entirely different method. DeLorean departs from previous approaches in using a probabilistic model called a Gaussian Process Latent Variable Model (GPLVM, discussed in section \ref{sec:gplvm} and the subject of most of chapter 2).
 
 The GPLVM learns a probabilistic mapping from the one dimensional latent pseudotimes to the observed gene expression profiles. The basic idea is that if two cells have similar pseudotimes then their transcriptomes will be highly correlated and thus will have similar measured expression profiles\footnote{
-This is essentially a continuity assumption - that cells close in pseudotime will have expression profiles ``close'' in expression space. This assumption was discussed in \cite{Gupta2008-fd} (see section \ref{sec:int:early}) who showed the change in expression over (pseudo-)time must be correlated for it to be true. This logic underlies many if not all pseudotime inference methods, such as DPT \cite{Haghverdi2016-eg}.
+This is essentially a continuity assumption - that cells close in pseudotime will have expression profiles ``close'' in expression space. This assumption was discussed in \cite{Gupta2008-fd} (see section \ref{sec:int:early}) who showed the change in expression over (pseudo-)time must be correlated for it to be true. This logic underlies many if not all pseudotime inference methods, such as DPT \cite{haghverdi2016diffusion}.
 }. Inference in the DeLorean model proceeds using the Stan probabilistic programming language, which performs automatic Bayesian inference using either Hamiltonian Monte Carlo (HMC) or Automatic-Differentiation Variational Inference (ADVI).
 
 DeLorean notes several drawbacks, some of which  we also grapple with in chapter 2. It may only be used on time-series single-cell expression profiles, and thus in a sense is used to refine time series rather than a strict pseudotime algorithm. If $k_n$ is the capture time of cell $n$, then the prior on $n$'s pseudotime $t_n$ takes the form $t_n \sim \Norm(k_n, \sigma_n^2)$, so the confidence in the capture time $\sigma_n$ must also be set by the user. Furthermore, the characteristic length scale of the GPLVM kernel (see section \ref{sec:gplvm}) must be manually set by the user, and even so the posterior distribution of pseudotimes is multi-modal. Finally, GPLVM requires parameters for each output (gene) which can scale poorly, so in practice pseudotime fitting is limited to a small number of genes chosen \emph{a priori}.
@@ -254,9 +254,9 @@ are calculated where $\bar{\mby}$ is the sample mean of $\mby_n$. The $Q$ princi
 PCA is frequently used in computational genomics. It is commonly used for visualisation of genomic variation data such as single nucleotide polymorphism (SNP) datasets, where it has an elegant interpretation in terms of the underlying genealogical history of samples \cite{mcvean2009genealogical}.
 It is often applied to microarray gene expression data for tasks such as data visualisation (see e.g. \cite{ringner2008principal}) and for clustering samples \cite{yeung2001principal}.
 
-Since the advent of single-cell RNA-sequencing, PCA has been the go-to dimensionality reduction algorithm for exploratory data analysis\footnote{Though faces stiff competition from t-Stochastic Neighbour Embedding (tSNE).}. Examples include latent space projections to understand cell types and hierarchies in the developing lung \cite{treutlein2014reconstructing} and the transcriptional states defining differentiation of embryonic stem cells under different serums \cite{kolodziejczyk2015single}. PCA is also used for clustering cells, either as a preprocessing step prior to clustering algorithms like $k-$means or as part of likelihood-based clustering \cite{yau2016pcareduce}.
+Since the advent of single-cell RNA-sequencing, PCA has been the go-to dimensionality reduction algorithm for exploratory data analysis\footnote{Though faces stiff competition from t-Stochastic Neighbour Embedding (tSNE).}. Examples include latent space projections to understand cell types and hierarchies in the developing lung \cite{Treutlein2014-ob} and the transcriptional states defining differentiation of embryonic stem cells under different serums \cite{kolodziejczyk2015single}. PCA is also used for clustering cells, either as a preprocessing step prior to clustering algorithms like $k-$means or as part of likelihood-based clustering \cite{yau2016pcareduce}.
 
-PCA also forms an initial step in many pseudotime algorithms such as in TSCAN \cite{ji2016tscan} and Waterfall \cite{shin2015single}. However, no studies have actually considered that a principal component of the data itself could \emph{be} the pseudotemporal trajectory. Intuitively such an idea is appealing since we would expect the pseudotemporal process to be the dominant source of variation within the data.
+PCA also forms an initial step in many pseudotime algorithms such as in TSCAN \cite{Ji2016-gx} and Waterfall \cite{Shin2015}. However, no studies have actually considered that a principal component of the data itself could \emph{be} the pseudotemporal trajectory. Intuitively such an idea is appealing since we would expect the pseudotemporal process to be the dominant source of variation within the data.
 
 \subsection{Probabilistic principal components analysis}
 
@@ -369,7 +369,7 @@ Laplacian eigenmaps were used for pseudotime inference in the \texttt{embeddr} p
 
 \subsubsection{Diffusion maps} \label{sec:diffusion_maps}
 
-Diffusion maps are closely related to laplacian eigenmaps and have been successfully applied to single-cell RNA-seq data both in the context of visualisation \cite{haghverdi2015diffusion} and pseudotime inference \cite{haghverdi2016diffusion}. The basic idea is to consider points on the manifold in terms of a diffusion process, with a sample more likely to diffuse to one closer to it than further away. It begins by constructing a transition matrix
+Diffusion maps are closely related to laplacian eigenmaps and have been successfully applied to single-cell RNA-seq data both in the context of visualisation \cite{Haghverdi2015} and pseudotime inference \cite{haghverdi2016diffusion}. The basic idea is to consider points on the manifold in terms of a diffusion process, with a sample more likely to diffuse to one closer to it than further away. It begins by constructing a transition matrix
 
 \begin{equation}
   P_{n',n} = \frac{1}{Z(\mby_{n'})} \exp\left( - \frac{\lvert \lvert \mby_n - \mby_{n'} \rvert \rvert^2}{2 \sigma^2}\right)
@@ -377,7 +377,7 @@ Diffusion maps are closely related to laplacian eigenmaps and have been successf
 
 where $Z(\mby_{n'}) = \sum_{n}  \exp\left( - \frac{\lvert \lvert \mby_n - \mby_{n'} \rvert \rvert^2}{2 \sigma^2}\right)$ and $\sigma^2$ is a characteristic length scale. $P_{n',n}$ can be thought of as the probability of transitioning or \emph{diffusing} from cell $n$ to $n'$. A renormalised transition matrix $\tilde{\mbP}$ can then be definied that takes into account the local density of samples in the space. One can then decompose the diffusion distances into a sum over the eigenvectors of $\tilde{\mbP}$
 weighted by eigenvalues,
-implying that retaining eigenvectors for the first $k$ ordered eigenvalues captures the major structure of the manifold and are therefore useful for visualisation. Haghverdi et al. \cite{haghverdi2015diffusion} further derive a heuristic for selection of the kernel width $\sigma$ in terms of the effective number of neighbours of each cell.
+implying that retaining eigenvectors for the first $k$ ordered eigenvalues captures the major structure of the manifold and are therefore useful for visualisation. Haghverdi et al. \cite{Haghverdi2015} further derive a heuristic for selection of the kernel width $\sigma$ in terms of the effective number of neighbours of each cell.
 
 \subsubsection{Multidimensional scaling}
 
@@ -453,7 +453,7 @@ Lawrence's key insight was that the term $\alpha^{-1} \mbZ \mbZ^T$ in the covari
 k_{\text{SQE}}(\mbz_n, \mbz_{n'}) = \sigma_f^2 \exp\left(-\frac{1}{2l^2} \lvert \lvert \mbz_n - \mbz_{n'} \rvert\rvert^2\right)
 \end{equation}
 
-as used in \cite{campbell2016order} or the Matern family such as the $\text{Matern}_{3/2}$ kernel used in \cite{reid2016pseudotime}:
+as used in \cite{campbell2016order} or the Matern family such as the $\text{Matern}_{3/2}$ kernel used in \cite{Reid2016-yo}:
 
 \begin{equation}
   k_{\text{Matern}_{3/2}}(\mbz_n, \mbz_{n'}) =
