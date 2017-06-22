@@ -198,7 +198,7 @@ if
 
 for some $k$. In other words, $g$ is significant if the $k \hat{s}_{\beta_g}$ posterior interval of $\beta_g$ falls outside of zero.  In practice, minimising the $\KL{q}{p}$ divergence typically underestimates posterior variances \citep{blei2016variational} so we choose a conservative $k=3$.
 
-\subsection{Inference of convergence points} \ref{sec:crossover}
+\subsection{Inference of convergence points} \label{sec:crossover}
 
 In PhenoPath we model gene expression evolving along the trajectories separately for each phenotype (or covariate) considered. Unless the gradient of change along the trajectory is exactly equal for both phenotypes (i.e. $\beta = 0$ exactly), the gene expression will cross at a given point in the trajectory.
 

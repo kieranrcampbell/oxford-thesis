@@ -57,7 +57,7 @@ Our objective here is to use parametric forms for the mapping function $f$ that 
 \end{figure}
 \addtocounter{figure}{-1}
 \begin{figure}
-  \caption{{\bf Overview of Ouija.}
+  \caption{Overview of Ouija.
   \textbf{A} A small panel of genes is chosen with \emph{a priori} knowledge about their expression dynamics, either as cell-type specific marker genes or from pathway interaction databases such as KEGG. The pseudotimes are subsequently inferred using Ouija followed by downstream analyses such as differential expression and clustering of additional genes  using standard methods such as those described in \cite{Trapnell2014-xi}.
   \textbf{B} Ouija infers pseudotimes using Bayesian nonlinear factor analysis by decomposing the input gene expression matrix through a sigmoidal mapping function. The latent variables become the pseudotimes of the cells while the factor loading matrix is informative of different types of gene behaviour. A heteroskedastic dispersed noise model with dropout is used to accurately model scRNA-seq data.
   \textbf{C}  Examples of sigmoidal gene expression for three different sets of parameters. Points represent simulated gene expression, with the solid black line denoting the sigmoid curve and the red dashed line denoting the activation time.
@@ -227,7 +227,7 @@ We performed posterior inference using Markov Chain Monte Carlo (MCMC) stochasti
 \begin{figure}
 \centering
  \includegraphics[width=0.9\textwidth]{gfx/ch3/mcmc}
- \caption{\textbf{MCMC convergence diagnostics}. \textbf{A} For a single chain \sname contains a convenience function to plot both the trace of the log-likelihood and the log-likelihood autocorrelation. \textbf{B-E} MCMC diagnostic statistics such as posterior log-likelihood trace, effective sample size, Gelman-Rubin statistic and ratio of monte carlo standard error to posterior standard deviation show good mixing across chains.} \label{fig:mcmc}
+ \caption{MCMC convergence diagnostics. \textbf{A} For a single chain \sname contains a convenience function to plot both the trace of the log-likelihood and the log-likelihood autocorrelation. \textbf{B-E} MCMC diagnostic statistics such as posterior log-likelihood trace, effective sample size, Gelman-Rubin statistic and ratio of monte carlo standard error to posterior standard deviation show good mixing across chains.} \label{fig:mcmc}
  \end{figure}
 
 Since \sname relies on MCMC simulation for inference it is crucial to assess model convergence before drawing statistical conclusions. The \sname \texttt{R} package contains a convenience function \texttt{plot(ouija\_fit, what = "diagnostic")} to plot both the posterior log-likelihood and posterior log-likelihood autocorrelation, an example of which is in figure \ref{fig:mcmc}A. In general we found it practical to run MCMC inference on only a single chain for most models. Therefore, to check both good mixing of the chains and that the models aren't getting stuck in local maxima, we tested the models for both the Trapnell and Shin datasets across multiple chains. We then examined several diagnostics such as the log-posterior mixing, effective sample size, Gelman-Rubin statistic and ratio of monte carlo standard error to posterior standard deviation (figures \ref{fig:mcmc}B-E), all of which fell inside the acceptable range. 
@@ -273,7 +273,7 @@ Figure \ref{fig:trapnell-correlations}(a) shows the correlation between pseudoti
 \begin{figure}%[!t]
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch3/algorithms.png}
-	\caption{\textbf{Comparison of pseudotime methods across three scRNA-seq data sets.} We compared pseudotime estimates from three studies \cite{Shin2015,Trapnell2014-xi,zhou2016tracing} using 5 different approaches. In (A) we compared the correlation between marker-based pseudotimes with those obtained from random gene-sets of varying (including the marker gene set), (B) we show the correlation with whole transcriptome (global) pseudotime obtained from all genes }
+	\caption{Comparison of pseudotime methods across three scRNA-seq data sets. We compared pseudotime estimates from three studies \cite{Shin2015,Trapnell2014-xi,zhou2016tracing} using 5 different approaches. In (A) we compared the correlation between marker-based pseudotimes with those obtained from random gene-sets of varying (including the marker gene set), (B) we show the correlation with whole transcriptome (global) pseudotime obtained from all genes }
 	\label{fig:comparisons}
 \end{figure}
 
@@ -285,7 +285,7 @@ Our major observation is the striking variability in pseudotime estimates across
 \begin{figure}%[!t]
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch3/de_results.png}
-	\caption{\textbf{Comparison of differential expression analyses.} We compared differential expression across pseudotime analyses. In (A)  }
+	\caption{Comparison of differential expression analyses. We compared differential expression across pseudotime analyses. In (A)  }
 	\label{fig:de_results}
 \end{figure}
 
@@ -393,7 +393,7 @@ Finally, a potential limitation of our switch behaviour model is that it assumes
 
 \begin{figure}
 	\includegraphics[width=\textwidth]{gfx/ch3/switch-transient-simulation.png}
-	\caption{{\bf Impact of marker genes exhibiting transient rather than switch-like gene behaviours.} (A) Examples of simulated switch and transient expression genes. (B) Example 24-gene panel with 12 switch and 12 transient genes. (C) Correlation between true and estimated pseudotime as a function of the gene panel size and proportion of switch genes for ten replicates.}
+	\caption{Impact of marker genes exhibiting transient rather than switch-like gene behaviours. (A) Examples of simulated switch and transient expression genes. (B) Example 24-gene panel with 12 switch and 12 transient genes. (C) Correlation between true and estimated pseudotime as a function of the gene panel size and proportion of switch genes for ten replicates.}
 	\label{fig:switch-transient-simulation}
 \end{figure}
 
@@ -409,7 +409,7 @@ When examining the inferred pseudotime progression of each marker gene (figure \
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch3/hsc}
-	\caption{{\bf Pseudotime ordering and cell type identification of haematopoeietic stem cell differentiation}
+	\caption{Pseudotime ordering and cell type identification of haematopoeietic stem cell differentiation.
 (A) Consistency matrix of pseudotime ordering. Entry in the $i^{th}$ row and $j^{th}$ column is the proportion of times cell $i$ was ordered before cell $j$ in the MCMC posterior traces. Gaussian mixture modelling on the first principal component of the matrix identified three clusters that are evident in the heatmap.
 (B) Confusion matrix for cell types identified in original study (rows) and Ouija inferred (columns). Ouija inferred cluster 1 largely corresponds to EC cells, cluster 2 corresponds to pre-HSC cells while cluster 3 corresponds to HSC cells.
 (C) PCA plot similar to the original publication \cite{zhou2016tracing} suggests supports the existence of three distinct cell types in the data.
@@ -430,7 +430,7 @@ This investigation indicates that although Ouija makes strong assumptions about 
 
 \begin{figure}
 	\includegraphics[width=\textwidth]{gfx/ch3/regev.png}
-	\caption{{\bf Cell cycle phase prediction.} Principal component representation of hematopoietic stem cells coloured according to (A) the original cell cycle progression score \cite{Kowalczyk2015-li} and (B) Ouija - cell cycle classes indicated are based on original study classifications. (C) Distribution of Ouija inferred pseudotime versus the original cell cycle classifications. (D) Estimated activation strengths for the 374 cell cycle gene panels. (E) Gene expression profile for 88 switch-like genes with cells ordered by pseudotime and (F) genes ordered by activation time.}
+	\caption{Cell cycle phase prediction. Principal component representation of hematopoietic stem cells coloured according to (A) the original cell cycle progression score \cite{Kowalczyk2015-li} and (B) Ouija - cell cycle classes indicated are based on original study classifications. (C) Distribution of Ouija inferred pseudotime versus the original cell cycle classifications. (D) Estimated activation strengths for the 374 cell cycle gene panels. (E) Gene expression profile for 88 switch-like genes with cells ordered by pseudotime and (F) genes ordered by activation time.}
 	\label{fig:regev}
 \end{figure}
 
