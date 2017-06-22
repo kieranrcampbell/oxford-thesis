@@ -79,8 +79,8 @@ For both COAD and BRCA studies, TPM matrices were retrieved from a recent transc
 
 \subsubsection{COAD}
 
-A PCA visualisation of the COAD dataset (Fig. \ref{fig:technical}A) showed two distinct clusters based on the plate of sequencing. Rather than try to correct such a large batch effect, we retained samples with a PC1 score of less than 0 and a PC3 score greater than -10, and removed any ``normal'' tumour types. For input to PhenoPath we used the 4801 genes whose median absolute deviation in $\log(\text{TPM} + 1)$ expression was greater than $\sqrt{\frac{1}{2}}$.
+A PCA visualisation of the COAD dataset (figure \ref{fig:technical}A) showed two distinct clusters based on the plate of sequencing. Rather than try to correct such a large batch effect, we retained samples with a PC1 score of less than 0 and a PC3 score greater than -10, and removed any ``normal'' tumour types. For input to PhenoPath we used the 4801 genes whose median absolute deviation in $\log(\text{TPM} + 1)$ expression was greater than $\sqrt{\frac{1}{2}}$.
 
 \subsubsection{BRCA}
 
-A PCA visualisation of the BRCA daatset (Fig. \ref{fig:technical}B) showed a loosely dispersed outlier population that separated on the first and third principal components. We performed Gaussian mixture model clustering using the \texttt{R} package \texttt{mclust}\cite{Fraley_undated-ug}, and removed samples designated as cluster 2 in Fig. \ref{fig:technical}B. For input to PhenoPath we used the 4579 genes whose variance in $\log(\text{TPM} + 1)$ expression was greater than 1 and whose median absolute deviation was greater than 0.
+A PCA visualisation of the BRCA daatset (figure \ref{fig:technical}B) showed a loosely dispersed outlier population that separated on the first and third principal components. We performed Gaussian mixture model clustering using the \texttt{R} package \texttt{mclust}\cite{Fraley_undated-ug}, and removed samples designated as cluster 2 in figure \ref{fig:technical}B. For input to PhenoPath we used the 4579 genes whose variance in $\log(\text{TPM} + 1)$ expression was greater than 1 and whose median absolute deviation was greater than 0.

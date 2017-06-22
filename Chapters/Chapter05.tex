@@ -198,6 +198,32 @@ if
 
 for some $k$. In other words, $g$ is significant if the $k \hat{s}_{\beta_g}$ posterior interval of $\beta_g$ falls outside of zero.  In practice, minimising the $\KL{q}{p}$ divergence typically underestimates posterior variances \citep{blei2016variational} so we choose a conservative $k=3$.
 
+\subsection{Inference of convergence points} \ref{sec:crossover}
+
+In PhenoPath we model gene expression evolving along the trajectories separately for each phenotype (or covariate) considered. Unless the gradient of change along the trajectory is exactly equal for both phenotypes (i.e. $\beta = 0$ exactly), the gene expression will cross at a given point in the trajectory.
+
+Inference of this point would allow us to identify sections of the trajectory not affected by the covariate and consequently sections of the trajectory that are. This is important as if the crossover point occurs towards the beginning of the trajectory, it would mean gene expression is similar at the beginning but diverges as we move along the trajectory. Similarly, if the crossover points occur towards the end of the trajectory, it would imply the expression profiles for the two phenotypes are different at the beginning of the trajectory, but converge as the trajectory progresses. An interpretation of this would be that the effect on expression from the trajectory slowly dominates over the effect of phenotypes on the trajectory.
+
+It is important to note that the latent trajectory values loosely follow a $\text{N}(0, 1)$ distribution. This means the `middle' of the trajectory is any value around zero, values of -1 or less could be thought of as the `beginning' while values greater than 1 may be thought of as the `end'. Crucially, we can derive an analytical expression from the PhenoPath parameters for the crossover point $z^*$. The condition for the crossover point is that the predicted expression for each phenotype is identical. Therefore if we have phenotypes $+$ and $-$ we require
+
+\begin{equation}
+  y_g^{+}(z_g^*) = y_g^{-}(z_g^*)
+\end{equation}
+
+which leads to the condition
+
+\begin{equation}
+  \alpha_g x_{+} + \left( c_g + \beta_g x_{+}\right) z^*_g =
+  \alpha_g x_{-} + \left( c_g + \beta_g x_{-}\right) z^*_g
+\end{equation}
+
+which is in turn solved by
+
+\begin{equation}
+  z^*_g = -\frac{\alpha_g}{\beta_g}.
+\end{equation}
+
+
 \subsection{Benchmarking through simulations}
 
 \begin{figure}
@@ -381,7 +407,7 @@ The most striking interaction discovered for this dataset was the \mlh gene whos
 We next performed a pseudotemporal analysis of the TCGA breast cancer cohort using estrogen receptor (ER) status as a phenotypic covariate. Approximately 60\% of breast cancers are estrogen receptor positive
 \cite{Early_Breast_Cancer_Trialists_Collaborative_Group_EBCTCG_undated-ux}, which is typically associated with improved prognosis and a longer time to recurrence 
 \cite{Parl1984-fo}. We applied PhenoPath to 1,135 samples post-QC and 4,579 highly variable genes. PhenoPath was run for approximately 2000 CAVI iterations until convergence of the ELBO (figure \ref{fig:elbo_coad}). Using stringent Bayesian significance testing criterion we found 1,932 genes (42\%) affected by an interaction between the pseudotemporal trajectory and ER receptor status (figure \ref{fig:brca}E).
- There was a correlation between the pathway interaction strength and the $p$-value reported through standard differential expression (Fig. \ref{fig:brca}B), though there remained some genes that exhibited pathway interaction and no differential expression.
+ There was a correlation between the pathway interaction strength and the $p$-value reported through standard differential expression (figure \ref{fig:brca}B), though there remained some genes that exhibited pathway interaction and no differential expression.
 
 \begin{figure}
    \includegraphics[width=\textwidth]{gfx/ch5/brca_genes.png}
@@ -389,7 +415,7 @@ We next performed a pseudotemporal analysis of the TCGA breast cancer cohort usi
 	\label{fig:brca_genes}
 \end{figure}
 
-A GO enrichment analysis indicated that the inferred pseudotemporal trajectory corresponded to vascular growth pathways or \emph{angiogenesis} (Fig. \ref{fig:brca}F) -- a well-known and uncontroversial hallmark of cancer development.\cite{ferrara2002vegf,welti2013recent} We confirmed this finding by specifically examining the expression of known angiogenesis inducing genes (Supplementary Fig. \ref{fig:vgf_genes}). We found increasing fibroblast growth factor-2 (\emph{FGF-2}) and vascular endothelial growth factors C and D (\emph{VEGF-C/D}) expression along the trajectory whose behaviours were independent of ER status.
+A GO enrichment analysis indicated that the inferred pseudotemporal trajectory corresponded to vascular growth pathways or \emph{angiogenesis} (figure \ref{fig:brca}F) -- a well-known and uncontroversial hallmark of cancer development.\cite{ferrara2002vegf,welti2013recent} We confirmed this finding by specifically examining the expression of known angiogenesis inducing genes (figure \ref{fig:vgf_genes}). We found increasing fibroblast growth factor-2 (\emph{FGF-2}) and vascular endothelial growth factors C and D (\emph{VEGF-C/D}) expression along the trajectory whose behaviours were independent of ER status.
 
 \begin{figure}
    \includegraphics[width=\textwidth]{gfx/ch5/vgf_genes.png}
@@ -399,8 +425,8 @@ A GO enrichment analysis indicated that the inferred pseudotemporal trajectory c
 
 We finally sought to examine some genes PhenoPath identified as being most affected by the interaction between angiogenesis and estrogen receptor status.
 Importantly, this set included the Estrogen Receptor 1 (\emph{ESR1})
-gene as well as the forkhead transcription factors \emph{FOXA1} and \emph{FOXC1} which are known to be involved with ER$\alpha$ mediated action in breast cancer \cite{lam2013forkhead,yu2016foxc1} (Fig. \ref{fig:brca}D and Supplementary Fig. \ref{fig:brca_genes}).
-Fig. \ref{fig:brca}D shows how the  ructose-1,6-biphosphatase (\emph{FBP1}) and \emph{FOXC1} genes evolve along the angiogenesis pathway dependent on ER status. In the ER- regime, \emph{FBP1} is upregulated along the trajectory while in the ER+ regime it is downregulated. Intriguingly, \emph{FBP1} has been identified as a marker to distinguish ER+ from ER- subtypes and its expression has been shown to be negatively correlated with \emph{SNAIL} as the Snail-G9a-Dnmt1 complex, is critical for E-cadherin promoter silencing, and required for the promoter methylation of FBP1 in basal-like breast cancer (Supplementary Fig. \ref{fig:fbp1-vs-snail}).\cite{dong2013loss} Similarly, \emph{FOXC1} shows no regulation in the ER- regime yet is strongly upregulated in the ER+ case.
+gene as well as the forkhead transcription factors \emph{FOXA1} and \emph{FOXC1} which are known to be involved with ER$\alpha$ mediated action in breast cancer \cite{lam2013forkhead,yu2016foxc1} (figures \ref{fig:brca}D and \ref{fig:brca_genes}).
+Figure \ref{fig:brca}D shows how the  ructose-1,6-biphosphatase (\emph{FBP1}) and \emph{FOXC1} genes evolve along the angiogenesis pathway dependent on ER status. In the ER- regime, \emph{FBP1} is upregulated along the trajectory while in the ER+ regime it is downregulated. Intriguingly, \emph{FBP1} has been identified as a marker to distinguish ER+ from ER- subtypes and its expression has been shown to be negatively correlated with \emph{SNAIL} as the Snail-G9a-Dnmt1 complex, is critical for E-cadherin promoter silencing, and required for the promoter methylation of FBP1 in basal-like breast cancer (figure \ref{fig:fbp1-vs-snail}) \cite{dong2013loss}. Similarly, \emph{FOXC1} shows no regulation in the ER- regime yet is strongly upregulated in the ER+ case.
 
 \begin{figure}
   \centering
@@ -409,8 +435,8 @@ Fig. \ref{fig:brca}D shows how the  ructose-1,6-biphosphatase (\emph{FBP1}) and 
 	\label{fig:fbp1-vs-snail}
 \end{figure}
 
-We noted that these genes represent a convergence - they have markedly different expression at the beginning of the trajectory based on ER status yet converge towards the end. We derived a mathematical formula to infer such convergence points and calculated these for all genes showing significant interactions (Supplementary Text). Remarkably, the vast majority converge towards the end of the trajectory (Fig. \ref{fig:brca}E), implying a common end-point in vascular development for both ER+ and ER- cancer subtypes (Supplementary Fig. \ref{fig:brca_convergence}).
-This effect can be seen in the example expression plots in figure \ref{fig:brca}D, where the vertical dashed line represents the convergence point always at the end of the trajectory.
+We noted that these genes represent a convergence - they have markedly different expression at the beginning of the trajectory based on ER status yet converge towards the end. Using our previous formula for the crossover point (section \ref{sec:crossover}), we found the vast majority converge towards the end of the trajectory (figure \ref{fig:brca}E), implying a common end-point in vascular development for both ER+ and ER- cancer subtypes.
+This effect can be seen in the example expression plots in figures \ref{fig:brca}D and \ref{fig:brca_convergence}, where the vertical dashed line represents the convergence point always at the end of the trajectory.
 This suggests that while there exists low levels of angiogenesis pathway activation, ER status dominates gene expression while as angiogenesis pathway activation increases it comes to dominate expression patterns over ER status. This finding might have implications for the application of angiogenesis inhibitors in breast cancer treatment.
 
 \begin{figure}
@@ -488,7 +514,16 @@ where we have omitted any dependency on hyperparameters.
 
 \subsubsection{Black-box variational inference}
 
-To infer posterior distributions over the entire set of latent variables $\mbTheta = \{\mbz, \mbt^{\text{cens}}, \mbalpha, \mbbeta, \mblambda, \theta_W, \mbsigma^2, \mbchi\}$ we posit a set of approximating distributions $q(\mbTheta | \mbPhi)$ with variational parameters $\mbPhi$. Inference then proceeds by finding estimates of $\mbPhi$ by minimising $\KL{q(\mbTheta | \mbPhi)}{p(\mbY, \mbo^{\text{cens}}, \mbt^{\text{obs}}, \mbTheta)}$,
+To infer posterior distributions over the entire set of latent variables 
+
+\begin{equation}
+\mbTheta = \{\mbz, \mbt^{\text{cens}}, \mbalpha, \mbbeta, \mblambda, \theta_W, \mbsigma^2, \mbchi\} 
+\end{equation}
+
+we posit a set of approximating distributions $q(\mbTheta | \mbPhi)$ with variational parameters $\mbPhi$. Inference then proceeds by finding estimates of $\mbPhi$ by minimising 
+\begin{equation}
+\KL{q(\mbTheta | \mbPhi)}{p(\mbY, \mbo^{\text{cens}}, \mbt^{\text{obs}}, \mbTheta)},
+\end{equation}
 which is equivalent to maximising the Evidence Lower Bound (ELBO) defined as $\text{ELBO}(\mbTheta) = \mbE_{q(\mbTheta)} \left[ p(\mbTheta, \mbY, \mbo^{\text{cens}}, \mbt^{\text{obs}}) - q(\mbTheta | \mbPhi))\right]$,
 with respect to the variational parameters $\mbPhi$ for which we make a fully factorised mean-field approximation $q(\mbTheta | \mbPhi) = \prod_i q_i(\theta_i | \phi_i)$.
 Inference of this model was implemented using the probabilistic programming language \texttt{Edward} \citep{Tran2016-ml} that allows for black-box variational inference of non-conditionally-conjugate models. The approximating distributions have reparameterizations (section \ref{sec:approx}), allowing us to sample from them via  $\epsilon \sim q(\epsilon), \; \theta_i = g_i(\epsilon, \phi_i)$ where $q(\epsilon)$ is a distribution independent of the variational parameters and $g_i$ is a deterministic transform. This allows us to use the reparametrization trick \citep{Kingma2013-wo} to compute noisy estimates of the gradient via
@@ -641,7 +676,7 @@ Note that the interactions between the latent variables and the covariates appea
 
 \begin{figure}
   \centering
-\includegraphics[width=1.1\textwidth]{gfx/ch5/thesis_features_all}
+\includegraphics[width=\textwidth]{gfx/ch5/thesis_features_all}
 \caption{Synthetic data used to test CGPLVM for $N=50$ samples and $G=10$ features, with kernel parameters $\eta = 0.2$, $\gamma \nu = \delta = \xi = 1$, and $\sigma^2 = 0.01$. The first 5 features had $\lambda = 0.2$ and the final 5 had $\lambda = 0$.} \label{fig:cgplvm_data}
 \end{figure}
 
