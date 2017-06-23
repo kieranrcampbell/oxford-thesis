@@ -109,7 +109,7 @@ which for gene $g$ in sample $n$ implies a mean-variance relationship of the for
 
 where $\phi_g$ is a gene-specific dispersion factor. Such strong parametric forms are typically required since for low sample sizes the estimates of the variance can be very unstable. % [reference?].
 
-However, typically in single-cell data there are enough measurements (ie cells) to allow robust estimation of both the mean and variance for each gene\cite{Finak2015-iy}. The exception to this is in pseudotime analyses, where we are assuming each cell represents a unique time point, and therefore the mean $\mu_{cg}$ and variance $\sigma^2_{cg}$ are effectively measured only once. Consequently we must consider a strong mean-variance relationship since assuming a constant variance per gene is akin to under-fitting while it would be impossible to fit a variance for each cell and each gene (since there is only one measurement).
+However, typically in single-cell data there are enough measurements (ie cells) to allow robust estimation of both the mean and variance for each gene \cite{Finak2015-iy}. The exception to this is in pseudotime analyses, where we are assuming each cell represents a unique time point, and therefore the mean $\mu_{cg}$ and variance $\sigma^2_{cg}$ are effectively measured only once. Consequently we must consider a strong mean-variance relationship since assuming a constant variance per gene is akin to under-fitting while it would be impossible to fit a variance for each cell and each gene (since there is only one measurement).
 
 As a solution to this we examine the mean-variance relationship for the genes across all cells and assume the same relationship approximately holds for cells as they progress along pseudotime trajectories. The relationship in \ref{eq:overd} applies to the original untransformed data (e.g. TPM or scaled counts) while we wish to model the $\log_2(\text{TPM} + 1)$ transformed relationship directly. Therefore we must examine the mean-variance relationship for the $\log_2$ data\footnote{Note for $x \gg 0$ $\log_2(x+1) \approx \log_2(x)$.}, since in general the mean-variance relationship of the log-tranfsormed data isn't the same as (the log of) the mean-variance relationship on the untransformed data.
 
@@ -273,7 +273,7 @@ Figure \ref{fig:trapnell-correlations}(a) shows the correlation between pseudoti
 \begin{figure}%[!t]
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch3/algorithms.png}
-	\caption{Comparison of pseudotime methods across three scRNA-seq data sets. We compared pseudotime estimates from three studies \cite{Shin2015,Trapnell2014-xi,zhou2016tracing} using 5 different approaches. In (A) we compared the correlation between marker-based pseudotimes with those obtained from random gene-sets of varying (including the marker gene set), (B) we show the correlation with whole transcriptome (global) pseudotime obtained from all genes }
+	\caption{Comparison of pseudotime methods across three scRNA-seq data sets. We compared pseudotime estimates from three studies \cite{Shin2015,Trapnell2014-xi,zhou2016tracing} using 5 different approaches. \textbf{A} Boxplots of the correlation between marker-based pseudotimes with those obtained from random gene-sets of varying (including the marker gene set) across 50 replicates. \textbf{B} Boxplots of correlation with whole transcriptome (global) pseudotime obtained from all genes across 50 replicates.}
 	\label{fig:comparisons}
 \end{figure}
 
@@ -285,11 +285,12 @@ Our major observation is the striking variability in pseudotime estimates across
 \begin{figure}%[!t]
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch3/de_results.png}
-	\caption{Comparison of differential expression analyses. We compared differential expression across pseudotime analyses. In (A)  }
+	\caption{Consistency of differential expression analyses. For each dataset and algorithm, we added a set number of randomly chosen genes (1, 5, 10, 20, 100, 500, 1000) to the set of marker genes, recomputed the pseudotimes and performed differential expression analysis. We then compared the proportion overlap of differentially expressed genes to those found at the full transcriptome pseudotimes (\textbf{A}) and at the marker-based pseudotimes (\textbf{B}).
+	}
 	\label{fig:de_results}
 \end{figure}
 
-We finally compared the consistency of differential expression across pseudotime using a recently published method for detecting which genes vary across pseudotime. All p-values were corrected using Benjamini-Hochberg and an FDR threshold of 5\% used to define significance. For each algorithm and number of additional genes we computed the proportion of genes deemed significant found in (a) the differential expression test using the transcriptome-wide pseudotime and (b) the differential expression test using the marker-only pseudotime.
+We finally compared the consistency of differential expression across pseudotime using a recently published method for detecting which genes vary across pseudotime \cite{campbell2016switchde}. All p-values were corrected using Benjamini-Hochberg and an FDR threshold of 5\% used to define significance. For each algorithm and number of additional genes we computed the proportion of genes deemed significant found in (a) the differential expression test using the transcriptome-wide pseudotime and (b) the differential expression test using the marker-only pseudotime.
 
 It can be see that as the number of markers included increases the rate of overlap to the transcriptome-wide DE calls also generally increases (figure \ref{fig:de_results}A). Notably, the rate is very low for DPT when the number of included markers is small, which is consistent with the low correlation to marker pseudotimes exhibited in figure \ref{fig:comparisons}. In contrast, as the number of included marker genes increases, the rate of overlap to the marker DE calls decreases (figure \ref{fig:de_results}B) as expected. 
 
@@ -393,7 +394,7 @@ Finally, a potential limitation of our switch behaviour model is that it assumes
 
 \begin{figure}
 	\includegraphics[width=\textwidth]{gfx/ch3/switch-transient-simulation.png}
-	\caption{Impact of marker genes exhibiting transient rather than switch-like gene behaviours. (A) Examples of simulated switch and transient expression genes. (B) Example 24-gene panel with 12 switch and 12 transient genes. (C) Correlation between true and estimated pseudotime as a function of the gene panel size and proportion of switch genes for ten replicates.}
+	\caption{Impact of marker genes exhibiting transient rather than switch-like gene behaviours. \textbf{A} Examples of simulated switch and transient expression genes. \textbf{B} Example 24-gene panel with 12 switch and 12 transient genes. \textbf{C} Correlation between true and estimated pseudotime as a function of the gene panel size and proportion of switch genes for ten replicates.}
 	\label{fig:switch-transient-simulation}
 \end{figure}
 
@@ -410,11 +411,11 @@ When examining the inferred pseudotime progression of each marker gene (figure \
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch3/hsc}
 	\caption{Pseudotime ordering and cell type identification of haematopoeietic stem cell differentiation.
-(A) Consistency matrix of pseudotime ordering. Entry in the $i^{th}$ row and $j^{th}$ column is the proportion of times cell $i$ was ordered before cell $j$ in the MCMC posterior traces. Gaussian mixture modelling on the first principal component of the matrix identified three clusters that are evident in the heatmap.
-(B) Confusion matrix for cell types identified in original study (rows) and Ouija inferred (columns). Ouija inferred cluster 1 largely corresponds to EC cells, cluster 2 corresponds to pre-HSC cells while cluster 3 corresponds to HSC cells.
-(C) PCA plot similar to the original publication \cite{zhou2016tracing} suggests supports the existence of three distinct cell types in the data.
-(D) HSC gene expression as a function of pseudotime ordering for six marker genes. Background colour denotes the maximum likelihood estimate for the Ouija inferred cell type in that region of pseudotime.
-(E) HSC gene expression as a function of pseudotime ordering for six marker genes with cells coloured by known cell type.
+\textbf{A} Consistency matrix of pseudotime ordering. Entry in the $i^{th}$ row and $j^{th}$ column is the proportion of times cell $i$ was ordered before cell $j$ in the MCMC posterior traces. Gaussian mixture modelling on the first principal component of the matrix identified three clusters that are evident in the heatmap.
+\textbf{B} Confusion matrix for cell types identified in original study (rows) and Ouija inferred (columns). Ouija inferred cluster 1 largely corresponds to EC cells, cluster 2 corresponds to pre-HSC cells while cluster 3 corresponds to HSC cells.
+\textbf{C} PCA plot similar to the original publication \cite{zhou2016tracing} suggests supports the existence of three distinct cell types in the data.
+\textbf{D} HSC gene expression as a function of pseudotime ordering for six marker genes. Background colour denotes the maximum likelihood estimate for the Ouija inferred cell type in that region of pseudotime.
+\textbf{E} HSC gene expression as a function of pseudotime ordering for six marker genes with cells coloured by known cell type.
 }
 	\label{fig:hsc}
 \end{figure}
@@ -430,7 +431,7 @@ This investigation indicates that although Ouija makes strong assumptions about 
 
 \begin{figure}
 	\includegraphics[width=\textwidth]{gfx/ch3/regev.png}
-	\caption{Cell cycle phase prediction. Principal component representation of hematopoietic stem cells coloured according to (A) the original cell cycle progression score \cite{Kowalczyk2015-li} and (B) Ouija - cell cycle classes indicated are based on original study classifications. (C) Distribution of Ouija inferred pseudotime versus the original cell cycle classifications. (D) Estimated activation strengths for the 374 cell cycle gene panels. (E) Gene expression profile for 88 switch-like genes with cells ordered by pseudotime and (F) genes ordered by activation time.}
+	\caption{Cell cycle phase prediction. Principal component representation of hematopoietic stem cells coloured according to \textbf{A} the original cell cycle progression score \cite{Kowalczyk2015-li} and \textbf{B} Ouija - cell cycle classes indicated are based on original study classifications. \textbf{C} Distribution of Ouija inferred pseudotime versus the original cell cycle classifications. \textbf{D} Estimated activation strengths for the 374 cell cycle gene panels. \textbf{E} Gene expression profile for 88 switch-like genes with cells ordered by pseudotime and \textbf{F} genes ordered by activation time.}
 	\label{fig:regev}
 \end{figure}
 

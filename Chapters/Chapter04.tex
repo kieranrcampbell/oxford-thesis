@@ -418,7 +418,9 @@ In general we expect linear latent variables to be highly mis-specified with res
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch4/limits_of_chi}
-	\caption{.} \label{fig:chi}
+	\caption{The limits of linear latent variable models for inferring bifurcations from
+	single-cell data. \emph{CD11b} is correctly identified as exhibiting bifurcating behaviour.
+	However, due to model mis-specification the cells with nonzero expression are assigned to branch 2, when in fact they should be assigned to both branches 1 \& 2, meaning \emph{CD34} is incorrectly identified as differentially regulated across the bifurcation.} \label{fig:chi}
 \end{figure}
 
 Such mis-specification - though conducive to fast full MCMC inference - does come at a cost. An example is given in figure \ref{fig:chi} of the mass cytometry data presented in the main text (we have reversed the pseudotimes so time runs from left to right). The gene \emph{CD11b} displays differential regulation across the branches - up-regulation on branch 1 and constant expression on branch 2. The model fits two values of $k$ for this as can be seen by the black line fits, and this the value of $\chi$ is sufficiently small that we correctly designate it as a gene that bifurcates.
