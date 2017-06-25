@@ -23,7 +23,7 @@
 % 1. Configure classicthesis for your needs here, e.g., remove "drafting" below
 % in order to deactivate the time-stamp on the pages
 % ****************************************************************************************************
-\PassOptionsToPackage{eulerchapternumbers,listings,drafting,%
+\PassOptionsToPackage{eulerchapternumbers,listings,%drafting,%
 					 pdfspacing,%floatperchapter,%linedheaders,%
 					 subfig,beramono,parts}{classicthesis}
 % ********************************************************************
@@ -42,7 +42,7 @@
 % ****************************************************************************************************
 \newcommand{\myTitle}{Probabilistic modelling of genomic trajectories\xspace}
 \newcommand{\mySubtitle}{An Homage to The Elements of Typographic Style\xspace}
-\newcommand{\myDegree}{Doctor of Philosophy (D.Phil)\xspace}
+\newcommand{\myDegree}{A thesis submitted for the degree of\\\emph{Doctor of Philosophy}\xspace}
 \newcommand{\myName}{Kieran R. Campbell\xspace}
 \newcommand{\myProf}{Put name here\xspace}
 \newcommand{\myOtherProf}{Put name here\xspace}
@@ -52,7 +52,7 @@
 \newcommand{\myUni}{University of Oxford \xspace}
 \newcommand{\myCollege}{St John's College \xspace}
 \newcommand{\myLocation}{Oxford, UK\xspace}
-\newcommand{\myTime}{July 2017\xspace}
+\newcommand{\myTime}{Trinity 2017\xspace}
 \newcommand{\myVersion}{version 4.2\xspace}
 
 % ********************************************************************
@@ -282,9 +282,13 @@
 % KRC mods here
 %***
 
+\titleformat{\chapter}[display]%
+  {\relax}{\vspace*{-3\baselineskip}\makebox[\linewidth][r]{\color{halfgray}\chapterNumber\thechapter}}{0pt}%
+  {\raggedright\spacedallcaps}[\normalsize\vspace*{.2\baselineskip}\titlerule]%
+
 % Packages
 \usepackage{lmodern}
-\usepackage[left=3cm,right=3cm,top=1in,bottom=1.5in]{geometry}
+\usepackage[left=4cm,right=2.8cm,top=1in,bottom=1.5in]{geometry}
 % \usepackage{eulermath}
 %\usepackage[euler-digits]{eulervm}
 

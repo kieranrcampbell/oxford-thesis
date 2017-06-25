@@ -8,7 +8,7 @@
 
 It is hard to overstate the impact of single-cell whole-transcriptome expression quantification on recent scientific research. The first single-cell RNA-sequencing (RNA-seq) method was introduced in 2009 \cite{Tang2009-th}, and gained widespread interest around three years later with the introduction of methods such as Smart-seq \cite{Ramskold2012-wt} and Smart-seq2 \cite{Picelli2013-tm} that significantly reduced the cost of library preparation. It is quite incredible that in the space of a little over five years the technology has sufficiently advanced to move from profiling a few tens of cells to thousands and hundreds of thousands using technologies such as Drop-seq \cite{Macosko2015-ek} and the 10x platform \cite{Zheng2017-vj}.
 
-This mass-production of single-cell data has lead to an explosion of methods development for downstream analysis by both computational biologists and statisticians. There are now a wide-range of methods specific to single-cell data for common analyses such as normalisation \cite{Lun2016-oj,Bacher2017-ga}, differential expression \cite{Kharchenko2014,Delmans2016-po,Korthauer2016-iz}, dimensionality reduction \cite{pierson2015zifa,Wang2017-dl}, and ``pseudotime'' analyses (see section \ref{sec:pseudotime}). Indeed, there are now over 100 dedicated tools for analysing single-cell data, 
+This mass-production of single-cell data has led to an explosion of methods development for downstream analysis by both computational biologists and statisticians. There are now a wide range of methods specific to single-cell data for common analyses such as normalisation \cite{Lun2016-oj,Bacher2017-ga}, differential expression \cite{Kharchenko2014,Delmans2016-po,Korthauer2016-iz}, dimensionality reduction \cite{pierson2015zifa,Wang2017-dl}, and ``pseudotime'' analyses (see section \ref{sec:pseudotime}). Indeed, there are now over 100 dedicated tools for analysing single-cell data, 
 the majority of which have been produced since 2015.
 
 \subsection{Why quantify gene expression in single-cells?}
@@ -62,7 +62,7 @@ One feature of single-cell RNA-seq data (and indeed RNA-seq data in general) is 
 Typically with some offset $c$ via $\log(x+c)$ to avoid divergence issues when $x \rightarrow 0$.
 } the (normalised) counts and model using a Gaussian likelihood, such as Limma Voom and Sleuth \cite{Law2014-tu,Pimentel2016-xz}.
 
-In the case of the count-based methods, RNA-seq data are  be well-approximated by negative binomial distributions \cite{Anders2010,Robinson2010-rj,Risso2017-qk} which relates the variance $\sigma^2$ to the mean $\mu$ of the counts for a given gene as
+In the case of the count-based methods, RNA-seq data are  be well-approximated by negative binomial distributions \cite{Anders2010,Robinson2010-rj,Risso2017-qk} which relates the variance $\sigma^2$ to the mean $\mu$ of the counts for a given gene by
 
 \begin{equation}
   \sigma^2 = \mu + \alpha \mu^2
@@ -201,22 +201,20 @@ Using a Tobit likelihood model; see chapter 2 for further discussions on differe
 
 The algorithm proceeds by using independent component analysis (ICA) to reduce the dimensionality of the dataset down to two dimensions. ICA attempts to find latent components in the data that are statistically independent and assumes that each component is non-Gaussian\footnote{
 ICA finds a projection that maximises the kurtosis in the latent space, compared to PCA that maximises the variance (see section \ref{sec:intr:pca}).
-}. The original paper provides no justification for using ICA over any other dimensionality reduction algorithm, nor the choice of two latent dimensions though they do note that this makes it easier to visualise and interpret. Interestingly, the authors note
-
-\begin{displayquote}
-\emph{Reducing dimensionality of single-cell expression data amounts to describing
-each cell in terms of abstract sources, which are hidden variables that
-describe a cell’s state but which are reflected in observed gene expression
-values.}
-\end{displayquote}
-
-which would seemingly justify a single dimensionality reduction step down to a one-dimensional latent component as a valid pseudotime algorithm.
-
-However, the Monocle algorithm proceeds with a secondary cell ordering step in the reduced space. It largely follows the procedure of Magwene et al. \cite{Magwene2003-bm} (see section \ref{sec:int:early}) in constructing a MST in the reduced space and finding the ``diameter path'' (i.e. the longest path through the MST) as the trajectory. In order to find biological branches (rather than technical ones), the algorithm finds branches from ``indecisive'' vertices (those with degree greater than two) and returns the $k$ longest, where $k$ is an integer set by the user in line with prior knowledge of the expected number of terminally differentiated cells in the sample.
+}. 
+%The original paper provides no justification for using ICA over any other dimensionality reduction algorithm, nor the choice of two latent dimensions though they do note that this makes it easier to visualise and interpret. Interestingly, the authors note
+% \begin{displayquote}
+% \emph{Reducing dimensionality of single-cell expression data amounts to describing
+% each cell in terms of abstract sources, which are hidden variables that
+% describe a cell’s state but which are reflected in observed gene expression
+% values.}
+% \end{displayquote}
+% which would seemingly justify a single dimensionality reduction step down to a one-dimensional latent component as a valid pseudotime algorithm.
+ Monocle then proceeds with a secondary cell ordering step in the reduced space that largely follows the procedure of Magwene et al. \cite{Magwene2003-bm} (see section \ref{sec:int:early}) in constructing a MST in the reduced space and finding the ``diameter path'' (i.e. the longest path through the MST) as the trajectory. In order to find biological branches (rather than technical ones), the algorithm finds branches from ``indecisive'' vertices (those with degree greater than two) and returns the $k$ longest, where $k$ is an integer set by the user in line with prior knowledge of the expected number of terminally differentiated cells in the sample.
 
 \subsubsection{Wanderlust}
 
-Published just a month after Monocle was Wanderlust \cite{Bendall2014-rc}, an algorithm developed to uncover human B cell lymphopoiesis using single-cell mass cytometry data. Compared to transcriptome wide RNA sequencing, mass cytometry measures a smaller number of markers. In this study, a custom panel of 44 makers designed to characterise B-cells were measured, including ``phenotypic proteins, transcription factors, regulatory enzymes, cell-state indicators, and activation of regulatory signaling molecules''.
+Published just a month after Monocle was Wanderlust \cite{Bendall2014-rc}, an algorithm developed to uncover human B cell lymphopoiesis using single-cell mass cytometry data. Compared to transcriptome wide RNA sequencing, mass cytometry measures a smaller number of markers. In this study, a custom panel of 44 makers designed to characterise B-cells were measured, including ``phenotypic proteins, transcription factors, regulatory enzymes, cell-state indicators, and activation of regulatory signalling molecules''.
 
 Wanderlust begins by constructing a $k$-nearest neighbour graph between all cells using euclidean distance and selects a small random subset of cells as ``waypoints''. It then creates a random ensemble of graphs by subsampling cells to mitigate the impact of ``short circuits'' on the trajectory construction\footnote{
 Short circuits are defined as ``spurious edges between distant cells'' - two cells distant in pseudotime are connected due to random fluctuations in their gene expression. In theory such a problem will be worse in the ~40 dimensional mass cytometry data than 1000+ dimensional single-cell RNA-seq.
@@ -341,7 +339,7 @@ where $\mby_n$ is the vector of child $n$'s test scores, $\mblambda$ is a vector
 Of course the idea of a single ``general intelligence'' goes against common sense. If there truly is a single latent factor it is possible to form the \emph{tetrad equations}. Later studies showed that deviations in the tetrad equations could not be explained by sampling noise alone. For an overview see \url{https://www.stat.cmu.edu/~cshalizi/350/lectures/12/lecture-12.pdf}.
 }.
 
-One can see in hindight the parallels to the pseudotime estimation problem: we measure some high-dimensional quantity $\mby_n$ over various samples and have a hazy and somewhat under-defined one-dimensional generating process $z_n$. In the context of psychology, this process is intelligence: something unmeasurable that we use to make sense of observations in life such as performance in tests. Similarly in biology we have the concept of differentiation trajectories: something equally unmeasurable but which we indirectly observe through molecular measurements such as gene expression quantification (table \ref{tbl:fa}(b)).
+One can see in hindsight the parallels to the pseudotime estimation problem: we measure some high-dimensional quantity $\mby_n$ over various samples and have a hazy and somewhat under-defined one-dimensional generating process $z_n$. In the context of psychology, this process is intelligence: something unmeasurable that we use to make sense of observations in life such as performance in tests. Similarly in biology we have the concept of differentiation trajectories: something equally unmeasurable but which we indirectly observe through molecular measurements such as gene expression quantification (table \ref{tbl:fa}(b)).
 
 Given the parallels between the original interpretation of factor analysis and differentiation trajectories we may suspect that it is particularly suited to the pseudotime inference. Indeed, chapters 3-5 are devoted to various modifications of factor analysis to infer such trajectories.
 
@@ -376,7 +374,7 @@ Diffusion maps are closely related to laplacian eigenmaps and have been successf
   P_{n',n} = \frac{1}{Z(\mby_{n'})} \exp\left( - \frac{\lvert \lvert \mby_n - \mby_{n'} \rvert \rvert^2}{2 \sigma^2}\right)
 \end{equation}
 
-where $Z(\mby_{n'}) = \sum_{n}  \exp\left( - \frac{\lvert \lvert \mby_n - \mby_{n'} \rvert \rvert^2}{2 \sigma^2}\right)$ and $\sigma^2$ is a characteristic length scale. $P_{n',n}$ can be thought of as the probability of transitioning or \emph{diffusing} from cell $n$ to $n'$. A renormalised transition matrix $\tilde{\mbP}$ can then be definied that takes into account the local density of samples in the space. One can then decompose the diffusion distances into a sum over the eigenvectors of $\tilde{\mbP}$
+where $Z(\mby_{n'}) = \sum_{n}  \exp\left( - \frac{\lvert \lvert \mby_n - \mby_{n'} \rvert \rvert^2}{2 \sigma^2}\right)$ and $\sigma^2$ is a characteristic length scale. $P_{n',n}$ can be thought of as the probability of transitioning or \emph{diffusing} from cell $n$ to $n'$. A renormalised transition matrix $\tilde{\mbP}$ can then be defined that takes into account the local density of samples in the space. One can then decompose the diffusion distances into a sum over the eigenvectors of $\tilde{\mbP}$
 weighted by eigenvalues,
 implying that retaining eigenvectors for the first $k$ ordered eigenvalues captures the major structure of the manifold and are therefore useful for visualisation. Haghverdi et al. \cite{Haghverdi2015} further derive a heuristic for selection of the kernel width $\sigma$ in terms of the effective number of neighbours of each cell.
 
@@ -434,7 +432,7 @@ which is equivalent to measuring distances in the latent space with a Student-t 
 %from $\mbP$ to $\mbQ$
 $\KL{\mbP}{\mbQ} = \sum_{n \neq n'} P_{nn'} \log \frac{P_{nn'}}{Q_{nn'}}$.
 
-It is hard to overstate how popular t-SNE has been for visualising single-cell gene expression data. Examples include as the initial dimensionality reduction step in \texttt{SCUBA} \cite{marco2014bifurcation} or for visualisation of branch structure of single-cell mass cytometry data \cite{setty2016wishbone}. Criticisms of t-SNE include the required specification of the kernel widths $\sigma_n$ (which can be interpreted in terms of an effective number of nearest neighbours or \emph{perplexity}) and the number of iterations of the (stochastic) gradient descent aglorithm.
+It is hard to overstate how popular t-SNE has been for visualising single-cell gene expression data. Examples include as the initial dimensionality reduction step in \texttt{SCUBA} \cite{marco2014bifurcation} or for visualisation of branch structure of single-cell mass cytometry data \cite{setty2016wishbone}. Criticisms of t-SNE include the required specification of the kernel widths $\sigma_n$ (which can be interpreted in terms of an effective number of nearest neighbours or \emph{perplexity}) and the number of iterations of the (stochastic) gradient descent algorithm.
 
 
 \subsection{Gaussian process latent variable models} \label{sec:gplvm}
@@ -462,7 +460,7 @@ as used in \cite{campbell2016order} or the Matern family such as the $\text{Mate
   1 + \sqrt{3} \lvert \mbz_n - \mbz_{n'} \rvert \right) \exp\left( - \sqrt{3} \lvert \mbz_n - \mbz_{n'} \rvert \right).
 \end{equation}
 
-GPLVM has been widely applied to single-cell expression data, including to single-cell qPCR data \cite{buettner2012novel} and single-cell RNA-seq \cite{campbell2016order,macaulay2016single}. Latent embeddings inferred using GPLVM are typically under-constrained leading to a number of studies that introduce ``data-driven priors'' to further constrain the model, such incorporating the t-SNE cost function to preserve local structure in GPLVM \cite{van2009preserving}
+GPLVM has been widely applied to single-cell expression data, including to single-cell qPCR data \cite{buettner2012novel} and single-cell RNA-seq \cite{campbell2016order,macaulay2016single}. Latent embeddings inferred using GPLVM are typically under-constrained leading to a number of studies that introduce ``data-driven priors'' to further constrain the model, such as incorporating the t-SNE cost function to preserve local structure in GPLVM \cite{van2009preserving}
 
 \section{Probabilistic modelling of genomic trajectories}
 

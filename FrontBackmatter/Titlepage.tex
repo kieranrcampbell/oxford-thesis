@@ -3,7 +3,7 @@
 %*******************************************************
 \begin{titlepage}
     % if you want the titlepage to be centered, uncomment and fine-tune the line below (KOMA classes environment)
-    %\begin{addmargin}[-1cm]{-3cm}
+    \begin{addmargin}[-1cm]{0cm}
     \begin{center}
         \large
 
@@ -15,24 +15,27 @@
             \spacedallcaps{\myTitle} \\ \bigskip
         \endgroup
 
-        \spacedlowsmallcaps{\myName}
+
 
         \vfill
 
-        \includegraphics[width=3cm]{gfx/oxford} \\ \medskip
+        \includegraphics[width=3cm]{gfx/oxford} \\ \bigskip \bigskip \bigskip
 
         %\mySubtitle \\ \medskip
         %\myDegree \\
         %\myDepartment \\
         %\myFaculty \\
+        \spacedlowsmallcaps{\myName} \\
         \vspace{2pt}
         \myCollege \\
         \myUni \\ \bigskip
 
-        \myTime\ % -- \myVersion
-
+        \bigskip \bigskip \bigskip \bigskip % -- \myVersion
+        %\vspace{3pt}
+        \myDegree \\ \bigskip \bigskip
+        \myTime\\
         \vfill
 
     \end{center}
-%  \end{addmargin}       
+ \end{addmargin}       
 \end{titlepage}

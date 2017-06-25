@@ -80,6 +80,8 @@ We fit the model using gradient-based L-BFGS-B optimisation to find maximum like
 
 To account for the aforementioned zero-inflation in the data we propose a model that incorporates dropouts in a similar style to \cite{pierson2015zifa}.
 
+\newpage
+
 \begin{equation}
 \begin{aligned}
 \mu_g(t_n, \theta_g) & = \frac{2 \mu^{(0)}_g}{1 + \exp\left(-k_g(t_n - t^{(0)}_g)\right)} \\
@@ -105,7 +107,7 @@ In \cite{Trapnell2014-xi} the genes \emph{CDK1} and \emph{ID1} are identified as
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.9\textwidth]{gfx/ch2/switchde/S_CDK1_ID1}
-\caption{Expression profiles of \emph{CDK1} (A) and \emph{ID1} (B) along with MLE fits for the zero-inflated sigmoidal model (solid red line) with imputed dropout expression (blue crosses).}\label{fig:S1}
+\caption{Expression profiles of \emph{CDK1} (left) and \emph{ID1} (right) along with MLE fits for the zero-inflated sigmoidal model (solid red line) with imputed dropout expression (blue crosses).}\label{fig:S1}
 \end{figure}
 
 \subsubsection{Examples of large and small $p$-values}
@@ -113,7 +115,7 @@ In \cite{Trapnell2014-xi} the genes \emph{CDK1} and \emph{ID1} are identified as
 \begin{figure}[h]%figure1
 \centering
 \includegraphics[width=0.9\textwidth]{gfx/ch2/switchde/S_pval_hl}
-\caption{(A) Expression of \emph{NUSAP1} with a $p$-value of $5.335782 \times 10^{-69}$ and (B) expression of \emph{GCLC} with a $p$-value of $0.9651487$.}\label{fig:S2}
+\caption{\textbf{A} Expression of \emph{NUSAP1} with a $p$-value of $5.335782 \times 10^{-69}$ and \textbf{B} expression of \emph{GCLC} with a $p$-value of $0.9651487$.}\label{fig:S2}
 \end{figure}
 
 In Figure \ref{fig:S2} we provide example (non-zero-inflated) fits for two genes with drastically different $p$-values: \emph{NUSAP1} is shown in Figure \ref{fig:S2}A with a $p$-value of $5.335782 \times 10^{-69}$ and \emph{GCLC} with a $p$-value of $0.9651487$. It is clear from the expression plots and MLE sigmoidal fits that the gene with the very low $p$-value clearly follows the sigmoidal switch-like trend while the gene with the high $p$-value is well explained by a null (constant expression) model.
@@ -137,7 +139,7 @@ The results can be seen in Figure \ref{fig:S3}, showing a clear `cascade' of suc
 \begin{figure}[!h]%figure1
 \centering
 \includegraphics[width=0.9\textwidth]{gfx/ch2/switchde/S_zi_compare}
-\caption{Comparison of MLE parameter estimates for zero-inflated and standard models, for (A) comparison of $\mu_0$, (B) comparison of $k$, (C) comparison of $t_0$ and (D) comparison of $p$-values.}\label{fig:S4}
+\caption{Comparison of MLE parameter estimates for zero-inflated and standard models, for \textbf{A} comparison of $\mu_0$, \textbf{B} comparison of $k$, \textbf{C} comparison of $t_0$ and \textbf{D} comparison of $p$-values.}\label{fig:S4}
 \end{figure}
 
 
@@ -158,7 +160,7 @@ A Gaussian Process (GP) is formally defined as \emph{a collection of random vari
 
 where the mean function $m(\bx)$ is typically taken to be zero.
 
-In ``real-world'' applications we rarely observe samples from $f$ itelf but from some noisy realisation
+In ``real-world'' applications we rarely observe samples from $f$ itself but from some noisy realisation
 
 \begin{equation}
 	y = f(\bx) + \epsilon
@@ -265,7 +267,7 @@ The kinetic energy is often defined as $K(\bp) = \bp^T \mbM^{-1} \bp / 2$ where 
 
 \paragraph{Hamiltonian Monte Carlo}
 
-The trick behind Hamiltonian Monte Carlo (HMC) is to choose $H(\mbtheta, \mbp)$ such that the hamiltonian dynamics allow us to effictively explore the target distribution. To do this HMC borrows the idea of the canonical distribution from statistical physics, which for some energy function $E(\theta)$ is defined as\footnote{We set the temperature that typically appears in the exponent to $T=1$.} $p(\theta) = \frac{1}{Z}\exp(-E(\theta))$ for some normalising constant $Z$. Therefore, if the energy function is the Hamiltonian $H(\mbtheta, \mbp) = U(\mbtheta) + K(\mbp)$ then the probability density factorises as
+The trick behind Hamiltonian Monte Carlo (HMC) is to choose $H(\mbtheta, \mbp)$ such that the hamiltonian dynamics allow us to effectively explore the target distribution. To do this HMC borrows the idea of the canonical distribution from statistical physics, which for some energy function $E(\theta)$ is defined as\footnote{We set the temperature that typically appears in the exponent to $T=1$.} $p(\theta) = \frac{1}{Z}\exp(-E(\theta))$ for some normalising constant $Z$. Therefore, if the energy function is the Hamiltonian $H(\mbtheta, \mbp) = U(\mbtheta) + K(\mbp)$ then the probability density factorises as
 
 \begin{equation}
 	p(\mbtheta, \mbp) \propto \exp(-U(\mbtheta)) \exp(-K(\mbp))
@@ -280,7 +282,7 @@ so $\mbtheta$ and $\mbp$ are independent. To target the Bayesian posterior densi
 The HMC algorithm begins by initialising the parameters $\mbtheta$ and the momenta $\mbp$ (by drawing from the prior $\Norm(\mbzero, \mbM)$). A single HMC iteration involves simulating Hamiltonian dynamics on $(\mbtheta, \mbp)$ according to equation \ref{eq:hd} for $L$ steps with a step-size of $\epsilon$, ending at some position $\mbtheta*$, at which point the momentum is negated giving a proposed state $(\mbtheta*, \mbp*)$. The proposed state is then accepted with probability
 
 \begin{equation}
-	\text{min}\left[ 1, exp(-H(\mbtheta*, \mbp*) + H(\mbtheta, \mbp))\right].
+	\text{min}\left[ 1, \exp(-H(\mbtheta*, \mbp*) + H(\mbtheta, \mbp))\right].
 \end{equation}
 
 For each subsequent iteration the momentum variables are re-sampled from the prior.
@@ -339,9 +341,9 @@ We next examined the posterior distributions in pseudotime assignment for four c
 
 The previous section addressed the sources of statistical uncertainty in the pseudotimes. We next explored the impact of pseudotime uncertainty on downstream analysis. Specifically, we focused on the identification of genes that are differentially expressed across pseudotime. Typically, these analyses involve regression models that assume the input variables (the pseudotimes) are both fixed and certain but, with our probabilistic model, we can use the posterior samples from our Bayesian model to refit the regression model to each pseudotime estimate. In doing so we can examine which genes are called as significant in each of the posterior samples and assess the stability of the differential expression analysis to pseudotime uncertainty by recording how frequently genes are designated as significant across the posterior samples. This allowed us to re-estimate the false discovery rate (FDR)  fully accounting for the variability in pseudotime. As there are a multitude of sources of uncertainty on top of this (such as biological and technical variability) this allows us to put a lower bound on the FDR of such analyses in general.
 
-Precisely, we fitted the tobit regression model from \cite{Trapnell2014-xi} for each gene for each sample from the posterior pseudotime distribution, giving us a per-gene set of false-discovery-rate-corrected $Q$-values. We then compared the proportion of times a gene is called as differentially expressed (5\% FDR) across all pseudotime samples to the $Q$-value using a point pseudotime estimate based on the maximum \textit{a posteriori} (or MAP) estimate. We reasoned that if a gene is truly differentially expressed then such expression will be robust to the underlying uncertainty in the ordering. Note for comparison, our MAP estimates with the GPLVM correlate strongly with Monocle derived pseudotime point estimates (see figure \ref{fig:s3}).
+Precisely, we fitted the Tobit regression model from \cite{Trapnell2014-xi} for each gene for each sample from the posterior pseudotime distribution, giving us a per-gene set of false-discovery-rate-corrected $Q$-values. We then compared the proportion of times a gene is called as differentially expressed (5\% FDR) across all pseudotime samples to the $Q$-value using a point pseudotime estimate based on the maximum \textit{a posteriori} (or MAP) estimate. We reasoned that if a gene is truly differentially expressed then such expression will be robust to the underlying uncertainty in the ordering. Note for comparison, our MAP estimates with the GPLVM correlate strongly with Monocle derived pseudotime point estimates (see figure \ref{fig:s3}).
 
-Figure \ref{fig:afdr}(A,B) shows two analyses for two illustrative genes  (ITGAE and ID2) in the Trapnell data set. Using the MAP pseudotime estimates, differential expression analysis of ITGAE over pseudotime attained a $q$-value of 0.02. However, the gene was only called significant in only 9\% of posterior pseudotime samples with a median $q$-value of 0.32. In contrast, ID1 - known to be involved in muscle differentiation - had a $q$-value of $6.6 \times 10^{-11}$ using the MAP pseudotime estimate, but was also called  significant in all the posterior pseudotime estimates having a median $q$-value of $4.4 \times 10^{-11}$. This indicates that the significance of the temporal expression variability of ID1 is highly robust whilst the significance ITGAE is much more dependent on the exact pseudotemporal ordering chosen.
+Figure \ref{fig:afdr}(A,B) shows two analyses for two illustrative genes  (\emph{ITGAE} and \emph{ID1}) in the Trapnell data set. Using the MAP pseudotime estimates, differential expression analysis of \emph{ITGAE} over pseudotime attained a $q$-value of 0.02. However, the gene was only called significant in only 9\% of posterior pseudotime samples with a median $q$-value of 0.32. In contrast, \emph{ID1} - known to be involved in muscle differentiation - had a $q$-value of $6.6 \times 10^{-11}$ using the MAP pseudotime estimate, but was also called  significant in all the posterior pseudotime estimates having a median $q$-value of $4.4 \times 10^{-11}$. This indicates that the significance of the temporal expression variability of \emph{ID1} is highly robust whilst the significance \emph{ITGAE} is much more dependent on the exact pseudotemporal ordering chosen.
 
 \begin{figure}
 	\centering
@@ -361,8 +363,8 @@ We performed a Gene Ontology enrichment analysis of the differentially expressed
 \centering
 	\includegraphics[width=\textwidth]{gfx/ch2/figure7.png}
 \caption{ Gene Ontology Enrichment Analysis.
-\textbf{(A)} Number of enriched GO categories for the three datasets studied. Genes used for enrichment were either those that exhibit \emph{robust} differential expression, \emph{unstable} differential expression or \emph{all}.
-\textbf{(B-D)} Venn diagrams showing the number of enriched GO terms based on the differential expression categories above.} \label{fig:go_enrichment}
+\textbf{A} Number of enriched GO categories for the three datasets studied. Genes used for enrichment were either those that exhibit \emph{robust} differential expression, \emph{unstable} differential expression or \emph{all}.
+\textbf{B-D} Venn diagrams showing the number of enriched GO terms based on the differential expression categories above.} \label{fig:go_enrichment}
 \end{figure}
 
 
@@ -383,7 +385,7 @@ We applied our sigmoidal model to learn patterns of switch-like behaviour of gen
 
 Representative examples of genes with large and small activation strengths showed marked differences in the gene expression patterns corresponding  to strong and weak switch-like behaviour as expected (figure \ref{fig:switchres}B). In addition, we examined the posterior density activation time $t_0$ for the five genes showing strong switching behaviour (figure \ref{fig:switchres}C). Under a point estimate of pseudotime each gene would give a distinct activation time with which these genes can be ordered. However, when pseudotime uncertainty is taken into account, a distribution over possible activation times emerges. In this case, the five genes all have activation times between 0.3 and 0.5 precluding a precise ordering (if one exists) of activation. Visually, this seems sensible since there is considerable cell-to-cell variability in the expression of these genes and not all cells express the genes during the ``on" phase. We are therefore unable to determine whether the ``on" phase begins when the first cell with high expression is first observed in pseudotime or, if it starts before, and the first few cells simply have null expression (for biological or technical reasons).
 
-We further explore this in figure \ref{fig:switchres2} which shows ten genes identified as having significant switch-like pseudotime dependence but with a range of mean activation times $t_0$. The switch-like behaviour is stable to the different posterior pseudotime estimates that were sampled from the GPLVM. It is clear that the two genes RARRES3 and C1S are activating at an earlier time compared to the genes IL20RA and APOL4. However, we cannot be confident of the ordering within the pairs RARRES3/C1S and IL20RA/APOL4 in pseudotime since the distributions over the activation times are not well-separated and it is impossible to make any definitive statements as to whether one of these genes (in)activates before another. If the probability of a sequence of activation events is required, instead of examining each gene in isolation, we can count the number of posterior samples in which one gene precedes another instead and evidence may emerge of a possible ordering. These observations suggests a finite temporal resolution limit that can be obtained using pseudotemporal ordering.
+We further explore this in figure \ref{fig:switchres2} which shows ten genes identified as having significant switch-like pseudotime dependence but with a range of mean activation times $t_0$. The switch-like behaviour is stable to the different posterior pseudotime estimates that were sampled from the GPLVM. It is clear that the two genes \emph{RARRES3} and \emph{C1S} are activating at an earlier time compared to the genes IL20RA and APOL4. However, we cannot be confident of the ordering within the pairs \emph{RARRES3}/\emph{C1S} and \emph{IL20RA}/\emph{APOL4} in pseudotime since the distributions over the activation times are not well-separated and it is impossible to make any definitive statements as to whether one of these genes (in)activates before another. If the probability of a sequence of activation events is required, instead of examining each gene in isolation, we can count the number of posterior samples in which one gene precedes another instead and evidence may emerge of a possible ordering. These observations suggests a finite temporal resolution limit that can be obtained using pseudotemporal ordering.
 
 \begin{figure}%[h]
 \centering
