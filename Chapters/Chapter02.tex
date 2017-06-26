@@ -44,7 +44,7 @@ However, the flexible nonparametric nature of the B-spline basis functions may l
 \begin{figure}[!h]
 \centering
 \includegraphics[width=0.85\textwidth]{gfx/ch2/switchde/fig1}
-\caption{Sigmoidal expression across pseudotime.
+\caption[Sigmoidal expression across pseudotime.]{Sigmoidal expression across pseudotime.
 \textbf{A} The sigmoid curve as a model of gene expression along single-cell trajectories, parametrised by the average peak expression $\mu_0$, the activation strength $k$ and the activation time $t_0$.
 \textbf{B} An example using the \emph{NDC80} gene from the Trapnell dataset (\cite{Trapnell2014-xi}), which had the lowest $p$-value of all genes tested. Gene expression measurements are shown as the grey points with the maximum likelihood sigmoid fit denoted by the dark line. The maximum likelihood parameter estimates were $\muu = 2.73$, $k_g = -8.71$ and $\tou = 17.61$.
 \textbf{C} Zero-inflated differential expression for the transcription factor \emph{MYOG}. Solid line shows the MLE sigmoidal mean while  crosses show imputed gene expression measured as zeroes.
@@ -107,7 +107,7 @@ In \cite{Trapnell2014-xi} the genes \emph{CDK1} and \emph{ID1} are identified as
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.9\textwidth]{gfx/ch2/switchde/S_CDK1_ID1}
-\caption{Expression profiles of \emph{CDK1} (left) and \emph{ID1} (right) along with MLE fits for the zero-inflated sigmoidal model (solid red line) with imputed dropout expression (blue crosses).}\label{fig:S1}
+\caption[Expression profiles of MLE fits.]{Expression profiles of \emph{CDK1} (left) and \emph{ID1} (right) along with MLE fits for the zero-inflated sigmoidal model (solid red line) with imputed dropout expression (blue crosses).}\label{fig:S1}
 \end{figure}
 
 \subsubsection{Examples of large and small $p$-values}
@@ -115,7 +115,7 @@ In \cite{Trapnell2014-xi} the genes \emph{CDK1} and \emph{ID1} are identified as
 \begin{figure}[h]%figure1
 \centering
 \includegraphics[width=0.9\textwidth]{gfx/ch2/switchde/S_pval_hl}
-\caption{\textbf{A} Expression of \emph{NUSAP1} with a $p$-value of $5.335782 \times 10^{-69}$ and \textbf{B} expression of \emph{GCLC} with a $p$-value of $0.9651487$.}\label{fig:S2}
+\caption[Sigmoidal expression of example genes.]{\textbf{A} Expression of \emph{NUSAP1} with a $p$-value of $5.335782 \times 10^{-69}$ and \textbf{B} expression of \emph{GCLC} with a $p$-value of $0.9651487$.}\label{fig:S2}
 \end{figure}
 
 In Figure \ref{fig:S2} we provide example (non-zero-inflated) fits for two genes with drastically different $p$-values: \emph{NUSAP1} is shown in Figure \ref{fig:S2}A with a $p$-value of $5.335782 \times 10^{-69}$ and \emph{GCLC} with a $p$-value of $0.9651487$. It is clear from the expression plots and MLE sigmoidal fits that the gene with the very low $p$-value clearly follows the sigmoidal switch-like trend while the gene with the high $p$-value is well explained by a null (constant expression) model.
@@ -126,7 +126,7 @@ In Figure \ref{fig:S2} we provide example (non-zero-inflated) fits for two genes
 \begin{figure}[h]%figure1
 \centering
 \includegraphics[width=0.9\textwidth]{gfx/ch2/switchde/S_differing_t0}
-\caption{A `cascade' of gene regulation along pseudotime. Each red curve corresponds to the MLE sigmoidal fit while the vertical blue dashed line corresponds to the MLE of $t_0$.}\label{fig:S3}
+\caption[A `cascade' of gene regulation along pseudotime.]{A `cascade' of gene regulation along pseudotime. Each red curve corresponds to the MLE sigmoidal fit while the vertical blue dashed line corresponds to the MLE of $t_0$.}\label{fig:S3}
 \end{figure}
 
 One advantage of our model is that one can identify genes up or down regulated at a particular part of the trajectory. To demonstrate this we found the genes with the closest $t_0$ values to 20\%, 32\%, 44\%, 56\%, 68\% and 80\% of the way through the trajectory, based on all genes significant at 1\% FDR.
@@ -139,7 +139,7 @@ The results can be seen in Figure \ref{fig:S3}, showing a clear `cascade' of suc
 \begin{figure}[!h]%figure1
 \centering
 \includegraphics[width=0.9\textwidth]{gfx/ch2/switchde/S_zi_compare}
-\caption{Comparison of MLE parameter estimates for zero-inflated and standard models, for \textbf{A} comparison of $\mu_0$, \textbf{B} comparison of $k$, \textbf{C} comparison of $t_0$ and \textbf{D} comparison of $p$-values.}\label{fig:S4}
+\caption[Comparison of MLE parameter estimates for zero-inflated and standard models.]{Comparison of MLE parameter estimates for zero-inflated and standard models, for \textbf{A} comparison of $\mu_0$, \textbf{B} comparison of $k$, \textbf{C} comparison of $t_0$ and \textbf{D} comparison of $p$-values.}\label{fig:S4}
 \end{figure}
 
 
@@ -218,7 +218,7 @@ where $\Omega_{\mbTheta}$ and $\Omega_{\mbt}$ are the sample spaces of $\mbTheta
 \begin{figure}
 \centering
   \includegraphics[width=\textwidth]{gfx/ch2/figure2.png}
-  \caption{Workflow for fitting Bayesian Gaussian Process Latent Variable Model pseudotime models.Reduced-dimension representations of the gene expression data (from Laplacian eigenmaps, PCA and/or t-SNE) are created. The pseudotime can be fitted using one or more low dimensional representations of the data. Posterior samples of pseudotimes are drawn from a Bayesian GPLVM and these are used to obtain alternative pseudotime estimates. Downstream differential analyses can be performed on the posterior samples to characterise the robustness with respect to variation in pseudotime estimates.} \label{fig:workflow}
+  \caption[Workflow for fitting Bayesian Gaussian Process Latent Variable Model pseudotime models.]{Workflow for fitting Bayesian Gaussian Process Latent Variable Model pseudotime models. Reduced-dimension representations of the gene expression data (from Laplacian eigenmaps, PCA and/or t-SNE) are created. The pseudotime can be fitted using one or more low dimensional representations of the data. Posterior samples of pseudotimes are drawn from a Bayesian GPLVM and these are used to obtain alternative pseudotime estimates. Downstream differential analyses can be performed on the posterior samples to characterise the robustness with respect to variation in pseudotime estimates.} \label{fig:workflow}
 \end{figure}
 
 The hierarchical model specification for probabilistic pseudotime using a Gaussian Process Latent Variable model is then
@@ -309,7 +309,7 @@ An implicit assumption in pseudotime estimation is that proximity in pseudotime 
 \begin{figure}
 \centering
 	\includegraphics[width=\textwidth]{gfx/ch2/figure3.png}
-  	\caption{Posterior pseudotime trajectories for three single-cell RNA-seq datasets. Posterior pseudotime trajectories shown in a two-dimensional reduced representation space for (left) a Laplacian eigenmaps representation of Trapnell et al. (2014) \cite{Trapnell2014-xi}, (centre) Laplacian eigenmaps representation of Burns et al. (2015) \cite{Burns2015} and (right) PCA representation of Shin et al. (2015) \cite{Shin2015}. Each point represents a cell and the black line represents the mean pseudotime trajectory. Plots \textbf{A-C} shows the overall posterior predictive data density (red) whilst \textbf{D-F} shows the conditional posterior predictive data density for $t = 0.5$ (red) and $t = 0.7$ (blue). }
+  	\caption[Posterior pseudotime trajectories for three single-cell RNA-seq datasets.]{Posterior pseudotime trajectories for three single-cell RNA-seq datasets. Posterior pseudotime trajectories shown in a two-dimensional reduced representation space for (left) a Laplacian eigenmaps representation of Trapnell et al. (2014) \cite{Trapnell2014-xi}, (centre) Laplacian eigenmaps representation of Burns et al. (2015) \cite{Burns2015} and (right) PCA representation of Shin et al. (2015) \cite{Shin2015}. Each point represents a cell and the black line represents the mean pseudotime trajectory. Plots \textbf{A-C} shows the overall posterior predictive data density (red) whilst \textbf{D-F} shows the conditional posterior predictive data density for $t = 0.5$ (red) and $t = 0.7$ (blue). }
   	\label{fig:posmean}
 \end{figure}
 
@@ -323,7 +323,7 @@ It is important to note that the posterior mean trajectories correspond to certa
 
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch2/figure4.png}
-  \caption{Effect of prior expectations on pseudotime trajectories.
+  \caption[Effect of prior expectations on pseudotime trajectories.]{Effect of prior expectations on pseudotime trajectories.
       The prior probability distribution (defined in terms of hyperparameters $(\gamma_\alpha, \gamma_\beta)$ in our model) on the expected smoothness of pseudotime trajectories can fundamentally change the inferred progression path. Examples shown using the data of Trapnell et al. (2014) \cite{Trapnell2014-xi}. Red - shows the density of the posterior predictive data distribution. Black - shows the mean pseudotime trajectory. Shrinkage hyperparameters $(\gamma_\alpha, \gamma_\beta)$ of (30, 5), (5,1) and (3,1) were used for \textbf{A}, \textbf{B} and \textbf{C} respectively.}
 	\label{fig:varygamma}
 \end{figure}
@@ -333,7 +333,7 @@ We next examined the posterior distributions in pseudotime assignment for four c
 \begin{figure}
 \centering
 	\includegraphics[width=\textwidth]{gfx/ch2/figure5.png}
-    \caption{ Posterior uncertainty in pseudotime trajectories.  \textbf{A} Posterior uncertainty in pseudotimes for four randomly selected cells from the Trapnell et al. (2014) dataset. Horizontal bars represent the 95\% highest probability density (HPD) credible interval (CI), which typically covers around a quarter of the pseudotime trajectory. \textbf{B-D} Boxplots showing the posterior uncertainty for each cell from the Trapnell et al. (2014) datasets. The edges of the boxes and tails correspond to the 75\% and 95\% HPD-CIs respectively.} \label{fig:posuncert}
+    \caption[Posterior uncertainty in pseudotime trajectories.]{ Posterior uncertainty in pseudotime trajectories.  \textbf{A} Posterior uncertainty in pseudotimes for four randomly selected cells from the Trapnell et al. (2014) dataset. Horizontal bars represent the 95\% highest probability density (HPD) credible interval (CI), which typically covers around a quarter of the pseudotime trajectory. \textbf{B-D} Boxplots showing the posterior uncertainty for each cell from the Trapnell et al. (2014) datasets. The edges of the boxes and tails correspond to the 75\% and 95\% HPD-CIs respectively.} \label{fig:posuncert}
 \end{figure}
 
 
@@ -348,7 +348,7 @@ Figure \ref{fig:afdr}(A,B) shows two analyses for two illustrative genes  (\emph
 \begin{figure}
 	\centering
 	\includegraphics[width=0.7\textwidth]{gfx/ch2/figure6.png}
-\caption{ Approximate FDR for differential expression across pseudotime.
+\caption[Approximate FDR for differential expression across pseudotime.]{ Approximate FDR for differential expression across pseudotime.
 \textbf{A} Gene expression plots across pseudotime, with black traces corresponding to models fitted to pseudotime samples while the red trace corresponds to the point (MAP) estimate for two exemplar genes and \textbf{B} corresponding gene expression heatmap for 20 randomly sampled posterior pseudotimes.
 \textbf{C} The number of genes identified as robust and unstable for all three datasets examined.}
 \label{fig:afdr}
@@ -362,7 +362,7 @@ We performed a Gene Ontology enrichment analysis of the differentially expressed
 \begin{figure}
 \centering
 	\includegraphics[width=\textwidth]{gfx/ch2/figure7.png}
-\caption{ Gene Ontology Enrichment Analysis.
+\caption[Gene Ontology Enrichment Analysis.]{ Gene Ontology Enrichment Analysis.
 \textbf{A} Number of enriched GO categories for the three datasets studied. Genes used for enrichment were either those that exhibit \emph{robust} differential expression, \emph{unstable} differential expression or \emph{all}.
 \textbf{B-D} Venn diagrams showing the number of enriched GO terms based on the differential expression categories above.} \label{fig:go_enrichment}
 \end{figure}
@@ -379,7 +379,7 @@ We applied our sigmoidal model to learn patterns of switch-like behaviour of gen
 \begin{figure}
 \centering
 	\includegraphics[width=\textwidth]{gfx/ch2/figure8.png}
-\caption{ Robust inference of switch-like behaviour in genes across pseudotime.
+\caption[Robust inference of switch-like behaviour in genes across pseudotime.]{ Robust inference of switch-like behaviour in genes across pseudotime.
 \textbf{A} The square-root of the median of the activation strength parameter $k$ across all pseudotime samples as a function of activation time $t_0$. The error bars show the 95\% credible interval, demonstrating that point estimates can severely skew the apparent behaviour of genes and a requirement for a robust Bayesian treatment of gene expression. A distinct population of genes whose median activation strength sits separate from the majority close to the x-axis implies a subset of genes show true switch-like behaviour. \textbf{B} Representative examples of genes whose median activation strength is large (top row) compared to small (bottom row). Each black point represents the gene expression of the cell with red lines corresponding to posterior traces of the sigmoidal gene expression model. Genes with a large activation strength show a distinct gene expression pattern compared to those with a small activation strength. \textbf{C} A posterior density plot of the activation time for the five genes showing strong activation strength in \textbf{B}.} \label{fig:switchres}
 \end{figure}
 
@@ -390,7 +390,7 @@ We further explore this in figure \ref{fig:switchres2} which shows ten genes ide
 \begin{figure}%[h]
 \centering
 	\includegraphics[width=\textwidth]{gfx/ch2/figure9.png}
-\caption{ Identifying pseudotime dependent gene activation behaviour. Ten selected genes from \cite{Trapnell2014-xi} found using our  sigmoidal gene activation model exhibiting a range of activation times. For each gene, we show the expression levels of each cell (centre) where each row corresponds to an ordering according to a different posterior samples of pseudotime. The orange line corresponds to a point estimate of the activation time. The posterior density of the estimated activation time is also shown (right).
+\caption[Identifying pseudotime dependent gene activation behaviour.]{ Identifying pseudotime dependent gene activation behaviour. Ten selected genes from \cite{Trapnell2014-xi} found using our  sigmoidal gene activation model exhibiting a range of activation times. For each gene, we show the expression levels of each cell (centre) where each row corresponds to an ordering according to a different posterior samples of pseudotime. The orange line corresponds to a point estimate of the activation time. The posterior density of the estimated activation time is also shown (right).
 } \label{fig:switchres2}
 \end{figure}
 
@@ -407,7 +407,7 @@ To do this, we used the differentiating myoblasts data set \cite{Trapnell2014-xi
 \begin{figure}
 \centering
 	\includegraphics[width=\textwidth]{gfx/ch2/figure10.png}
-\caption{ Pseudotime uncertainty arising from reduced dimensional representation.
+\caption[Pseudotime uncertainty arising from reduced dimensional representation.]{ Pseudotime uncertainty arising from reduced dimensional representation.
 \textbf{A} Proportion of all subsampled differential expression tests where the gene was found to be robustly differentially expressed using only those genes robustly differentially expressed when considering all cells. % This sentence is painful
 \textbf{B} Cumulative frequency of cell subsamples in which a given gene is robustly differentially expressed. Over half of all genes were robustly differentially expressed in all PCA subsamples.} \label{fig:pca_compare}
 \end{figure}
@@ -421,7 +421,7 @@ To demonstrate that there is inherent uncertainty in pseudotime (i.e. it's not j
 \begin{figure}
 \centering
 	\includegraphics[width=0.9\textwidth]{gfx/ch2/S2}
-\caption{Inherent uncertainty in single-cell pseudotime. \textbf{A} The pseudotimes of the cells (ordered by index) with $2 \sigma$ intervals as error bars. \textbf{B} The distribution of $2\sigma$ intervals reaches as large as $0.5$, covering half the trajectory.} \label{fig:s2}
+\caption[Inherent uncertainty in single-cell pseudotime.]{Inherent uncertainty in single-cell pseudotime. \textbf{A} The pseudotimes of the cells (ordered by index) with $2 \sigma$ intervals as error bars. \textbf{B} The distribution of $2\sigma$ intervals reaches as large as $0.5$, covering half the trajectory.} \label{fig:s2}
 \end{figure}
 
 \subsection{Consistency with \texttt{Monocle}}
@@ -430,7 +430,7 @@ To ensure the GPLVM fit is consistent with other methods we compared the MAP pse
 \begin{figure}
 \centering
 	\includegraphics[width=0.9\textwidth]{gfx/ch2/S3}
-\caption{GPLVM pseudotime fits compared to Monocle for both ICA dimensionality reduction (left) and laplacian eigenmaps (right). Error bars show 95\% posterior credible interval} \label{fig:s3}
+\caption[Comparison of GPLVM pseudotime fits.]{GPLVM pseudotime fits compared to Monocle for both ICA dimensionality reduction (left) and laplacian eigenmaps (right). Error bars show 95\% posterior credible interval} \label{fig:s3}
 \end{figure}
 
 We performed two comparisons: firstly using the entire \texttt{Monocle} method (using the 500 most variable genes for dimensionality reduction), and secondly using just the MST fitting using the Laplacian Eigenmaps embedding as described above. The results can be seen in figure \ref{fig:s3} with $R^2$ values of 0.83 and 0.96. Also plotted are the 95\% HPD credible intervals, and in general the \texttt{Monocle} value is captured within this interval.

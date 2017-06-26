@@ -14,7 +14,7 @@
 \begin{figure}
 \centering
   \includegraphics[width=0.98\textwidth]{gfx/ch5/1_method_diagram}
-  \caption{The behaviour of gene expression along trajectories may be affected by externally measured covariates.
+  \caption[The behaviour of gene expression along trajectories may be affected by externally measured covariates.]{The behaviour of gene expression along trajectories may be affected by externally measured covariates.
   Such covariates may be discrete (left) or continuous (right).
   } \label{fig:phenotime_diagram}
 \end{figure}
@@ -36,7 +36,7 @@ This chapter includes a minor change in notation - latent variables are now $z_n
 \begin{figure}
 \centering
   \includegraphics[width=0.98\textwidth]{gfx/ch5/2_phenopath_eqn}
-  \caption{Covariate-adjusted latent variable models consider observed expression as a combination of standard differential expression (DE) and pathway effects, including covariate-pathway interactions.
+  \caption[Covariate-adjusted latent variable models.]{Covariate-adjusted latent variable models consider observed expression as a combination of standard differential expression (DE) and pathway effects, including covariate-pathway interactions.
   } \label{fig:phenopath_eqn}
 \end{figure}
 
@@ -226,7 +226,7 @@ which is in turn solved by $
 \begin{figure}
 \centering
   \includegraphics[width=0.98\textwidth]{gfx/ch5/3_simulation_scenarios}
-   \caption{Four gene expression simulation scenarios were used: (1) differential expression only where the overall expression level for groups -1 and 1 differed but there is no dependence on pseudotime or pathway score, (2) pseudotime regulation only where the overall marginal distribution of expression values is identical between groups but expression changes with latent pathway score, (3) pseudotime and covariate interactions where the trajectory for each group differs over pathway score and (4) a complex scenario where differential expression and covariate-pseudotime interactions all exist. } \label{fig:simulation_scenarios}
+   \caption[Gene expression simulation regimes to test PhenoPath.]{Four gene expression simulation scenarios were used: (1) differential expression only where the overall expression level for groups -1 and 1 differed but there is no dependence on pseudotime or pathway score, (2) pseudotime regulation only where the overall marginal distribution of expression values is identical between groups but expression changes with latent pathway score, (3) pseudotime and covariate interactions where the trajectory for each group differs over pathway score and (4) a complex scenario where differential expression and covariate-pseudotime interactions all exist. } \label{fig:simulation_scenarios}
 \end{figure}
 
 We first performed a simulation study to demonstrate the value of modelling covariate-pathway interactions and to show that such effects are missed by standard differential expression analyses. Specifically, we sought to compare differentially expressed genes identified by Limma Voom \cite{Law2014-tu}, one of the leading RNA-seq differential expression methods, to the $\beta$ interactions from PhenoPath. For $N = 200$ samples we assigned each to one of two categories given by the $x$ values $x = -1, 1$, and assigned a pseudotime $z$ through draws from a standard normal distribution. For each sample $n = 1, \ldots, N$ and gene $g = 1, \ldots, G$ we then generated a mean value through the PhenoPath mean function
@@ -256,7 +256,7 @@ and quantified into TPM and count estimates using Kallisto \cite{Bray2016-uh}. T
 \begin{figure}
 \centering
   \includegraphics[width=0.98\textwidth]{gfx/ch5/4_simulation_pca}
-  \caption{Simulations of RNA-seq data with covariate pseudotime interactions for 200 samples and 400 genes using the R/Bioconductor package \texttt{polyester}. \textbf{A} A PCA representation of the data coloured by pseudotime shows a clear splitting of trajectories between covariate status. \textbf{B} Comparison of the true pseudotime to both PC1 and PhenoPath pathway score $z$ with correlations of 0.85 and 0.97 respectively.
+  \caption[Simulations of RNA-seq data with covariate pseudotime interactions for 200 samples and 400 genes.]{Simulations of RNA-seq data with covariate pseudotime interactions for 200 samples and 400 genes using the R/Bioconductor package \texttt{polyester}. \textbf{A} A PCA representation of the data coloured by pseudotime shows a clear splitting of trajectories between covariate status. \textbf{B} Comparison of the true pseudotime to both PC1 and PhenoPath pathway score $z$ with correlations of 0.85 and 0.97 respectively.
   } \label{fig:simulation_pca}
 \end{figure}
 
@@ -274,7 +274,7 @@ An exploratory PCA analysis of the data reveals a \emph{wishbone}-like pattern s
     PhenoPath & 0.97 & 0.02 & 0.03 \\
     \hline
   \end{tabular}
-\end{center} \caption{A comparison of true positive, false positive, and false discovery rates for Limma Voom detecting differential expression and PhenoPath detecting covariate-pseudotime interactions on synthetic data.} \label{tbl:fdr}
+\end{center} \caption[A comparison of true and false positive rates for differential expression and PhenoPath.]{A comparison of true positive, false positive, and false discovery rates for Limma Voom detecting differential expression and PhenoPath detecting covariate-pseudotime interactions on synthetic data.} \label{tbl:fdr}
 \end{table}
 
 % latex table generated in R 3.3.1 by xtable 1.8-2 package
@@ -296,7 +296,7 @@ An exploratory PCA analysis of the data reveals a \emph{wishbone}-like pattern s
 \begin{figure}
 \centering
   \includegraphics[width=0.98\textwidth]{gfx/ch5/5_simulations}
-  \caption{A comparison of the effect sizes and number of genes identified as differentially regulated across the four simulation regimes for both Limma Voom (top) and PhenoPath (bottom). } \label{fig:simulations}
+  \caption[A comparison of the effect sizes and number of genes identified as differentially regulated.]{A comparison of the effect sizes and number of genes identified as differentially regulated across the four simulation regimes for both Limma Voom (top) and PhenoPath (bottom). } \label{fig:simulations}
 \end{figure}
 
 %  We simulated RNAseq-based gene expression data\cite{Frazee2015-vy} where genes were either (1) differentially expressed, (2) modulated along a hidden pathway trajectory, (3) modulated along a pathway with covariate interactions, or (4) differentially expressed with pathway modulation and covariate interactions (Supplementary Figure \ref{fig:simulation_pca}, \ref{fig:simulation_scenarios}).
@@ -322,7 +322,7 @@ In our simulation study, Limma Voom ``only'' detects 47\% of the genes simulated
 \begin{figure}
 \centering
   \includegraphics[width=0.98\textwidth]{gfx/ch5/6_shalek_thesis.png}
-  \caption{Stimulant-immune interactions in time-series single-cell RNA-sequencing data.
+  \caption[Stimulant-immune interactions in time-series single-cell RNA-sequencing data.]{Stimulant-immune interactions in time-series single-cell RNA-sequencing data.
   \textbf{A} PhenoPath applied to the Shalek et al. dataset uncovers genes differentially regulated along pseudotime depending on the stimulant (LPS or PAM) applied.
   \textbf{B} PhenoPath infers pseudotimes ($z$) consistent with the physical capture times.
   \textbf{C} A comparison of $p$-values obtained through a nonparametric statistical test for differential expression between LPS and PAM stimulation shows no particular relation with the interaction parameters $\beta$ inferred with PhenoPath.
@@ -332,7 +332,7 @@ In our simulation study, Limma Voom ``only'' detects 47\% of the genes simulated
 
 \begin{figure}
    \includegraphics[width=\textwidth]{gfx/ch5/7_s_compare_monocle_dpt.png}
-   \caption{Performance of DPT and Monocle 2 on Shalek et al dataset.
+   \caption[Performance of DPT and Monocle 2 on Shalek et al dataset.]{Performance of DPT and Monocle 2 on Shalek et al dataset.
 \textbf{A} Sorted DPT pseudotimes by index identifies three outlier cells. \textbf{B} Comparison of DPT pseudotimes to PhenoPath pathway score $z$. \textbf{C} Comparison of Monocle 2 pseudotimes to PhenoPath pathway score $z$.}
 	\label{fig:shalek_comparison}
 \end{figure}
@@ -360,7 +360,7 @@ The Shalek et al. dataset of time-series dendritic cells was previously used in 
 
 \begin{figure}
 \includegraphics[width=0.98\textwidth]{gfx/ch5/8_coad_figure.png}
-\caption{Immune-microsatellite instability interactions uncovered in colorectal adenocarcinoma.
+\caption[Immune-microsatellite instability interactions uncovered in colorectal adenocarcinoma.]{Immune-microsatellite instability interactions uncovered in colorectal adenocarcinoma.
 \textbf{A} PhenoPath applied to colorectal adenocarcinoma (COAD) RNA-seq expression data uncovers a landscape of interactions between the inferred immune trajectory and microsatellite instability status (MSI).
 \textbf{B} Expression of three T regulatory cell markers demonstrates that our pseudotime corresponds to activation of immune response pathways.
 \textbf{C} A comparison to the FDR-corrected $q$-values reported by Limma Voom demonstrates genes found interacting with MSI status and the immune pathway are found to be both DE and non-DE in standard analyses.
@@ -392,7 +392,7 @@ The most striking interaction discovered for this dataset was the \mlh gene whos
 
 \begin{figure}
 \includegraphics[width=0.98\textwidth]{gfx/ch5/9_brca_figure}
-\caption{Vascular growth-ER status interactions uncovered by PhenoPath in breast cancer.
+\caption[Vascular growth-ER status interactions uncovered by PhenoPath in breast cancer.]{Vascular growth-ER status interactions uncovered by PhenoPath in breast cancer.
 \textbf{A} PhenoPath applied to Breast Cancer (BRCA) RNA-seq expression data uncovers a landscape of interactions between the inferred angiogenesis trajectory and estrogen receptor (ER) status.
 \textbf{B} A comparison to the FDR-corrected $q$-values reported by Limma Voom identifies a significant number of DE genes display an interaction with ER status and the angiogenic pathway.
 \textbf{C} A GO enrichment analysis of upregulated genes implies the latent trajectory encodes angiogenesis pathway activation in each tumour.
@@ -409,7 +409,7 @@ We next performed a pseudotemporal analysis of the TCGA breast cancer cohort usi
 
 \begin{figure}
    \includegraphics[width=\textwidth]{gfx/ch5/brca_genes.png}
-   \caption{Pseudotemporally ordered gene expression trajectories for the TCGA Breast Cancer data for 12 breast cancer-associated genes.}
+   \caption[Pseudotemporally ordered gene expression trajectories for the TCGA Breast Cancer data.]{Pseudotemporally ordered gene expression trajectories for the TCGA Breast Cancer data for 12 breast cancer-associated genes.}
 	\label{fig:brca_genes}
 \end{figure}
 
@@ -417,7 +417,7 @@ A GO enrichment analysis indicated that the inferred pseudotemporal trajectory c
 
 \begin{figure}
    \includegraphics[width=\textwidth]{gfx/ch5/vgf_genes.png}
-   \caption{Pseudotemporally ordered gene expression trajectories for the TCGA Breast Cancer data for six angiogenesis-associated genes.}
+   \caption[Pseudotemporally ordered gene expression trajectories for six angiogenesis-associated genes.]{Pseudotemporally ordered gene expression trajectories for the TCGA Breast Cancer data for six angiogenesis-associated genes.}
 	\label{fig:vgf_genes}
 \end{figure}
 
@@ -439,7 +439,7 @@ This suggests that while there exists low levels of angiogenesis pathway activat
 
 \begin{figure}
    \includegraphics[width=\textwidth]{gfx/ch5/brca-convergence.png}
-   \caption{Expression of 20 genes with the largest interaction effects along the inferred pseudotemporal trajectory coloured by estrogen receptor status with linear fits as solid lines. The vertical dashed line indicates the crossover point.}
+   \caption[Expression of 20 genes with the largest interaction effects along the inferred pseudotemporal trajectory.]{Expression of 20 genes with the largest interaction effects along the inferred pseudotemporal trajectory coloured by estrogen receptor status with linear fits as solid lines. The vertical dashed line indicates the crossover point.}
 	\label{fig:brca_convergence}
 \end{figure}
 
@@ -484,7 +484,7 @@ where observed survival times are drawn from a Weibull distribution while censor
 \begin{figure}
   \centering
 \includegraphics[width=0.45\textwidth]{gfx/ch5/model_diagram.png}
-\caption{Survival-adjusted latent variable model, with data $\mby_n$, latent variables $z_n$, survival times $t_n$, and global parameters $\mbtheta_W$, $\mbbeta$, and $\mblambda$. The diamond represents the deterministic transform of the parameters to produce the observed data with sampling noise.} \label{fig:model}
+\caption[Survival-adjusted latent variable model.]{Survival-adjusted latent variable model, with data $\mby_n$, latent variables $z_n$, survival times $t_n$, and global parameters $\mbtheta_W$, $\mbbeta$, and $\mblambda$. The diamond represents the deterministic transform of the parameters to produce the observed data with sampling noise.} \label{fig:model}
 \end{figure}
 
 The overall generative model is represented in figure \ref{fig:model}. We place a further Sparse Bayesian Learning prior $\alpha_g \sim \Norm(0, \eta_g^{-1})$, $\alpha_g \stackrel{iid}{\sim} \Gam(a_\alpha, b_\alpha)$ and set $a_\alpha = b_\alpha = a_\beta = b_\beta = 10^{-2}$.
@@ -568,7 +568,7 @@ We applied our model to RNA sequencing data and survival times from breast cance
 \begin{figure}
   \centering
 \includegraphics[width=\textwidth]{gfx/ch5/censoring_figure.png}
-\caption{Imputation of survival times. Weibull plots of (\textbf{a}) observed  and (\textbf{b}) imputed  survival times $t_n$, where $\hat{F}$ is the empirical cumulative distribution function for the MAP estimates of $k$ and $\lambda = p^{-k}$. If the survival times were truly drawn from the fitted Weibull distribution the points would fall along the diagonal $y=x$ (dashed line).
+\caption[Imputation of survival times.]{Imputation of survival times. Weibull plots of (\textbf{a}) observed  and (\textbf{b}) imputed  survival times $t_n$, where $\hat{F}$ is the empirical cumulative distribution function for the MAP estimates of $k$ and $\lambda = p^{-k}$. If the survival times were truly drawn from the fitted Weibull distribution the points would fall along the diagonal $y=x$ (dashed line).
 \textbf{(c)} Histograms of the observed and imputed survival times $t_n$ along with the unnormalised Weibull density (dashed line) at the MAP estimates of $\mbtheta_W$ shown by the dashed line.
 \textbf{(d)} Deviations of the imputed survival times $t^{\text{cens}}_n$ compared to their censoring times $o^{\text{cens}}_n$ as a function of censoring times. Error bars show the posterior $2 \sigma$ interval.
 } \label{fig:censoring_figure}
@@ -587,7 +587,7 @@ which is expected given the log-normal approximating distribution $q(t_n)$ const
 \begin{figure}
   \centering
 \includegraphics[width=\textwidth]{gfx/ch5/brca_plot.png}
-\caption{Results on breast cancer gene expression data.
+\caption[Results of survival-adjusted latent variable models on breast cancer gene expression data.]{Results on breast cancer gene expression data.
 (\textbf{a}) Comparison of the inferred latent variables $z_n$ to the first principal component of the data. Different trajectories are visible for long survival times (which largely mimics PC1) to short survival times, which departs from PC1 on a separate trajectory.
 (\textbf{b}) A plot of MAP $\chi_g^{-1}$ versus $\beta_g$ identifies significant interactions between the inferred latent variables and survival times.
 (\textbf{c}) A hierarchical clustering of expression of genes designated significant from (\textbf{b}) reveals two main classes of expression programme over along $z_n$, segregating into those involved in signal transduction and cell cycle dependent genes.
@@ -647,7 +647,7 @@ K(\mbx \odot \mbz,\mbx' \odot \mbz')
 \begin{figure}
   \centering
 \includegraphics[width=0.85\textwidth]{gfx/ch5/cgplvm_prior}
-\caption{Draws from a CGPLVM prior with $\lambda = 0.5$, $\gamma = \nu = \eta = \delta = 0.2$ and $\xi \in \{0, 0.1, 0.5, 1\}$. For small $\xi$ an identical trajectory is taken regardless of $x$ but as $\xi$ increases differing trajectories become apparent.} \label{fig:cgplvm_prior}
+\caption[Draws from a CGPLVM prior.]{Draws from a CGPLVM prior with $\lambda = 0.5$, $\gamma = \nu = \eta = \delta = 0.2$ and $\xi \in \{0, 0.1, 0.5, 1\}$. For small $\xi$ an identical trajectory is taken regardless of $x$ but as $\xi$ increases differing trajectories become apparent.} \label{fig:cgplvm_prior}
 \end{figure}
 
 
@@ -675,7 +675,7 @@ Note that the interactions between the latent variables and the covariates appea
 \begin{figure}
   \centering
 \includegraphics[width=\textwidth]{gfx/ch5/thesis_features_all}
-\caption{Synthetic data used to test CGPLVM for $N=50$ samples and $G=10$ features, with kernel parameters $\eta = 0.2$, $\gamma \nu = \delta = \xi = 1$, and $\sigma^2 = 0.01$. The first 5 features had $\lambda = 0.2$ and the final 5 had $\lambda = 0$.} \label{fig:cgplvm_data}
+\caption[Synthetic data used to test CGPLVM.]{Synthetic data used to test CGPLVM for $N=50$ samples and $G=10$ features, with kernel parameters $\eta = 0.2$, $\gamma \nu = \delta = \xi = 1$, and $\sigma^2 = 0.01$. The first 5 features had $\lambda = 0.2$ and the final 5 had $\lambda = 0$.} \label{fig:cgplvm_data}
 \end{figure}
 
 As a small proof-of-concept we created a synthetic dataset (figure \ref{fig:cgplvm_data}) for $N=50$ samples and $G=10$ features, with $z$ drawn from $\text{Unif(-1, 1)}$ and the covariates sampled randomly from $\{-1, -0.5, 0, 0.5, 1\}$. The kernel parameters were fixed to $\eta = 0.2$, $\gamma = \nu = \delta = \xi = 1$, and $\sigma^2 = 0.01$. The first 5 features had $\lambda = 0.2$ and the final 5 had $\lambda = 0$ so that half the features exhibited covariate-latent variable interactions. The model was implemented in the probabilistic programming language \texttt{Stan} with hierarchical priors $\lambda_g \sim \chi^2(1)$, $z_n \sim \Norm(0,1)$ and $1 / \sigma^2 \sim \text{Gamma}(0.1, 0.1)$.
@@ -686,7 +686,7 @@ As a small proof-of-concept we created a synthetic dataset (figure \ref{fig:cgpl
 \begin{figure}
   \centering
 \includegraphics[width=0.9\textwidth]{gfx/ch5/cgplvm_results}
-\caption{Black-box inference for CGPLVM on synthetic data.
+\caption[Black-box inference for CGPLVM on synthetic data.]{Black-box inference for CGPLVM on synthetic data.
 \textbf{A} Comparison of posterior mean inferred $z$ from CGPLVM vs. true $z$. % has $\rho_{Pearson} = 0.998$.
 \textbf{B} Same comparison with first principal component of the data. % has $\rho_{Pearson} = 0.971$.
 \textbf{C} Traceplot of the posterior log-likelihood suggests good convergence of the model.

@@ -71,7 +71,7 @@ In the case of the count-based methods, RNA-seq data are  be well-approximated b
 \begin{figure}
 \centering
   \includegraphics[width=1.05\textwidth]{gfx/ch1/od-thesis.png}
-  \caption{Mean variance relationships in an example single-cell dataset of thymic epithelial cells. Single-cell RNA-seq data shows a characteristic dependency on the $\text{CV}^2 = \frac{\sigma^2}
+  \caption[Mean-variance relationships in an example single-cell dataset.]{Mean variance relationships in an example single-cell dataset of thymic epithelial cells. Single-cell RNA-seq data shows a characteristic dependency on the $\text{CV}^2 = \frac{\sigma^2}
 {\mu^2}$ on the mean counts for each gene (left). Methods such as \cite{Brennecke2013-xy} can then be used to identify genes that vary more than expected at random due to the technical noise in the dataset. An alternative view is to look at the mean variance trend in log space (right), where the overdispersed genes from \cite{Brennecke2013-xy} are often the most variable.} \label{fig:od}
 \end{figure}
 
@@ -91,7 +91,7 @@ An often discussed feature of single-cell RNA-seq data is the idea of \emph{drop
 \begin{figure}
 \centering
   \includegraphics[width=\textwidth]{gfx/ch1/thesis-dropout.png}
-  \caption{Relationship between dropout (proportion of cells not expressing a gene) and mean expression in an example single-cell dataset of thymic epithelial cells. Typically, the high variance genes lie along the right hand ``edge'' of the relationship (left). A number of models to account for dropout as a function of mean expression have been proposed, including exponential, double exponential and logistic (right).} \label{fig:intro_dropout}
+  \caption[Mean-dropout relationship in an example single-cell dataset.]{Relationship between dropout (proportion of cells not expressing a gene) and mean expression in an example single-cell dataset of thymic epithelial cells. Typically, the high variance genes lie along the right hand ``edge'' of the relationship (left). A number of models to account for dropout as a function of mean expression have been proposed, including exponential, double exponential and logistic (right).} \label{fig:intro_dropout}
 \end{figure}
 
 The characteristic pattern of proportion of cells in which a gene is expressed compared to the mean expression can be seen in figure \ref{fig:intro_dropout}A for an example dataset of thymic epithelial cells. Most single-cell datasets exhibit a set of genes that are not expressed (top-right corner), a set of housekeeping genes that are constitutively expressed at high levels, and a set of high-variance genes that contribute to heterogeneity in the dataset.
@@ -114,7 +114,7 @@ However, most gene expression quantification methods to date - particularly tran
 \begin{figure}
 \centering
   \includegraphics[width=0.98\textwidth]{gfx/ch1/figure1.png}
-  \caption{The pseudotime estimation problem.
+  \caption[The pseudotime estimation problem.]{The pseudotime estimation problem.
 \textbf{A} Cells undergo some physical time process such as differentiation, cell-cycle, or apoptosis.
 \textbf{B} The cell capture and expression quantification method - such as single-cell RNA-seq or single-cell mass-cytometry - leads to a loss of temporal information (if it were possible to measure in the first place).
 \textbf{C} Pseudotime algorithms attempt to reconstruct the original time series using gene expression data alone.
@@ -177,7 +177,7 @@ Ouija & \cite{Campbell2016-ys} & N/A & Nonlinear factor analysis & Yes & No \\
 MFA & \cite{campbell2017probabilistic} & N/A & Mixture of factor analysers & Yes & Yes \\
 \hline
 \end{tabular}
-\caption{An overview of some pseudotime algorithms. Most involve a dimensionality reduction step followed by pseudotime assignment (``cell ordering'') in the reduced space, though arguably this constitutes a single dimensionality reduction step. Methods shaded in grey are introduced in this thesis.} \label{tbl:pseudotimecomparison}
+\caption[An overview of some pseudotime algorithms.]{An overview of some pseudotime algorithms. Most involve a dimensionality reduction step followed by pseudotime assignment (``cell ordering'') in the reduced space, though arguably this constitutes a single dimensionality reduction step. Methods shaded in grey are introduced in this thesis.} \label{tbl:pseudotimecomparison}
 \end{sidewaystable}
 
 This renaissance was largely spurred by the development of \texttt{Monocle} \cite{Trapnell2014-xi}, discussed in detail in section \ref{tbl:monocle}. Monocle's two step procedure - an initial dimensionality reduction step using independent component analysis followed by a ``cell ordering'' step to order the cells using MSTs - greatly influenced the algorithms that followed. Examples include \texttt{TSCAN} that uses PCA for dimensionality reduction followed by clustering and MSTs for cell ordering; \texttt{embeddr} that uses laplacian eigenmaps for dimensionality reduction and principal curves for cell ordering; and \texttt{Waterfall} that uses PCA for dimensionality reduction followed by connecting clusters in the reduced space for cell ordering. An overview of some pseudotime algorithms is given in table \ref{tbl:pseudotimecomparison} with several important contributions discussed in detail in the following sections.
@@ -193,7 +193,7 @@ Using a Tobit likelihood model; see chapter 2 for further discussions on differe
 \begin{figure}
 \centering
   \includegraphics[width=0.98\textwidth]{gfx/ch1/monocle.png}
-  \caption{The Monocle pseudotime algorithm (reused with permission).
+  \caption[The Monocle pseudotime algorithm.]{The Monocle pseudotime algorithm (reused with permission).
 \textbf{a} Dimensionality reduction is performed on the expression matrix using ICA. A MST is then fitted in the reduced space and cells are ordered along the diameter path, with branching also detected. Downstream analysis then includes differential expression and gene clustering.
 \textbf{b} Monocle applied to human skeletal muscle myoblasts. The authors identified three cell types (proliferating cells, differentiating myoblasts, and interstitial mesenchymal cells). The main pseudotime trajectory progresses from the proliferating cells to the differentiating myoblasts, with the contaminating mesenchymal cells appearing on a separate branch.
   } \label{fig:monocle}

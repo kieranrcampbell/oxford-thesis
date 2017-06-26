@@ -15,11 +15,11 @@ This chapter proceeds by explicitly framing single-cell pseudotimes as a statist
 \section{Connection between latent variable modelling and trajectories} \label{sec:latvar}
 
 The aim of pseudotime ordering is to associate a $G$-dimensional expression measurement $\mby_n$ of cell $n \in 1, \ldots, N$ to a latent unobserved univariate pseudotime $t_n$. Mathematically we can express this as
-\begin{align}
+\begin{equation} 
  \underbrace{\mby_n}_{\mathclap{\text{Expression}}} = \underbrace{\mbf_\Theta}_{\text{Mapping}}(\underbrace{t_n}_{\text{Pseudotime}}) + \underbrace{\epsilon_n}_{\text{Noise}}
  \label{eq:master_eq}
-\end{align}
-where the function $\mbf_\Theta$ maps the one-dimensional pseudotime $t_n$ to the $G$-dimensional observation space in which the data lies with (possibly output-dimension dependent) parameters $\Theta$. The challenge lies in the fact that both the mapping function $f$ and the pseudotimes are \emph{unknown}. Furthermore, it is hard to derive objective criteria to evaluate potential mapping functions - why is $f(t) = \theta t$ (factor analysis) or $f(t) = \text{nonparametric smooth functions}$ (GPLVM) necessarily ``better'' than $f(t) = \text{const}$ or $f(t) = 1 / t$? A key result discussed below is that $f$ corresponds to our \emph{a priori} expectation of how gene expression changes over time.
+\end{equation}
+where the function $\mbf_\Theta$ maps the one-dimensional pseudotime $t_n$ to the $G$-dimensional observation space in which the data lies with (possibly output-dimension dependent) parameters $\Theta$. The challenge lies in the fact that the mapping function $\mbf$, its parameters $\Theta$, and the pseudotimes are all \emph{unknown}. Furthermore, it is hard to derive objective criteria to evaluate potential mapping functions - why is $f(t) = \theta t$ (factor analysis) or $f(t) = \text{nonparametric smooth functions}$ (GPLVM) necessarily ``better'' than $f(t) = \text{const}$ or $f(t) = 1 / t$? A key result discussed below is that $f$ corresponds to our \emph{a priori} expectation of how gene expression changes over time.
 
 % Further, the measurement noise $\epsilon_n$ must absorb \emph{all} the variation not explained by the pseudotime and mapping function
 
@@ -53,11 +53,11 @@ Our objective here is to use parametric forms for the mapping function $f$ that 
 \begin{figure}% [!t]
 	\centering
 	\includegraphics[width=1.5\textwidth,angle=90]{gfx/ch3/main_fig}
-  \caption{(Caption next page.)} \label{fig:main}
+  \caption[]{(Caption next page.)} \label{fig:main}
 \end{figure}
 \addtocounter{figure}{-1}
 \begin{figure}
-  \caption{Overview of Ouija.
+  \caption[Overview of Ouija.]{Overview of Ouija.
   \textbf{A} A small panel of genes is chosen with \emph{a priori} knowledge about their expression dynamics, either as cell-type specific marker genes or from pathway interaction databases such as KEGG. The pseudotimes are subsequently inferred using Ouija followed by downstream analyses such as differential expression and clustering of additional genes  using standard methods such as those described in \cite{Trapnell2014-xi}.
   \textbf{B} Ouija infers pseudotimes using Bayesian nonlinear factor analysis by decomposing the input gene expression matrix through a sigmoidal mapping function. The latent variables become the pseudotimes of the cells while the factor loading matrix is informative of different types of gene behaviour. A heteroscedastic dispersed noise model with dropout is used to accurately model scRNA-seq data.
   \textbf{C}  Examples of sigmoidal gene expression for three different sets of parameters. Points represent simulated gene expression, with the solid black line denoting the sigmoid curve and the red dashed line denoting the activation time.
@@ -73,9 +73,9 @@ Our objective here is to use parametric forms for the mapping function $f$ that 
 
 If we wish to build a generative statistical latent variable model of pseudotime we must therefore decide on a sensible set of functions $f$ that accurately characterise gene expression over (pseudo-)time. We have so far essentially considered $f$ as a linear change over time (PCA/factor analysis) and $f$ simply as smooth functions (GPLVM).
 
-However, both the linearly-restricted case and the entirely nonparametric cases are unrealistic for different reasons. The linear case assumes that the mean function must change across the entire trajectory (ie there can be no parts where the mean value is stationary), making modelling of complex processes where different genes are responsible for different parts of the trajectory impossible. Furthermore, it assumes that as the trajectory progresses the expression values will tend to $\pm \infty$ (which has the additional issue of negative expression values). While the linear case is too restrictive, the non-parametric case is overly-flexible, allowing biologically unrealistic expression patterns such as cubic polynomials or genes with multiple modes over a relatively short trajectory.
+However, both the linearly-restricted case and the entirely nonparametric cases are unrealistic for different reasons. The linear case assumes that the mean function must change across the entire trajectory (i.e. there can be no parts where the mean value is stationary), making modelling of complex processes where different genes are responsible for different parts of the trajectory impossible. Furthermore, it assumes that as the trajectory progresses the expression values will tend to $\pm \infty$ (which has the additional issue of negative expression values). While the linear case is too restrictive, the non-parametric case is overly-flexible, allowing biologically unrealistic expression patterns such as cubic polynomials or genes with multiple modes over a relatively short trajectory.
 
-Instead we opt for a `goldilocks' mean function, where we assume genes are off, undergo a period of near-linear increase and settle at a constant value (or conversely begin on then turn off)\footnote{In practice this restricts us to the class of monotonically increasing and decreasing gene expression signatures}. A good approximation to this is the sigmoid function which parametrises the mean as
+Instead we opt for a `goldilocks' mean function, where we assume genes are off, undergo a period of near-linear increase and settle at a constant value (or conversely begin on then turn off)\footnote{In practice this restricts us to the class of monotonically increasing and decreasing gene expression signatures}. A good approximation to this is the sigmoid function (considered previously in chapter 2) which parametrises the mean as
 
 \begin{equation}
 f(t; \mu_0, k, t_0) = \frac{2 \mu_0}{1 + \exp\left( -k (t - t_0) \right)}
@@ -109,14 +109,14 @@ which for gene $g$ in sample $n$ implies a mean-variance relationship of the for
 
 where $\phi_g$ is a gene-specific dispersion factor. Such strong parametric forms are typically required since for low sample sizes the estimates of the variance can be very unstable. % [reference?].
 
-However, typically in single-cell data there are enough measurements (ie cells) to allow robust estimation of both the mean and variance for each gene \cite{Finak2015-iy}. The exception to this is in pseudotime analyses, where we are assuming each cell represents a unique time point, and therefore the mean $\mu_{cg}$ and variance $\sigma^2_{cg}$ are effectively measured only once. Consequently we must consider a strong mean-variance relationship since assuming a constant variance per gene is akin to under-fitting while it would be impossible to fit a variance for each cell and each gene (since there is only one measurement).
+However, typically in single-cell data there are enough measurements (i.e. cells) to allow robust estimation of both the mean and variance for each gene \cite{Finak2015-iy}. The exception to this is in pseudotime analyses, where we are assuming each cell represents a unique time point, and therefore the mean $\mu_{cg}$ and variance $\sigma^2_{cg}$ are effectively measured only once. Consequently we must consider a strong mean-variance relationship since assuming a constant variance per gene is akin to under-fitting while it would be impossible to fit a variance for each cell and each gene (since there is only one measurement).
 
-As a solution to this we examine the mean-variance relationship for the genes across all cells and assume the same relationship approximately holds for cells as they progress along pseudotime trajectories. The relationship in \ref{eq:overd} applies to the original untransformed data (e.g. TPM or scaled counts) while we wish to model the $\log_2(\text{TPM} + 1)$ transformed relationship directly. Therefore we must examine the mean-variance relationship for the $\log_2$ data\footnote{Note for $x \gg 0$ $\log_2(x+1) \approx \log_2(x)$.}, since in general the mean-variance relationship of the log-transformed data isn't the same as (the log of) the mean-variance relationship on the untransformed data.
+As a solution to this we examine the mean-variance relationship for the genes across all cells and assume the same relationship approximately holds for cells as they progress along pseudotime trajectories. The relationship in \ref{eq:overd} applies to the original untransformed data (e.g. TPM or scaled counts) while we wish to model the $\log_2(\text{TPM} + 1)$ transformed relationship directly. Therefore we must examine the mean-variance relationship for the $\log_2$ data, since in general the mean-variance relationship of the log-transformed data isn't the same as the log of the mean-variance relationship on the untransformed data.
 
 \begin{figure}
 \centering
  \includegraphics[width=\textwidth]{gfx/ch3/supp_paper_variance_2}
- \caption{The mean-variance relationship in $\log_2(\text{TPM} + 1)$ single-cell data for the three datasets studied in the main text. Red denotes the marker genes identified in the main text while blue corresponds to three house-keeping genes (\emph{LDHA}, \emph{NONO}, \emph{PGK1}) or their mouse equivalents. Both the Trapnell and Zhou datasets show consistent evidence that pseudotemporal marker genes exist on the `leading edge' of the data with medium mean expression but high variance. This suggests a linear relationship between mean and variance in $\log_2$ space. In contrast, the housekeeping genes all sit in the `tails' with high mean expression but very low variance.} \label{fig:variance}
+ \caption[Mean-variance relationship in example datasets.]{The mean-variance relationship in $\log_2(\text{TPM} + 1)$ single-cell data for the three datasets. Red denotes the marker genes identified in the original publications while blue corresponds to three house-keeping genes (\emph{LDHA}, \emph{NONO}, \emph{PGK1}) or their mouse equivalents. Both the Trapnell and Zhou datasets show consistent evidence that pseudotemporal marker genes exist on the `leading edge' of the data with medium mean expression but high variance. This suggests a linear relationship between mean and variance in $\log_2$ space. In contrast, the housekeeping genes all sit in the `tails' with high mean expression but very low variance.} \label{fig:variance}
  \end{figure}
 
  The mean-variance relationship of $\log$ count data has been examined both in Limma Voom \cite{Law2014-tu}
@@ -139,7 +139,7 @@ We examined the mean-variance relationship of the logged data for the three data
 
 As previously discussed in section \ref{sec:intro_dropout} single-cell RNA-seq data is known to exhibit substantial dropout, whereby a failure to reverse transcribe lowly expressed transcripts results in zeros in the count matrix. Note that this is distinct from \emph{true zeros} where no mRNA transcripts are truly present, due to either bursty or non-expression.
 
-To account for this we assume that the probability of a dropout is logistic on the latent gene expression mean in a similar approach to Kharchenko et al 2014. The difference to previous approaches is that (1) we are working in $\log_2(\text{TPM} + 1)$ space and (2) we assume a unique mean $\mu_{cg}$ for every gene in every cell, giving a per-gene per-cell dropout probability $p(\mu_{cg})$ of
+To account for this we assume that the probability of a dropout is logistic on the latent gene expression mean in a similar approach to Kharchenko et al. \cite{Kharchenko2014}. The difference to previous approaches is that (1) we are working in $\log_2(\text{TPM} + 1)$ space and (2) we assume a unique mean $\mu_{cg}$ for every gene in every cell, giving a per-gene per-cell dropout probability $p(\mu_{cg})$ of
 
 \begin{equation}
 \log\left[ \frac{p(\mu_{cg})}{1 - p(\mu_{cg})} \right] = \beta_0 + \beta_1 \mu_{cg}.
@@ -152,7 +152,7 @@ The dropout parameters $\beta_0$ and $\beta_1$ are constant across all cells as 
 \begin{figure}
 \centering
  \includegraphics[width=0.4\textwidth]{gfx/ch3/drop_plot}
- \caption{The probability of a dropout against the mean $\log_2$ expression in the Trapnell et al. dataset. The red solid line shows the logistic regression fit.} \label{fig:dropout}
+ \caption[Dropout probability as a function of mean expression.]{The probability of a dropout against the mean $\log_2$ expression in the Trapnell et al. dataset. The red solid line shows the logistic regression fit.} \label{fig:dropout}
  \end{figure}
 
 \subsection{Statistical model specification}
@@ -215,7 +215,7 @@ with default priors
 		k_g & \sim \norm(\mu^{(k)}_g, 1 / \tau^{(k)}_g), \\
 		\tO_g & \sim \norm(\mu^{(t)}_g, 1 / \tau^{(t)}_g),
 \end{align}
-If available, user-supplied prior beliefs can be encoded in these priors by specifying the parameters $\mu^{(k)}_g, \tau^{(k)}_g, \mu^{(t)}_g, \tau^{(t)}_g$. Otherwise, inference can be performed using uninformative hyperpriors on these parameters. Specifying $\mu^{(k)}_g$ encodes a prior belief in the strength and direction of the activation of gene $g$ along the trajectory with $\tau^{(k)}_g$ (inversely-) representing the strength of this belief. Similarly, specifying $\mu^{(t)}_g$ encodes a prior belief of where in the trajectory gene $g$ exhibits behaviour (either turning on or off) with $\tau^{(t)}_g$ encoding the strength of this belief.
+If available, user-supplied prior beliefs can be encoded in these priors by specifying the parameters $\mu^{(k)}_g, \tau^{(k)}_g, \mu^{(t)}_g, \tau^{(t)}_g$. Otherwise, inference can be performed using uninformative hyperpriors on these parameters. Specifying $\mu^{(k)}_g$ encodes a prior belief in the strength and direction of the activation of gene $g$ along the trajectory with $\tau^{(k)}_g$ (inversely) representing the strength of this belief. Similarly, specifying $\mu^{(t)}_g$ encodes a prior belief of where in the trajectory gene $g$ exhibits behaviour (either turning on or off) with $\tau^{(t)}_g$ encoding the strength of this belief.
 
 \subsection{Inference}
 
@@ -227,7 +227,7 @@ We performed posterior inference using Markov Chain Monte Carlo (MCMC) stochasti
 \begin{figure}
 \centering
  \includegraphics[width=0.9\textwidth]{gfx/ch3/mcmc}
- \caption{MCMC convergence diagnostics. \textbf{A} For a single chain \sname contains a convenience function to plot both the trace of the log-likelihood and the log-likelihood autocorrelation. \textbf{B-E} MCMC diagnostic statistics such as posterior log-likelihood trace, effective sample size, Gelman-Rubin statistic and ratio of monte carlo standard error to posterior standard deviation show good mixing across chains.} \label{fig:mcmc}
+ \caption[MCMC convergence diagnostics for Ouija.]{MCMC convergence diagnostics. \textbf{A} For a single chain \sname contains a convenience function to plot both the trace of the log-likelihood and the log-likelihood autocorrelation. \textbf{B-E} MCMC diagnostic statistics such as posterior log-likelihood trace, effective sample size, Gelman-Rubin statistic and ratio of monte carlo standard error to posterior standard deviation show good mixing across chains.} \label{fig:mcmc}
  \end{figure}
 
 Since \sname relies on MCMC simulation for inference it is crucial to assess model convergence before drawing statistical conclusions. The \sname \texttt{R} package contains a convenience function \texttt{plot(ouija\_fit, what = "diagnostic")} to plot both the posterior log-likelihood and posterior log-likelihood autocorrelation, an example of which is in figure \ref{fig:mcmc}A. In general we found it practical to run MCMC inference on only a single chain for most models. Therefore, to check both good mixing of the chains and that the models aren't getting stuck in local maxima, we tested the models for both the Trapnell and Shin datasets across multiple chains. We then examined several diagnostics such as the log-posterior mixing, effective sample size, Gelman-Rubin statistic and ratio of monte carlo standard error to posterior standard deviation (figures \ref{fig:mcmc}B-E), all of which fell inside the acceptable range. 
@@ -273,11 +273,12 @@ Figure \ref{fig:trapnell-correlations}(a) shows the correlation between pseudoti
 \begin{figure}%[!t]
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch3/algorithms.png}
-	\caption{Comparison of pseudotime methods across three scRNA-seq data sets. We compared pseudotime estimates from three studies \cite{Shin2015,Trapnell2014-xi,zhou2016tracing} using 5 different approaches. \textbf{A} Boxplots of the correlation between marker-based pseudotimes with those obtained from random gene-sets of varying (including the marker gene set) across 50 replicates. \textbf{B} Boxplots of correlation with whole transcriptome (global) pseudotime obtained from all genes across 50 replicates.}
+	\caption[Comparison of pseudotime methods across three scRNA-seq data sets.]{Comparison of pseudotime methods across three scRNA-seq data sets. We compared pseudotime estimates from three studies \cite{Shin2015,Trapnell2014-xi,zhou2016tracing} using 5 different approaches. \textbf{A} Boxplots of the correlation between marker-based pseudotimes with those obtained from random gene-sets of varying (including the marker gene set) across 50 replicates. \textbf{B} Boxplots of correlation with whole transcriptome (global) pseudotime obtained from all genes across 50 replicates.}
 	\label{fig:comparisons}
 \end{figure}
 
-We investigated further by examining the relationship between pseudotimes obtained from marker gene panels, whole transcriptomes and gene set sizes falling between these two extrema. We computed a transcriptome-wide pseudotime where genes retained had a variance in log-expression (TPM/FPKM) greater than 1 and were expressed in at least one cell at log-expression greater than $1$. Furthermore, for each dataset and algorithm combination, we generated additional gene sets that consisted of the marker genes and $N = 1, 5, 10, 20, 50, 100, 500, 1000$ randomly chosen genes from the full transcriptome-wide gene set. In doing so we were able to investigate the continuum between marker-based and whole-transcriptome pseudotime estimation. This was performed for 50 replicates for each $N$. We then compared the results on three metrics: (Pearson) correlation to the marker pseudotimes and correlation to the global pseudotimes.
+We investigated further by examining the relationship between pseudotimes obtained from marker gene panels, whole transcriptomes and gene set sizes falling between these two extrema. We computed a transcriptome-wide pseudotime where genes retained had a variance in log-expression (TPM/FPKM) greater than 1 and were expressed in at least one cell at log-expression greater than $1$. Furthermore, for each dataset and algorithm combination, we generated additional gene sets that consisted of the marker genes and\\
+ $N = 1, 5, 10, 20, 50, 100, 500, 1000$ randomly chosen genes from the full transcriptome-wide gene set. In doing so we were able to investigate the continuum between marker-based and whole-transcriptome pseudotime estimation. This was performed for 50 replicates for each $N$. We then compared the results by considering (Pearson) correlation to the marker pseudotimes and correlation to the global pseudotimes.
 
 Our major observation is the striking variability in pseudotime estimates across data sets, gene sets and replicates for all algorithms
 (figure \ref{fig:comparisons}). As the number of additional genes included in each data set increases, the correlation of the estimated pseudotimes to the reference marker-based pseudotimes typically decreases (figure \ref{fig:comparisons}A) whilst the correlation with global pseudotime increases respectively (figure \ref{fig:comparisons}B). Note that Ouija is not included in the latter analysis since it is not intended to be applied to whole transcriptome analyses. This behaviour is expected since the forms of variation encoded in the larger gene set are likely to differ from that encoded within the marker genes. However, it is evident that depending on the dataset and genes chosen there is large variability in the consistency of pseudotime algorithm fitting. In other words, there is no one global solution that consistently fits the same pseudotime that will recapitulate the desired behaviour of marker genes.
@@ -285,7 +286,7 @@ Our major observation is the striking variability in pseudotime estimates across
 \begin{figure}%[!t]
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch3/de_results.png}
-	\caption{Consistency of differential expression analyses. For each dataset and algorithm, we added a set number of randomly chosen genes (1, 5, 10, 20, 100, 500, 1000) to the set of marker genes, recomputed the pseudotimes and performed differential expression analysis. We then compared the proportion overlap of differentially expressed genes to those found at the full transcriptome pseudotimes (\textbf{A}) and at the marker-based pseudotimes (\textbf{B}).
+	\caption[Consistency of differential expression analyses.]{Consistency of differential expression analyses. For each dataset and algorithm, we added a set number of randomly chosen genes (1, 5, 10, 20, 100, 500, 1000) to the set of marker genes, recomputed the pseudotimes and performed differential expression analysis. We then compared the proportion overlap of differentially expressed genes to those found at the full transcriptome pseudotimes (\textbf{A}) and at the marker-based pseudotimes (\textbf{B}).
 	}
 	\label{fig:de_results}
 \end{figure}
@@ -301,7 +302,7 @@ It can be see that as the number of markers included increases the rate of overl
 \begin{figure}%[!t]
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch3/sims.png}
-	\caption{Incorporating prior information improves pseudotime inference of switch-like genes. Four mean functions were considered in simulations (top), each corresponding to different switch-like behaviour across pseudotime. We then reinferred the pseudotimes for four different gene set sizes with 40 replications each, for PC1, DPT, and Ouija with and without informative priors. In each case, increasing the number of genes improves pseudotime inference, as does incorporating prior information.}
+	\caption[Incorporating prior information improves pseudotime inference of switch-like genes.]{Incorporating prior information improves pseudotime inference of switch-like genes. Four mean functions were considered in simulations (top), each corresponding to different switch-like behaviour across pseudotime. We then reinferred the pseudotimes for four different gene set sizes with 40 replications each, for PC1, DPT, and Ouija with and without informative priors. In each case, increasing the number of genes improves pseudotime inference, as does incorporating prior information.}
 	\label{fig:simulated_comparison}
 \end{figure}
 
@@ -378,13 +379,13 @@ The results can be seen in figure \ref{fig:simulated_comparison}, in which a few
 
 A further trend is that incorporating prior information improves pseudotime inference across all mean functions. For example, with a probit mean function and $ G = 12$, the average person correlation without prior information is $\rho = 0.91$ while incorporating prior information gives $\rho = 0.97$. The results also implies that Ouija's performance is agnostic to the precise form of the switching function, with no obvious degradation in accuracy in moving from sigmoidal to alternative mean parameterisations. Intruigingly competitive performance is maintained using the threshold mean function, which contains virtually no pseudotime information pre- and post- switch point for each gene.
 
-We subsequently sought to test the dependency of Ouija's accuracy on how the priors on the switching times are specified. As mentioned above, Ouija was run in two additional modes for the sigmoidal mean function - ``switch midpoint'', where the prior means on the switch times are set to 0.5, and ``switch uncertainty'', where the prior means on the switch times are set to the true values plus a $\Norm(0, 0.1)$ variable. The results of this can be seen in figure \ref{fig:ouija_only}. It can be seen that incorporating any information on the switch strength ($k$) improves the correlation with the true pseudotimes, even if the prior on $t^{(0)}$ is noninformative. In other words, the incorporation of prior information is fairly robust to uncertainty in prior knowledge of the switch times. Furthermore, as the prior knowledge in the switch times approaches the ``truth'' (ie as we move from specifying the switch time to be the midpoint of pseudotime, to near the true values, to the true values), the correlation to the true pseudotimes increases.
+We subsequently sought to test the dependency of Ouija's accuracy on how the priors on the switching times are specified. As mentioned above, Ouija was run in two additional modes for the sigmoidal mean function - ``switch midpoint'', where the prior means on the switch times are set to 0.5, and ``switch uncertainty'', where the prior means on the switch times are set to the true values plus a $\Norm(0, 0.1)$ variable. The results of this can be seen in figure \ref{fig:ouija_only}. It can be seen that incorporating any information on the switch strength ($k$) improves the correlation with the true pseudotimes, even if the prior on $t^{(0)}$ is noninformative. In other words, the incorporation of prior information is fairly robust to uncertainty in prior knowledge of the switch times. Furthermore, as the prior knowledge in the switch times approaches the ``truth'' (i.e. as we move from specifying the switch time to be the midpoint of pseudotime, to near the true values, to the true values), the correlation to the true pseudotimes increases.
 
 
 \begin{figure}%[!t]
 	\centering
 	\includegraphics[width=0.8\textwidth]{gfx/ch3/logit-only-ouija.png}
-	\caption{Correlation to true pseudotime across four gene set sizes and 40 replications for the sigmoidal mean function. Ouija was benchmarked with four configurations: noninformative priors, noninformative on the switch time but informative on activation strength (\emph{switch midpoint}), informative on activation strength and weakly informative on switch time (\emph{switch uncertainty}), and informative on both parameters. As the priors converge to the true values the accuracy of pseudotime inference increases.}
+	\caption[Correlation to true pseudotime across sigmoidal simulations.]{Correlation to true pseudotime across four gene set sizes and 40 replications for the sigmoidal mean function. Ouija was benchmarked with four configurations: noninformative priors, noninformative on the switch time but informative on activation strength (\emph{switch midpoint}), informative on activation strength and weakly informative on switch time (\emph{switch uncertainty}), and informative on both parameters. As the priors converge to the true values the accuracy of pseudotime inference increases.}
 	\label{fig:ouija_only}
 \end{figure}
 
@@ -394,7 +395,7 @@ Finally, a potential limitation of our switch behaviour model is that it assumes
 
 \begin{figure}
 	\includegraphics[width=\textwidth]{gfx/ch3/switch-transient-simulation.png}
-	\caption{Impact of marker genes exhibiting transient rather than switch-like gene behaviours. \textbf{A} Examples of simulated switch and transient expression genes. \textbf{B} Example 24-gene panel with 12 switch and 12 transient genes. \textbf{C} Correlation between true and estimated pseudotime as a function of the gene panel size and proportion of switch genes for ten replicates.}
+	\caption[Impact of marker genes exhibiting transient rather than switch-like gene behaviours.]{Impact of marker genes exhibiting transient rather than switch-like gene behaviours. \textbf{A} Examples of simulated switch and transient expression genes. \textbf{B} Example 24-gene panel with 12 switch and 12 transient genes. \textbf{C} Correlation between true and estimated pseudotime as a function of the gene panel size and proportion of switch genes for ten replicates.}
 	\label{fig:switch-transient-simulation}
 \end{figure}
 
@@ -410,7 +411,7 @@ When examining the inferred pseudotime progression of each marker gene (figure \
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch3/hsc}
-	\caption{Pseudotime ordering and cell type identification of haematopoeietic stem cell differentiation.
+	\caption[Pseudotime ordering and cell type identification of haematopoeietic stem cell differentiation.]{Pseudotime ordering and cell type identification of haematopoeietic stem cell differentiation.
 \textbf{A} Consistency matrix of pseudotime ordering. Entry in the $i^{th}$ row and $j^{th}$ column is the proportion of times cell $i$ was ordered before cell $j$ in the MCMC posterior traces. Gaussian mixture modelling on the first principal component of the matrix identified three clusters that are evident in the heatmap.
 \textbf{B} Confusion matrix for cell types identified in original study (rows) and Ouija inferred (columns). Ouija inferred cluster 1 largely corresponds to EC cells, cluster 2 corresponds to pre-HSC cells while cluster 3 corresponds to HSC cells.
 \textbf{C} PCA plot similar to the original publication \cite{zhou2016tracing} suggests supports the existence of three distinct cell types in the data.
@@ -431,7 +432,7 @@ This investigation indicates that although Ouija makes strong assumptions about 
 
 \begin{figure}
 	\includegraphics[width=\textwidth]{gfx/ch3/regev.png}
-	\caption{Cell cycle phase prediction. Principal component representation of hematopoietic stem cells coloured according to \textbf{A} the original cell cycle progression score \cite{Kowalczyk2015-li} and \textbf{B} Ouija - cell cycle classes indicated are based on original study classifications. \textbf{C} Distribution of Ouija inferred pseudotime versus the original cell cycle classifications. \textbf{D} Estimated activation strengths for the 374 cell cycle gene panels. \textbf{E} Gene expression profile for 88 switch-like genes with cells ordered by pseudotime and \textbf{F} genes ordered by activation time.}
+	\caption[Cell cycle phase prediction.]{Cell cycle phase prediction. Principal component representation of hematopoietic stem cells coloured according to \textbf{A} the original cell cycle progression score \cite{Kowalczyk2015-li} and \textbf{B} Ouija - cell cycle classes indicated are based on original study classifications. \textbf{C} Distribution of Ouija inferred pseudotime versus the original cell cycle classifications. \textbf{D} Estimated activation strengths for the 374 cell cycle gene panels. \textbf{E} Gene expression profile for 88 switch-like genes with cells ordered by pseudotime and \textbf{F} genes ordered by activation time.}
 	\label{fig:regev}
 \end{figure}
 

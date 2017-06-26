@@ -102,7 +102,7 @@ Therefore, accounting for zero-inflation in our mixture-of-factor analysers mode
 \begin{figure}%[h]
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch4/s1_dropout}
-	\caption{Dropout relationships in single-cell RNA-seq data for two scRNA-seq datasets. An exponential dropout model (blue) empirically fits the data better than double exponential (red).} \label{fig:dropout}
+	\caption[Dropout relationships in single-cell RNA-seq data for two scRNA-seq datasets. ]{Dropout relationships in single-cell RNA-seq data for two scRNA-seq datasets. An exponential dropout model (blue) empirically fits the data better than double exponential (red).} \label{fig:dropout}
 \end{figure}
 
 As a solution to this we propose an Empirical-Bayes like procedure to estimate $\lambda$ globally then infer the latent expression $x$ through further Gibbs updates. First we note that a single exponential dropout empirically fits the dropout relations in single-cell RNA-seq datasets better than the double exponential dropout (figure \ref{fig:dropout}).
@@ -146,7 +146,7 @@ While incorporating zero-inflation in the likelihood leads to a less-mispecified
 \begin{figure}%[!t]
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch4/bifurcation_solutions}
-	\caption{Multiple solutions to bifurcation inference.
+	\caption[Multiple solutions to bifurcation inference.]{Multiple solutions to bifurcation inference.
 {\normalfont
 Starting with three cell states we would like to infer a bifurcation process from one to the other two. If a single gene is upregulated in one of the states yet downregulated in the other two then clearly any state may act as the beginning of the trajectory. For example, if we start in state 1 then the gene is upregulated along state 2 and stays constant in state 3; if we start in state 2 then the gene is downregulated in states 1 \& 3; if we start in state 3 then the gene is upregulated in state 2 and remains downregulated in state 1.  However, due to the nonidentifiability this is true if we add additional genes that are upregulated in one or two of the cell states. The equivalent geometric argument is that we can build the transcriptomic profiles across all genes by spinning the figure about \textbf{B} (with possible inversion) and ``adding'' that gene. No matter how many additional genes we add, any one of the three states can act as the root state or beginning of pseudotime. Therefore, in the absence of any additional information there are always three equally valid solutions to bifurcation inference from gene expression data alone.
 }
@@ -259,7 +259,7 @@ Alternatively, if $k_{gb_1} < 0$ then the genes must begin in an \emph{on} state
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch4/s2_synthetic}
-	\caption{Generation of synthetic data to test \texttt{mfa}. Examples of diverging monotonic behaviour across branches (\textbf{A} - \textbf{B}) and diverging transient behaviour (\textbf{C} - \textbf{D}), with resulting PCA representations coloured by both pseudotime (\textbf{E}) and branch allocation (\textbf{F}).} \label{fig:mfa_synthetic}
+	\caption[Generation of synthetic data to test \texttt{mfa}.]{Generation of synthetic data to test \texttt{mfa}. Examples of diverging monotonic behaviour across branches (\textbf{A} - \textbf{B}) and diverging transient behaviour (\textbf{C} - \textbf{D}), with resulting PCA representations coloured by both pseudotime (\textbf{E}) and branch allocation (\textbf{F}).} \label{fig:mfa_synthetic}
 \end{figure}
 
 We may also wish to generate transiently expressed genes to test the limits of the monotonicity assumptions in our model. Transient behaviour can either be across both branches or exhibit divergent behaviour (transient on one branch only). To simulate transient genes we swap out the sigmoidal mean function for a Gaussian function centred around the mid-point of the trajectory:
@@ -281,11 +281,11 @@ Our synthetically generated data is mildly mis-specified with respect to our mod
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch4/fig1_toy}
- \caption{Caption next page.}\label{fig:toy}
+ \caption[]{Caption next page.}\label{fig:toy}
 \end{figure}
 \addtocounter{figure}{-1}
 \begin{figure}
-\caption{Probabilistic inference of bifurcations in synthetic data. 
+\caption[Probabilistic inference of bifurcations in synthetic data.]{Probabilistic inference of bifurcations in synthetic data. 
 \textbf{A} PCA representation of a toy dataset for 300 cells and 60 genes, coloured by the maximum aposteriori (MAP) pseudotime estimates.
 \textbf{B} Equivalent representation as \textbf{(A)} colour by the MAP branch estimate.
 \textbf{C} Equivalent representation showing whether each branch was assigned correctly. Due to the non-identifiability of mixture components, we map component indices from true to inferred such that the agreement is maximised.
@@ -311,7 +311,7 @@ One notable difference between MFA and existing bifurcation inference algorithms
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch4/dropout}
-	\caption{The effects of modelling zero-inflation. {\normalfont
+	\caption[The effects of modelling zero-inflation.]{The effects of modelling zero-inflation. {\normalfont
 \textbf{A} Zero counts observed in single-cell RNA-seq data may be attributed to either \emph{true zeros} where no mRNA of a given gene is produced in a cell, or \emph{dropout} where there is a failure to reverse-transcribe the low levels of starting material. Alternatively, a count is registered and the gene is \emph{amplified}. In theory not accounting for dropouts will reduce the accuracy of pseudotime inference - the two red counts at pseudotimes of 4 and 6 would be ordered with the blue counts. However, in practice it is impossible to distinguish between \emph{dropouts} and \emph{true zeros}.
 \textbf{B} The percentage of counts with zero expression across 50 replicates for each value of $\lambda$ used in dropout simulations.
 \textbf{C} The pearson correlation to true pseudotime using both the non-zero-inflated and zero-inflated variants of MFA as a function of $\lambda$ used to generate the dataset. Accounting for zero-inflation shows marginal benefits if only a small percentage counts are dropouts. However, for high dropout percentages ($>80\%$) the algorithm has to ``impute'' such a large percentage of the data that correlations to the true pseudotime reduce to near-zero.
@@ -333,12 +333,12 @@ The resulting correlations with the true pseudotimes across the range of $\lambd
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch4/scrnaseq_fig}
-	\caption{Caption next page.}
+	\caption[]{Caption next page.}
 	 \label{fig:scrnaseq}
 \end{figure}
 \addtocounter{figure}{-1}
 \begin{figure}
-\caption{Inference of bifurcations in scRNA-seq data of 4,423 Hematopoietic progenitor/stem cells (HSPCs) differentiating into myeloid and erythroid precursors.
+\caption[Inference of bifurcations in scRNA-seq data of 4,423 Hematopoietic progenitor/stem cells.]{Inference of bifurcations in scRNA-seq data of 4,423 Hematopoietic progenitor/stem cells (HSPCs) differentiating into myeloid and erythroid precursors.
 \textbf{A} tSNE representation from \cite{setty2016wishbone} coloured by the maximum aposteriori (MAP) pseudotime.
 \textbf{B} Equivalent plot as \textbf{A} coloured by MAP $\gamma$ (branch assignment).
 \textbf{C} Inverse map $\chi$ showing both the 20 largest and 20 smallest values indicating which genes do and do not show differential behaviour across the bifurcation.
@@ -375,11 +375,11 @@ We subsequently compared the inferred pseudotimes and branching to those found u
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch4/masscyto_fig}
-	\caption{Caption next page.} \label{fig:masscyto}
+	\caption[]{Caption next page.} \label{fig:masscyto}
 \end{figure}
 \addtocounter{figure}{-1}
 \begin{figure}
-	\caption{Inference of bifurcations in single-cell mass cytometry data of a subsample of 2,000 HPSCs differentiating into monocyte and erythrocyte progenitors.
+	\caption[Inference of bifurcations in single-cell mass cytometry data.]{Inference of bifurcations in single-cell mass cytometry data of a subsample of 2,000 HPSCs differentiating into monocyte and erythrocyte progenitors.
 	\textbf{A} tSNE representation from \cite{setty2016wishbone} coloured by the maximum aposteriori (MAP) pseudotime.
 	\textbf{B} Equivalent plot as \textbf{A} coloured by MAP $\gamma$ (branch assignment).
 	\textbf{C} Scatter plots of MFA pseudotime compared to PC2, Wishbone, Monocle, and DPT, with pearson correlations of 0.84, 0.86, 0.80 and 0.69 respectively.
@@ -418,7 +418,8 @@ In general we expect linear latent variables to be highly mis-specified with res
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch4/limits_of_chi}
-	\caption{The limits of linear latent variable models for inferring bifurcations from
+	\caption[The limits of linear latent variable models for inferring bifurcations from
+	single-cell data.]{The limits of linear latent variable models for inferring bifurcations from
 	single-cell data. \emph{CD11b} is correctly identified as exhibiting bifurcating behaviour.
 	However, due to model mis-specification the cells with nonzero expression are assigned to branch 2, when in fact they should be assigned to both branches 1 \& 2, meaning \emph{CD34} is incorrectly identified as differentially regulated across the bifurcation.} \label{fig:chi}
 \end{figure}
@@ -460,7 +461,7 @@ DPs can easily be sampled from by drawing a sample $x_1$ from the base distribut
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{gfx/ch4/dp_sn_base_dist.png}
-	\caption{100 draws from a dirichlet process with $\alpha = 0.5, 1, 2, 5$ with a standard normal base distribution.} \label{fig:dp}
+	\caption[Example draws from a dirichlet process.]{100 draws from a dirichlet process with $\alpha = 0.5, 1, 2, 5$ with a standard normal base distribution.} \label{fig:dp}
 \end{figure}
 
 Nonparametric mixtures of factor analysers have previously been considered for compressed sensing \cite{chen2010compressive} and applied to NMR metabolomic data \cite{murphy2017infinite}. Such models typically consider a nonparametric prior on the number of latent dimensions allowing the model to ``automatically decide'' the dimensionality of the latent space, though in pseudotemporal applications this can be fixed to 1. A nonparametric mixture of overlapping Gaussian Processes was considered in \cite{lonnberg2016temporal}, though they found that in practice this typically overestimated the number of branches.
