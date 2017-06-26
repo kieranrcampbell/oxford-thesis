@@ -3,9 +3,9 @@
 
 \section{Overview}
 
-For both Gibbs sampling and variational inference we require the conditional densities $p(\theta_n | \theta_{-i}, \bY)$.
+For both Gibbs sampling and variational inference we require the conditional densities $p(\theta_i | \theta_{-i}, \bY)$.
 
-Recall we have data in the form of an $N \times G$ matrix $\bY$ and an $N \times P$ matrix $\bX$ for $N$ samples, $G$ features and $P$ covariates. With the notation of $I_N$ being the $N \times N$ identity matrix and $1_N$ being the column vector of ones, our model is
+Recall we have data in the form of an $N \times G$ matrix $\bY$ and an $N \times P$ matrix $\bX$ for $N$ samples, $G$ features and $P$ covariates. Our model is
 
 \begin{equation}
 \begin{aligned}
@@ -339,7 +339,7 @@ where $\mu_{ng} = \mu_g + \sum_p \alpha_{pg} x_{np} + z_n \left( \lambda_g + \su
 \end{aligned}
 \end{equation}
 
-where $f_{ng}$ is defined as above and we have dropped additive terms since we are only concerned in changes in the ELBO.
+where $f_{ng}$ is defined as above and we have dropped additive terms since we are only concerned by changes in the ELBO.
 
 \paragraph{Derivation of  $\Ex[\log p(\Theta)]$}
 
@@ -422,7 +422,7 @@ data {
   int G; // number of features
   vector [N] Y[G]; // gene expression input
   real x[N]; // covariate measurements
-  real z_prior[N]; // priors on t
+  real z_prior[N]; // priors on z
   real<lower = 0> z_sd;
   
   // CGPLVM kernel parameters (fixed)

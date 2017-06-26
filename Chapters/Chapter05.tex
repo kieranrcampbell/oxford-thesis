@@ -36,7 +36,7 @@ This chapter includes a minor change in notation - latent variables are now $z_n
 \begin{figure}
 \centering
   \includegraphics[width=0.98\textwidth]{gfx/ch5/2_phenopath_eqn}
-  \caption{PhenoPath models observed expression as a combination of standard differential expression (DE) and pathway effects, including covariate-pathway interactions.
+  \caption{Covariate-adjusted latent variable models consider observed expression as a combination of standard differential expression (DE) and pathway effects, including covariate-pathway interactions.
   } \label{fig:phenopath_eqn}
 \end{figure}
 
@@ -99,7 +99,7 @@ y_{ng} & = \mu_g +  \sum_p \alpha_{pg} x_{np} + \left( \lambda_g + \sum_p \beta_
 \end{aligned} \label{eq:clvm_model}
 \end{equation}
 
-where $\tau_\alpha$, $\tau_\lambda$, $a$, $b$, $a_\beta$, $b_\beta$, $\tau_q$ are fixed hyperparameters and $q_n$ encodes prior information about $z_n$ if available but typically $q_n = 0 \; \forall n$ in the uninformative case.
+where $\tau_\alpha$, $\tau_\lambda$, $a$, $b$, $a_\beta$, $b_\beta$, $\tau_q$ are fixed hyperparameters and $q_n$ encodes prior information about $z_n$ if available but typically $q_n = 0 \; \forall n$ in the uninformative case. We refer to this statistical model applied to genomics data and the accompanying \texttt{R} package for inference as ``PhenoPath''.
 
 
 
@@ -187,7 +187,7 @@ q(\theta_j) = \text{Gamma}\left(
 
 Variational inference for non-conditionally conjugate models is considered in \ref{sec:survival}.
 
-\subsection{Bayesian significance testing of interactions}
+\subsection{Bayesian significance testing of interactions} \label{sec:sigtest}
 
 It is possible to construct a Bayesian significance test for the existence of covariate-pathway interactions (in other words, whether $\beta_g$ is ``significant'' under some criterion) using posterior credible intervals and a region of practical interest. The variational approximation for each $\beta_g$ is given by $q(\beta_g) \sim \Norm(m_{\beta_g}, s^2_{\beta_g})$. Therefore, if $\hat{m}_{\beta_g}$ and $\hat{s}_{\beta_g}$ are the estimates of $m_{\beta_g}$ and $s_{\beta_g}$ respectively after a sufficient number of iterations that we consider the ELBO to be converged, then we define $g$ to have a \emph{significant interaction}
 if
@@ -217,11 +217,8 @@ which leads to the condition
   \alpha_g x_{-} + \left( c_g + \beta_g x_{-}\right) z^*_g
 \end{equation}
 
-which is in turn solved by
-
-\begin{equation}
-  z^*_g = -\frac{\alpha_g}{\beta_g}.
-\end{equation}
+which is in turn solved by $
+  z^*_g = -\frac{\alpha_g}{\beta_g}$.
 
 
 \subsection{Benchmarking through simulations}
@@ -244,6 +241,7 @@ The gene-specific parameters $(\alpha_g, \lambda_g, \beta_g)$ were sampled in eq
   \item \emph{Pseudotime and covariate interactions} where $\lambda_g$ and $\beta_g$ are set to 1 or -1  with equal probability and $\alpha_g = 0$
   \item \emph{Differential expression, pseudotime and covariate interactions} where all parameters take on values of -1 or 1 with equal probabilities
 \end{enumerate}
+Examples of expression from these four simulation regimes can be seen in figure \ref{fig:simulation_scenarios}.
 
 In order to generate RNA-seq reads we need positive count values. In the spirit of general linear models, we then used $g(x) = 2^x$ as a link function and generated a matrix of positive means
 \begin{equation}
@@ -258,7 +256,7 @@ and quantified into TPM and count estimates using Kallisto \cite{Bray2016-uh}. T
 \begin{figure}
 \centering
   \includegraphics[width=0.98\textwidth]{gfx/ch5/4_simulation_pca}
-  \caption{Simulations of RNA-seq data with covariate pseudotime interactions for 200 samples and 400 genes using the R/Bioconductor package \texttt{polyester}. \textbf{A} A PCA representation of the data coloured by pseudotime shows a clear splitting of trajectories between covariate status.\textbf{B} Comparison of the true pseudotime to both PC1 and PhenoPath pathway score$z$ with correlations of 0.85 and 0.97 respectively.
+  \caption{Simulations of RNA-seq data with covariate pseudotime interactions for 200 samples and 400 genes using the R/Bioconductor package \texttt{polyester}. \textbf{A} A PCA representation of the data coloured by pseudotime shows a clear splitting of trajectories between covariate status. \textbf{B} Comparison of the true pseudotime to both PC1 and PhenoPath pathway score $z$ with correlations of 0.85 and 0.97 respectively.
   } \label{fig:simulation_pca}
 \end{figure}
 
@@ -324,7 +322,7 @@ In our simulation study, Limma Voom ``only'' detects 47\% of the genes simulated
 \begin{figure}
 \centering
   \includegraphics[width=0.98\textwidth]{gfx/ch5/6_shalek_thesis.png}
-  \caption{Stimulant-immune reactions single-cell RNA-sequencing data.
+  \caption{Stimulant-immune interactions in time-series single-cell RNA-sequencing data.
   \textbf{A} PhenoPath applied to the Shalek et al. dataset uncovers genes differentially regulated along pseudotime depending on the stimulant (LPS or PAM) applied.
   \textbf{B} PhenoPath infers pseudotimes ($z$) consistent with the physical capture times.
   \textbf{C} A comparison of $p$-values obtained through a nonparametric statistical test for differential expression between LPS and PAM stimulation shows no particular relation with the interaction parameters $\beta$ inferred with PhenoPath.
@@ -339,12 +337,12 @@ In our simulation study, Limma Voom ``only'' detects 47\% of the genes simulated
 	\label{fig:shalek_comparison}
 \end{figure}
 
-We next examined a time-series single-cell RNA-seq (scRNA-seq) data set of bone marrow derived dendritic cells responding to particular stimuli \cite{Shalek2014-cg}. Cells were exposed to LPS, a component of Gram-negative bacteria, and PAM, a synthetic mimic of bacterial lipopeptides, and scRNA-seq performed at 0, 1, 2, 4 and 6 hours after stimulation. Despite the time-series measurement, previous studies have suggested this dataset is more suited to a ``pseudotime'' analysis as the cells respond asynchronously and heterogeneity exists within the cellular populations at each time point\cite{Reid2016-yo}. To-date pseudotime inference algorithms would typically assume a common trajectory across all experimental conditions or a pseudotime analysis  performed separately for each stimulant. This might give a loss of statistical power and artefacts introduced by confounding effects. Using PhenoPath we can encode the stimulant to which the cells were exposed as a covariate and allow gene expression to evolve along pseudotime differently for either LPS or PAM exposure. This allows us to learn a single trajectory for all cells regardless of stimulant applied yet simultaneously infer which genes are differentially regulated in response. We applied this to the 820 cells exposed to LPS and PAM in the time points 1, 2, 4, and 6 hours after stimulation using the 7,533 genes whose variance in normalised log-expression exceeded a pre-set threshold (see appendix \ref{sec:prepclvm}). PhenoPath was run for approximately 250 CAVI iterations until convergence of the ELBO (figure \ref{fig:elbo_shalek}).
+We next examined a time-series single-cell RNA-seq dataset of bone marrow derived dendritic cells responding to particular stimuli \cite{Shalek2014-cg}. Cells were exposed to LPS, a component of Gram-negative bacteria, and PAM, a synthetic mimic of bacterial lipopeptides, and expression quantification performed at 0, 1, 2, 4 and 6 hours after stimulation. Despite the time-series measurement, previous studies have suggested this dataset is more suited to a ``pseudotime'' analysis as the cells respond asynchronously and heterogeneity exists within the cellular populations at each time point \cite{Reid2016-yo}. To-date pseudotime inference algorithms would typically assume a common trajectory across all experimental conditions or a pseudotime analysis  performed separately for each stimulant. This might give a loss of statistical power and artefacts introduced by confounding effects. Using PhenoPath we can encode the stimulant to which the cells were exposed as a covariate and allow gene expression to evolve along pseudotime differently for either LPS or PAM exposure. This allows us to learn a single trajectory for all cells regardless of stimulant applied yet simultaneously infer which genes are differentially regulated in response. We applied this to the 820 cells exposed to LPS and PAM in the time points 1, 2, 4, and 6 hours after stimulation using the 7,533 genes whose variance in normalised log-expression exceeded a pre-set threshold (see appendix \ref{sec:prepclvm}). PhenoPath was run for approximately 250 CAVI iterations until convergence of the ELBO (figure \ref{fig:elbo_shalek}).
 
 We inferred a covariate-perturbed trajectory using PhenoPath and uncovered a landscape of pseudotime-stimulant interactions (figure \ref{fig:shalek}A), unveiling genes whose regulation along pseudotime is modulated by the application of LPS or PAM. The trajectory inferred largely recapitulated the true time-series measurement (figure \ref{fig:shalek}B, $R^2 = 0.64$), despite no explicit temporal information being provided to the algorithm, though transcriptional heterogeneity at each time point is still evident. We also compared this to two commonly-used pseudotime algorithms and found that the pseudotimes inferred using PhenoPath had the best agreement with the capture times (figure \ref{fig:shalek_comparison}).
 
 
-Using PhenoPath we found a large number of stimulant-modulated interactions masked by standard differential-expression analysis (figure \ref{fig:shalek}C). A GO analysis revealed genes whose upregulation along the common trajectory was increased by LPS exposure (as opposed to PAM) were highly enriched for immune response (figure \ref{fig:shalek}D), which recapitulates previous results\cite{Shalek2014-cg,Reid2016-yo} that suggest a ``core'' module of antiviral genes upregulated at later timepoints in LPS cells but in an entirely unsupervised, integrated manner. We finally examined the individual genes most perturbed by LPS or PAM along the trajectory (figure \ref{fig:shalek}E), which identifies as yet uncharacterised expression patterns associated with LPS and PAM. 
+Using PhenoPath we found a large number of stimulant-modulated interactions masked by standard differential-expression analysis (figure \ref{fig:shalek}C). A GO analysis revealed genes whose upregulation along the common trajectory was increased by LPS exposure (as opposed to PAM) were highly enriched for immune response (figure \ref{fig:shalek}D), which recapitulates previous results \cite{Shalek2014-cg,Reid2016-yo} that suggest a ``core'' module of antiviral genes upregulated at later timepoints in LPS cells but in an entirely unsupervised, integrated manner. We finally examined the individual genes most perturbed by LPS or PAM along the trajectory (figure \ref{fig:shalek}E), which identifies as yet uncharacterised expression patterns associated with LPS and PAM. 
 Most notably, the tumour necrosis factor \emph{Tnf} had around twice the interaction effect size of any other gene, and decreases under LPS stimulation but increases under PAM.
 Further genes exhibit differential regulation according to stimulant, such as \emph{Mef2c} that has constant expression over pseudotime under LPS stimulation yet shows downregulation under PAM stimulation.
 These results complement previously discovered gene differences such as that of \emph{Tnf}, but in a systematic, transcriptome-wide approach.
@@ -382,7 +380,7 @@ Tumour-infiltrating Tregs are potent immunosuppressive cells of the immune syste
 A standard differential expression analysis using Limma Voom \cite{Law2014-tu} (figure \ref{fig:coad}D) demonstrates that PhenoPath is required to uncover such interactions as a gene being differentially expressed does not imply a pathway-MSI interaction, while such interactions do not require differential expression.
 
 The most striking interaction discovered for this dataset was the \mlh gene whose interaction effect size was far larger than any other gene.
-\mlh is a DNA mismatch repair gene, germline mutations of which are causal for hereditary non-polyposis colorectal cancer\cite{Bonadona2011-ml,Gille2002-rx}.  By applying PhenoPath we correctly identified that in patients with low or absent levels of microsatellite instability there is no relationship between \mlh expression and immune pathway interaction, with \mlh expressed at an approximately constant level (figure \ref{fig:coad}E). However, when MSI occurs in a tumour, \mlh expression is highly correlated with immune response, showing almost no expression when the immune pathway is inactive and gradually being upregulated with immune pathway response\cite{michel2008high}.
+\mlh is a DNA mismatch repair gene, germline mutations of which are causal for hereditary non-polyposis colorectal cancer \cite{Bonadona2011-ml,Gille2002-rx}.  By applying PhenoPath we correctly identified that in patients with low or absent levels of microsatellite instability there is no relationship between \mlh expression and immune pathway interaction, with \mlh expressed at an approximately constant level (figure \ref{fig:coad}E). However, when MSI occurs in a tumour, \mlh expression is highly correlated with immune response, showing almost no expression when the immune pathway is inactive and gradually being upregulated with immune pathway response \cite{michel2008high}.
 
 \subsection{Breast cancer bulk RNA-seq} \label{sec:brca}
 
@@ -400,14 +398,14 @@ The most striking interaction discovered for this dataset was the \mlh gene whos
 \textbf{C} A GO enrichment analysis of upregulated genes implies the latent trajectory encodes angiogenesis pathway activation in each tumour.
 \textbf{D} Four example genes \emph{ESR1}, \emph{FBP1}, and \emph{FOXC1} were identified by PhenoPath as significantly perturbed along the angiogenesis trajectory by ER status. The vertical dashed line signifies the calculated crossover point, demonstrating the expression profiles of these genes converge towards the end of the trajectory.
 \textbf{E} A histogram of the crossover points of all genes whose trajectory-covariate interactions were significant. The vast majority of crossover points are at the end of the trajectory (around 0.5, where the ``middle'' pathway score is 0) implying a convergence of gene expression as the trajectory progresses.
-} \label{fig:brca}
+} \label{fig:brca_er}
 \end{figure}
 
 
 We next performed a pseudotemporal analysis of the TCGA breast cancer cohort using estrogen receptor (ER) status as a phenotypic covariate. Approximately 60\% of breast cancers are estrogen receptor positive
 \cite{Early_Breast_Cancer_Trialists_Collaborative_Group_EBCTCG_undated-ux}, which is typically associated with improved prognosis and a longer time to recurrence 
-\cite{Parl1984-fo}. We applied PhenoPath to 1,135 samples post-QC and 4,579 highly variable genes. PhenoPath was run for approximately 2000 CAVI iterations until convergence of the ELBO (figure \ref{fig:elbo_coad}). Using stringent Bayesian significance testing criterion we found 1,932 genes (42\%) affected by an interaction between the pseudotemporal trajectory and ER receptor status (figure \ref{fig:brca}E).
- There was a correlation between the pathway interaction strength and the $p$-value reported through standard differential expression (figure \ref{fig:brca}B), though there remained some genes that exhibited pathway interaction and no differential expression.
+\cite{Parl1984-fo}. We applied PhenoPath to 1,135 samples post-QC and 4,579 highly variable genes. PhenoPath was run for approximately 2000 CAVI iterations until convergence of the ELBO (figure \ref{fig:elbo_coad}). Using our Bayesian significance testing criterion (section \ref{sec:sigtest}) we found 1,932 genes (42\%) affected by an interaction between the pseudotemporal trajectory and ER receptor status (figure \ref{fig:brca_er}A).
+ There was a correlation between the pathway interaction strength and the $p$-value reported through standard differential expression (figure \ref{fig:brca_er}B), though there remained some genes that exhibited pathway interaction and no differential expression.
 
 \begin{figure}
    \includegraphics[width=\textwidth]{gfx/ch5/brca_genes.png}
@@ -415,7 +413,7 @@ We next performed a pseudotemporal analysis of the TCGA breast cancer cohort usi
 	\label{fig:brca_genes}
 \end{figure}
 
-A GO enrichment analysis indicated that the inferred pseudotemporal trajectory corresponded to vascular growth pathways or \emph{angiogenesis} (figure \ref{fig:brca}F) -- a well-known and uncontroversial hallmark of cancer development.\cite{ferrara2002vegf,welti2013recent} We confirmed this finding by specifically examining the expression of known angiogenesis inducing genes (figure \ref{fig:vgf_genes}). We found increasing fibroblast growth factor-2 (\emph{FGF-2}) and vascular endothelial growth factors C and D (\emph{VEGF-C/D}) expression along the trajectory whose behaviours were independent of ER status.
+A GO enrichment analysis indicated that the inferred pseudotemporal trajectory corresponded to vascular growth pathways or \emph{angiogenesis} (figure \ref{fig:brca_er}C) -- a well-known and uncontroversial hallmark of cancer development \cite{ferrara2002vegf,welti2013recent}. We confirmed this finding by specifically examining the expression of known angiogenesis inducing genes (figure \ref{fig:vgf_genes}). We found increasing fibroblast growth factor-2 (\emph{FGF-2}) and vascular endothelial growth factors C and D (\emph{VEGF-C/D}) expression along the trajectory whose behaviours were independent of ER status.
 
 \begin{figure}
    \includegraphics[width=\textwidth]{gfx/ch5/vgf_genes.png}
@@ -425,8 +423,8 @@ A GO enrichment analysis indicated that the inferred pseudotemporal trajectory c
 
 We finally sought to examine some genes PhenoPath identified as being most affected by the interaction between angiogenesis and estrogen receptor status.
 Importantly, this set included the Estrogen Receptor 1 (\emph{ESR1})
-gene as well as the forkhead transcription factors \emph{FOXA1} and \emph{FOXC1} which are known to be involved with ER$\alpha$ mediated action in breast cancer \cite{lam2013forkhead,yu2016foxc1} (figures \ref{fig:brca}D and \ref{fig:brca_genes}).
-Figure \ref{fig:brca}D shows how the  ructose-1,6-biphosphatase (\emph{FBP1}) and \emph{FOXC1} genes evolve along the angiogenesis pathway dependent on ER status. In the ER- regime, \emph{FBP1} is upregulated along the trajectory while in the ER+ regime it is downregulated. Intriguingly, \emph{FBP1} has been identified as a marker to distinguish ER+ from ER- subtypes and its expression has been shown to be negatively correlated with \emph{SNAIL} as the Snail-G9a-Dnmt1 complex, is critical for E-cadherin promoter silencing, and required for the promoter methylation of FBP1 in basal-like breast cancer (figure \ref{fig:fbp1-vs-snail}) \cite{dong2013loss}. Similarly, \emph{FOXC1} shows no regulation in the ER- regime yet is strongly upregulated in the ER+ case.
+gene as well as the forkhead transcription factors \emph{FOXA1} and \emph{FOXC1} which are known to be involved with ER$\alpha$ mediated action in breast cancer \cite{lam2013forkhead,yu2016foxc1} (figures \ref{fig:brca_er}D and \ref{fig:brca_genes}).
+Figure \ref{fig:brca_er}D shows how the  ructose-1,6-biphosphatase (\emph{FBP1}) and \emph{FOXC1} genes evolve along the angiogenesis pathway dependent on ER status. In the ER- regime, \emph{FBP1} is upregulated along the trajectory while in the ER+ regime it is downregulated. Intriguingly, \emph{FBP1} has been identified as a marker to distinguish ER+ from ER- subtypes and its expression has been shown to be negatively correlated with \emph{SNAIL} as the Snail-G9a-Dnmt1 complex, is critical for E-cadherin promoter silencing, and required for the promoter methylation of FBP1 in basal-like breast cancer (figure \ref{fig:fbp1-vs-snail}) \cite{dong2013loss}. Similarly, \emph{FOXC1} shows no regulation in the ER- regime yet is strongly upregulated in the ER+ case.
 
 \begin{figure}
   \centering
@@ -435,8 +433,8 @@ Figure \ref{fig:brca}D shows how the  ructose-1,6-biphosphatase (\emph{FBP1}) an
 	\label{fig:fbp1-vs-snail}
 \end{figure}
 
-We noted that these genes represent a convergence - they have markedly different expression at the beginning of the trajectory based on ER status yet converge towards the end. Using our previous formula for the crossover point (section \ref{sec:crossover}), we found the vast majority converge towards the end of the trajectory (figure \ref{fig:brca}E), implying a common end-point in vascular development for both ER+ and ER- cancer subtypes.
-This effect can be seen in the example expression plots in figures \ref{fig:brca}D and \ref{fig:brca_convergence}, where the vertical dashed line represents the convergence point always at the end of the trajectory.
+We noted that these genes represent a convergence - they have markedly different expression at the beginning of the trajectory based on ER status yet converge towards the end. Using our previous formula for the crossover point (section \ref{sec:crossover}), we found the vast majority converge towards the end of the trajectory (figure \ref{fig:brca_er}E), implying a common end-point in vascular development for both ER+ and ER- cancer subtypes.
+This effect can be seen in the example expression plots in figures \ref{fig:brca_er}D and \ref{fig:brca_convergence}, where the vertical dashed line represents the convergence point always at the end of the trajectory.
 This suggests that while there exists low levels of angiogenesis pathway activation, ER status dominates gene expression while as angiogenesis pathway activation increases it comes to dominate expression patterns over ER status. This finding might have implications for the application of angiogenesis inhibitors in breast cancer treatment.
 
 \begin{figure}
@@ -481,7 +479,7 @@ and survival function $S_{\text{Weibull}}(t; k, p) = \int_t^\infty f(t'; k, p) d
   \end{cases}
 \end{equation}
 
-where observed survival times are drawn from a Weibull distribution while censored survival times are drawn from a Weibull distribution truncated below at the censoring times (ie $p(t_n \leq o_n) = 0$ if $\delta_n = 0$).
+where observed survival times are drawn from a Weibull distribution while censored survival times are drawn from a Weibull distribution truncated below at the censoring times (i.e. $p(t_n \leq o_n) = 0$ if $\delta_n = 0$).
 
 \begin{figure}
   \centering
@@ -606,7 +604,7 @@ We subsequently performed a gene ontology (GO) enrichment analysis to identify t
 
 Figure \ref{fig:brca}(\textbf{b}) shows the posterior estimates of $\chi_g^{-1}$ against the posterior estimates of $\beta_g$ coloured by whether the interaction is identified as significant. % or not using the criterion from \ref{sec:signif}.
 A total of 2,371 genes (42\% of those included) exhibited a significant interaction between the inferred angiogenesis trajectory and the survival times of the patients. Many of the genes with the largest $\beta$ effect sizes are previously implicated in cancer progression: \emph{SDPR} acts as a metastasis suppressor \citep{ozturk2016sdpr}, \emph{PRMT1} promotes mitosis in
-cancer cells \citep{deng2015prmt1}, \emph{PRMT1} modulates the epithelial-mesenchymal transition and cellular senescence in breast cancer cells \citep{gao2016dual}, while \emph{TOP2A} is a predictive marker of chemotherapy efficacy \citep{wang2012top2a}.
+cancer cells \citep{deng2015prmt1}, and modulates the epithelial-mesenchymal transition and cellular senescence in breast cancer cells \citep{gao2016dual}, while \emph{TOP2A} is a predictive marker of chemotherapy efficacy \citep{wang2012top2a}.
 
 We next performed hierarchical clustering on the expression profiles of the 2,371 genes that showed significant interactions between angiogensis and survival time, as shown in figure \ref{fig:brca}(\textbf{c}). This identified two main classes of genes whose expression programmes followed correlated expression patterns. %KC: I'm going to purgatory for this sentence
 A further GO analysis individually on each gene set revealed their biological relevance.
@@ -618,7 +616,7 @@ The second set contains genes associated with cell cycle - the sequence of event
 
 \subsection{Marginalising over the mapping}
 
-One limitation of the model is its linear nature, making inferred latent variables similar to those from factor analysis. We therefore propose a nonlinear, nonparametric extension similar to Gaussian Process Latent Variable Models \citep{Lawrence2005-cu} that were previously discussed in section \ref{sec:gplvm}.
+One limitation of our proposed covariate-adjusted latent variable models is their linear nature, making inferred latent variables similar to those from factor analysis. We therefore propose a nonlinear, nonparametric extension similar to Gaussian Process Latent Variable Models \citep{Lawrence2005-cu} that were previously discussed in section \ref{sec:gplvm}.
 
 %The trick is to consider the $\mbX\mbX^T$ term in the covariance matrix of the marginal distribution of $\mbY$ and replace it with any (semi-)positive definite matrix representing ``similarity'' between the elements of $\mby$, such as double-exponential kernels.
 %We previously suggested \emph{Covariate-adjusted Gaussian Process Latent Variable Models} (C-GPLVM, \cite{Campbell2016-nu}), which for a fixed covariate $\mbx \in \mathbb{R}^N$ has kernels including  $K(\mbx \odot \mbz, \mbx \odot \mbz')$ where $\odot$ denotes element-wise multiplication so $(\mbx \odot \mbz)_i = x_i z_i$.
@@ -680,7 +678,7 @@ Note that the interactions between the latent variables and the covariates appea
 \caption{Synthetic data used to test CGPLVM for $N=50$ samples and $G=10$ features, with kernel parameters $\eta = 0.2$, $\gamma \nu = \delta = \xi = 1$, and $\sigma^2 = 0.01$. The first 5 features had $\lambda = 0.2$ and the final 5 had $\lambda = 0$.} \label{fig:cgplvm_data}
 \end{figure}
 
-As a small proof-of-concept we created a synthetic dataset (figure \ref{fig:cgplvm_data}) for $N=50$ samples and $G=10$ features, with $z$ drawn from $\text{Unif(-1, 1)}$ and the covariates sampled randomly from $\{-1, -0.5, 0, 0.5, 1\}$. The kernel parameters were fixed to $\eta = 0.2$, $\gamma \nu = \delta = \xi = 1$, and $\sigma^2 = 0.01$. The first 5 features had $\lambda = 0.2$ and the final 5 had $\lambda = 0$ so that half the features exhibited covariate-latent variable interactions. The model was implemented in the probabilistic programming language \texttt{Stan} with hierarchical priors $\lambda_g \sim \chi^2(1)$, $z_n \sim \Norm(0,1)$ and $1 / \sigma^2 \sim \text{Gamma}(0.1, 0.1)$.
+As a small proof-of-concept we created a synthetic dataset (figure \ref{fig:cgplvm_data}) for $N=50$ samples and $G=10$ features, with $z$ drawn from $\text{Unif(-1, 1)}$ and the covariates sampled randomly from $\{-1, -0.5, 0, 0.5, 1\}$. The kernel parameters were fixed to $\eta = 0.2$, $\gamma = \nu = \delta = \xi = 1$, and $\sigma^2 = 0.01$. The first 5 features had $\lambda = 0.2$ and the final 5 had $\lambda = 0$ so that half the features exhibited covariate-latent variable interactions. The model was implemented in the probabilistic programming language \texttt{Stan} with hierarchical priors $\lambda_g \sim \chi^2(1)$, $z_n \sim \Norm(0,1)$ and $1 / \sigma^2 \sim \text{Gamma}(0.1, 0.1)$.
 \texttt{Stan} was run for 4000 iterations (2000 burn-in) with the latent variables initialised to the first principal component of the data.
 
 
