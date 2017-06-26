@@ -78,7 +78,7 @@ where $\tilde{\eta}$, $\tilde{\theta}$, $\tau_\eta$, $\tau_\theta$, $\tau_c$, $\
 
 \subsection{Inference} \label{sec:gibbs}
 
-As the model exhibits complete conditional conjugacy, inference was performed using Gibbs sampling. Briefly, Gibbs sampling is a Markov Chain Monte-Carlo (MCMC) algorithm for drawing a sequence of samples $\btheta^1, \ldots, \bm \theta^T$ that approximate some target distribution $p(\btheta | x)$ that is analytically intractable, i.e. for which we cannot write down an exact expression. Given the parameter vector $\btheta = (\theta_1, \ldots, \theta_P)$, Gibbs sampling requires analytical expressions (or at least the ability to quickly generate samples from) the conditional distributions $p(\theta_p | \btheta_{-p}, x)$ where $\btheta_{-p}$ is the set of parameters other than $p$. Gibbs sampling then proceeds by consecutively drawing
+As the model exhibits complete conditional conjugacy, inference was performed using Gibbs sampling. Briefly, Gibbs sampling is a Markov Chain Monte-Carlo (MCMC) algorithm for drawing a sequence of $T$ samples $\btheta^1, \ldots, \bm \theta^T$ that approximate some target distribution $p(\btheta | x)$ that is analytically intractable, i.e. for which we cannot write down an exact expression. Given the parameter vector $\btheta = (\theta_1, \ldots, \theta_P)$, Gibbs sampling requires analytical expressions (or at least the ability to quickly generate samples from) the conditional distributions $p(\theta_p | \btheta_{-p}, x)$ where $\btheta_{-p}$ is the set of parameters other than $p$. Gibbs sampling then proceeds by consecutively drawing
 
 \begin{equation}
 	%\begin{aligned}
@@ -172,7 +172,7 @@ While in algorithms such as Wishbone and DPT this non-identifiability is solved 
 
 \subsubsection{Generating of synthetic datasets}
 
-Synthetic datasets were generated for various simulations throughout the analysis. Rather than simply generating data from the model we attempted to create synthetic data that was as close to real single-cell data as feasible, meaning \emph{the synthetic data is severely misspecified with respect to our model}. 
+Synthetic datasets were generated for various simulations throughout the analysis. Rather than simply generating data from the model we attempted to create synthetic data that was as close to real single-cell data as feasible, meaning the synthetic data is severely misspecified with respect to our model. 
 
 % The full details can be found in algorithm \ref{alg:synth} but summarise the procedure below.
 
@@ -247,7 +247,7 @@ Synthetic datasets were generated for various simulations throughout the analysi
 
 The first consideration is the functional form of gene expression along pseudotime. A linear assumption is fundamentally unrealistic as the gene expression cannot go to $\pm \infty$ as pseudotime progresses. Consequently we adopt sigmoidal expression across pseudotime (previously suggested in \cite{campbell2016order,campbell2016switchde} and discussed in chapters 2-3), parameterised\footnote{We depart from the previous notation here to avoid index hell when referencing multiple branches.} by the half-peak expression $\phi$, the \emph{switch-time} $\delta$ and the switch-strength $k$:
 \begin{equation}\label{eq:sigmoid}
-      \text{Sigmoid}(t, k, \phi, \delta)  = \frac{2 \phi}{1 + \exp(-k(t - \delta))}
+      \text{Sigmoid}(t, k, \phi, \delta)  = \frac{2 \phi}{1 + \exp(-k(t - \delta))}.
 \end{equation}
 
 %Examples of sigmoidal expression can be seen in figure \ref{fig:branch_expression}.
@@ -392,7 +392,7 @@ We subsequently compared the inferred pseudotimes and branching to those found u
 \section{Discussion}
 
 % What we did
-In this paper we have presented a Bayesian hierarchical mixture of factor analysers for inference of bifurcating trajectories in single-cell data. Our model is unique compared to existing efforts in that it (a) is fully generative, incorporating measurement noise into inference, (b) jointly infers both the pseudotimes and branches compared to post-hoc inference of branch detection, and (c) jointly infers which genes are differentially regulated across the branches. We also proposed an extension that accounts for the high levels of zero-inflation present in single-cell RNA-seq data. We applied our model to a range of synthetic and real datasets and demonstrated it  performs competitively with existing methods.
+In this chapter we have presented a Bayesian hierarchical mixture of factor analysers for inference of bifurcating trajectories in single-cell data. Our model is unique compared to existing efforts in that it (a) is fully generative, incorporating measurement noise into inference, (b) jointly infers both the pseudotimes and branches compared to post-hoc inference of branch detection, and (c) jointly infers which genes are differentially regulated across the branches. We also proposed an extension that accounts for the high levels of zero-inflation present in single-cell RNA-seq data. We applied our model to a range of synthetic and real datasets and demonstrated it  performs competitively with existing methods.
 
 % Some comparisons
 \subsection{Trade off between model expressivity and practicality}
