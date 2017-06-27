@@ -63,7 +63,7 @@ In factor analysis models it is typical to standardize the data so that the marg
 \begin{equation}
   \begin{aligned}
 \mbz_n & \sim \Norm(0, \mbI) \\
-\mby_n & \sim \Norm\left( \mbA \mbx_n + (\mblambda + \mbB \mbx_n) z_n, \mbSigma\right)
+\mby_n & \sim \Norm\left( \mbA \mbx_n + (\mblambda + \mbB \mbx_n) z_n, \mbSigma\right).
   \end{aligned} \label{eq:clvm}
 \end{equation}
 
@@ -117,7 +117,7 @@ Variational inference posits an approximating or \emph{variational} distribution
 \label{eq:kl_min}
 \end{equation}
 
-A little algebra shows that minimising the $KL$-divergence in equation \ref{eq:kl_min} is equivalent to maximising the evidence lower-bound (ELBO), defined as
+A little algebra shows that minimising the KL-divergence in equation \ref{eq:kl_min} is equivalent to maximising the evidence lower-bound (ELBO), defined as
 \begin{equation}
   \text{ELBO}(\mblambda; \mbX, \mbtheta) = \mbE_{q(\mbtheta | \mblambda)} \left[
 \log q(\mbtheta | \mblambda) - \log p(\mbX, \mbtheta)
@@ -134,8 +134,8 @@ For our model in equation \ref{eq:clvm_model} we make what is known as a mean-fi
 \{ \mu_g \}_{g=1}^G,
 \{ \tau_g \}_{g=1}^G,
 \{ \lambda_g \}_{g=1}^G,
-\{ \alpha_{pg} \}_{g=1,p=1}^{G,P}
-\{ \beta_{pg} \}_{g=1,p=1}^{G,P}
+\{ \alpha_{pg} \}_{g=1,p=1}^{G,P},
+\{ \beta_{pg} \}_{g=1,p=1}^{G,P},
 \{ \chi_{pg} \}_{g=1,p=1}^{G,P}
 \right) \\
 & = \prod_{n=1}^N \underbrace{q_z(z_n)}_{\text{Normal}}
@@ -390,7 +390,7 @@ The most striking interaction discovered for this dataset was the \mlh gene whos
 
 We next performed a pseudotemporal analysis of the TCGA breast cancer cohort using estrogen receptor (ER) status as a phenotypic covariate. Approximately 60\% of breast cancers are estrogen receptor positive
 \cite{Early_Breast_Cancer_Trialists_Collaborative_Group_EBCTCG_undated-ux}, which is typically associated with improved prognosis and a longer time to recurrence 
-\cite{Parl1984-fo}. We applied PhenoPath to 1,135 samples post-QC and 4,579 highly variable genes. PhenoPath was run for approximately 2000 CAVI iterations until convergence of the ELBO (figure \ref{fig:elbo_coad}). Using our Bayesian significance testing criterion (section \ref{sec:sigtest}) we found 1,932 genes (42\%) affected by an interaction between the pseudotemporal trajectory and ER receptor status (figure \ref{fig:brca_er}A).
+\cite{Parl1984-fo}. We applied PhenoPath to 1,135 samples post-QC and 4,579 highly variable genes. PhenoPath was run for approximately 2000 CAVI iterations until convergence of the ELBO (figure \ref{fig:elbo_brca}). Using our Bayesian significance testing criterion (section \ref{sec:sigtest}) we found 1,932 genes (42\%) affected by an interaction between the pseudotemporal trajectory and ER receptor status (figure \ref{fig:brca_er}A).
  There was a correlation between the pathway interaction strength and the $p$-value reported through standard differential expression (figure \ref{fig:brca_er}B), though there remained some genes that exhibited pathway interaction and no differential expression.
 
 \begin{figure}
@@ -582,7 +582,7 @@ We subsequently performed a gene ontology (GO) enrichment analysis to identify t
 
 Figure \ref{fig:brca}(\textbf{b}) shows the posterior estimates of $\chi_g^{-1}$ against the posterior estimates of $\beta_g$ coloured by whether the interaction is identified as significant. % or not using the criterion from \ref{sec:signif}.
 A total of 2,371 genes (42\% of those included) exhibited a significant interaction between the inferred angiogenesis trajectory and the survival times of the patients. Many of the genes with the largest $\beta$ effect sizes are previously implicated in cancer progression: \emph{SDPR} acts as a metastasis suppressor \citep{ozturk2016sdpr}, \emph{PRMT1} promotes mitosis in
-cancer cells \citep{deng2015prmt1}, and modulates the epithelial-mesenchymal transition and cellular senescence in breast cancer cells \citep{gao2016dual}, while \emph{TOP2A} is a predictive marker of chemotherapy efficacy \citep{wang2012top2a}.
+cancer cells \citep{deng2015prmt1} and modulates the epithelial-mesenchymal transition and cellular senescence in breast cancer cells \citep{gao2016dual}, while \emph{TOP2A} is a predictive marker of chemotherapy efficacy \citep{wang2012top2a}.
 
 We next performed hierarchical clustering on the expression profiles of the 2,371 genes that showed significant interactions between angiogensis and survival time, as shown in figure \ref{fig:brca}(\textbf{c}). This identified two main classes of genes whose expression programmes followed correlated expression patterns. %KC: I'm going to purgatory for this sentence
 A further GO analysis individually on each gene set revealed their biological relevance.

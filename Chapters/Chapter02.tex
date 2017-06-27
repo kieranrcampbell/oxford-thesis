@@ -45,7 +45,7 @@ However, the flexible nonparametric nature of the B-spline basis functions may l
 \includegraphics[width=0.85\textwidth]{gfx/ch2/switchde/fig1}
 \caption[Sigmoidal expression across pseudotime.]{Sigmoidal expression across pseudotime.
 \textbf{A} The sigmoid curve as a model of gene expression along single-cell trajectories, parametrised by the average peak expression $\mu_0$, the activation strength $k$ and the activation time $t_0$.
-\textbf{B} An example using the \emph{NDC80} gene from the Trapnell dataset (\cite{Trapnell2014-xi}), which had the lowest $p$-value of all genes tested. Gene expression measurements are shown as the grey points with the maximum likelihood sigmoid fit denoted by the dark line. The maximum likelihood parameter estimates were $\muu = 2.73$, $k_g = -8.71$ and $\tou = 17.61$.
+\textbf{B} An example using the \emph{NDC80} gene from the Trapnell dataset \cite{Trapnell2014-xi}, which had the lowest $p$-value of all genes tested. Gene expression measurements are shown as the grey points with the maximum likelihood sigmoid fit denoted by the dark line. The maximum likelihood parameter estimates were $\muu = 2.73$, $k_g = -8.71$ and $\tou = 17.61$.
 \textbf{C} Zero-inflated differential expression for the transcription factor \emph{MYOG}. Solid line shows the MLE sigmoidal mean while  crosses show imputed gene expression measured as zeroes.
 \textbf{D} Posterior predictive density for the zero-inflated model with the solid line denoting MLE sigmoidal mean.
 }\label{fig:01}
@@ -98,7 +98,7 @@ which can be fitted with an expectation-maximisation algorithm (appendix \ref{ap
 
 \subsubsection{Expression profiles of marker genes}
 
-In \cite{Trapnell2014-xi} the genes \emph{CDK1} and \emph{ID1} are identified as markers for the myoblast differentiation trajectory. Zero-inflated \texttt{switchde} fits for these two genes are shown in figures \ref{fig:S1}A\& B respectively along with the imputed dropout expression (blue crosses). Using the zero-inflated likelihood ratio test these two genes have $p$-values of $2.371947 \times 10^{-73}$ and $1.550464 \times 10^{-8}$.
+In \cite{Trapnell2014-xi} the genes \emph{CDK1} and \emph{ID1} are identified as markers for the myoblast differentiation trajectory. Zero-inflated \texttt{switchde} fits for these two genes are shown in figures \ref{fig:S1}A\&B respectively along with the imputed dropout expression (blue crosses). Using the zero-inflated likelihood ratio test these two genes have $p$-values of $2.371947 \times 10^{-73}$ and $1.550464 \times 10^{-8}$.
 
 \begin{figure}[h]
 \centering
@@ -221,7 +221,7 @@ The hierarchical model specification for probabilistic pseudotime using a Gaussi
 	\bSigma & =  \mathrm{diag}(\sigma_1^2, \dots, \sigma_P^2) \\
 	K^{(p)}(t, t') & = \exp( -\lambda_p (t-t')^2 ), ~p=1,\dots, P, \\
 	\mu_p &\sim  \mathrm{GP}(0, K^{(p)}), ~ p=1,\dots,P,  \\
-	\mbx_{n} & \sim  \mathrm{MultiNorm}( \mbmu(t_n), \mbSigma ), ~i=1,\dots,N.
+	\mbx_{n} & \sim  \Norm( \mbmu(t_n), \mbSigma ), ~i=1,\dots,N.
 \end{aligned}
 \end{equation}\label{eq:pseudogp_model}
 
@@ -266,7 +266,7 @@ so $\mbtheta$ and $\mbp$ are independent. To target the Bayesian posterior densi
 	U(\mbtheta) = -\log\left[ p(\mbX | \mbtheta) p(\mbtheta )\right].
 \end{equation}
 
-The HMC algorithm begins by initialising the parameters $\mbtheta$ and the momenta $\mbp$ (by drawing from the prior $\Norm(\mbzero, \mbM)$). A single HMC iteration involves simulating Hamiltonian dynamics on $(\mbtheta, \mbp)$ according to equation \ref{eq:hd} for $L$ steps with a step-size of $\epsilon$, ending at some position $\mbtheta*$, at which point the momentum is negated giving a proposed state $(\mbtheta*, \mbp*)$. The proposed state is then accepted with probability
+The HMC algorithm begins by initialising the parameters $\mbtheta$ and the momenta $\mbp$ (by drawing from the prior $\Norm(\mbzero, \mbM)$). A single HMC iteration involves simulating Hamiltonian dynamics on $(\mbtheta, \mbp)$ according to equation \ref{eq:hd} for $L$ steps with a step-size of $\epsilon$, ending at some position $\mbtheta^*$, at which point the momentum is negated giving a proposed state $(\mbtheta^*, \mbp^*)$. The proposed state is then accepted with probability
 \begin{equation}
 	\text{min}\left[ 1, \exp(-H(\mbtheta*, \mbp*) + H(\mbtheta, \mbp))\right].
 \end{equation}
@@ -303,7 +303,8 @@ It is interesting to discuss the latter point as it is an issue that is often no
 
 Returning to the intrinsic cell-to-cell variability, we next considered the conditional posterior predictive data distributions $p(\bX^*|t^*, \bX)$ which are shown in figure \ref{fig:posmean}D-F. These distributions show the possible distribution of future data points given the existing data \emph{and} a theoretical pseudotime $t^*$ and, in this example, we condition on pseudotimes $t^* = 0.5$ and $t^* = 0.7$. Although the two pseudotimes differ by a magnitude of 0.2, the conditional predictive distributions are very close or overlapping. This means that cells with pseudotimes of 0.5 or 0.7 could have given rise to data point occupying these overlapping regions. This variability is what ultimately limits the temporal resolution that can be obtained.
 
-It is important to note that the posterior mean trajectories correspond to certain \textit{a priori} or subjective smoothness assumptions (specified as hyperparameters in the model specification) which dedicate the curvature properties of the trajectory. Figure \ref{fig:varygamma} shows three alternative posterior mean pseudotime trajectories for the Trapnell data based on different hyperparameters settings for the GPLVM. In a truly unsupervised scenario all three paths could be plausible as we would have little information to inform us about the true shape of the trajectory. This would become an additional source of uncertainty in the pseudotime estimates. However, we favoured hyperparameter settings that gave rise to well-defined (unimodal) posterior distributions that resulted in multiple independent Markov Chain Monte Carlo runs converging to the same mean trajectory rather than settings that give rise to a ``lumpy'' posterior distribution with many local modes corresponding to different interpretations of the data. Later on, when we consider inference using multiple representations, the ability to specify a wider choice of trajectories is useful as we will demonstrate how the correspondence between pseudotime trajectories in different reduced dimension representations is not always obvious from a visual analysis.
+It is important to note that the posterior mean trajectories correspond to certain \textit{a priori} or subjective smoothness assumptions (specified as hyperparameters in the model specification) which dedicate the curvature properties of the trajectory. Figure \ref{fig:varygamma} shows three alternative posterior mean pseudotime trajectories for the Trapnell data based on different hyperparameters settings for the GPLVM. In a truly unsupervised scenario all three paths could be plausible as we would have little information to inform us about the true shape of the trajectory. This would become an additional source of uncertainty in the pseudotime estimates. However, we favoured hyperparameter settings that gave rise to well-defined (unimodal) posterior distributions that resulted in multiple independent Markov Chain Monte Carlo runs converging to the same mean trajectory rather than settings that give rise to a ``lumpy'' posterior distribution with many local modes corresponding to different interpretations of the data. 
+%Later on, when we consider inference using multiple representations, the ability to specify a wider choice of trajectories is useful as we will demonstrate how the correspondence between pseudotime trajectories in different reduced dimension representations is not always obvious from a visual analysis.
 
 \begin{figure}
 
@@ -380,7 +381,7 @@ We further explore this in figure \ref{fig:switchres2} which shows ten genes ide
 } \label{fig:switchres2}
 \end{figure}
 
-We note that we have deliberately avoid directly linking the sigmoidal gene activation and GPLVM pseudotime models to derive a single, joint model. In a joint model, the inference would attempt to order the cells in such a way as to maximise the fit of the sigmoidal and GPLVM to the expression data. However, as the sigmoidal model is only intended to identify genes with switch-like behaviour, it cannot explain other types of pseudotime dependence that may and do exist. This model misspecification would potentially drive inference in ways that cannot be foreseen.
+% We note that we have deliberately avoid directly linking the sigmoidal gene activation and GPLVM pseudotime models to derive a single, joint model. In a joint model, the inference would attempt to order the cells in such a way as to maximise the fit of the sigmoidal and GPLVM to the expression data. However, as the sigmoidal model is only intended to identify genes with switch-like behaviour, it cannot explain other types of pseudotime dependence that may and do exist. This model misspecification would potentially drive inference in ways that cannot be foreseen.
 
 \subsection{Contribution to pseudotime uncertainty from the reduced dimensional representation}
 

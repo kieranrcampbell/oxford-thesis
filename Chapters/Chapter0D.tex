@@ -29,8 +29,6 @@
 \section{Gibbs updates}
 
 The full model is specified by
-
-
 \begin{equation} \label{eq:mfamodel}
 \begin{aligned}
 \bm \omega & \sim \text{Dirichlet}(1 / B, \ldots, 1 / B) \\
@@ -51,26 +49,22 @@ where $\by_n$ is a $G$-length vector of expression in cell $n$, $B$ is the numbe
 \paragraph{Update for $\gamma$}
 
 Defining $\pi_{n,b} = p(\gamma_n = b)$ (the probability that cell $n$ is on branch $b$) then
-
 \begin{equation}
   p(\gamma_n | \by_n, t_n, \{ \Lambda_b \}_{b=1}^B, \bm \omega, \btau) = \text{Categorical}(\bm \pi_{n})
 \end{equation}
 
 where
-
 \begin{equation}
   \pi_{n,b} = \frac{\omega_b \norm(\by_n | \bc_b + \bk_b t_n, \tauinv)}
   {\sum_{b'=1}^B \omega_{b'} \norm(\by_n | \bc_{b'} + \bk_{b'} t_n, \tauinv) }
 \end{equation}
 
 \paragraph{Update for $k$}
-
 \begin{equation}
   k_{gb} | \bgamma, c_{gb}, \bY, \btau, \bt \sim \norm(\nu^k_{gb}, 1 / \lambda^k_{gb})
 \end{equation}
 
 where
-
 \begin{equation}
 \begin{aligned}
 \nu^k_{gb} & = \frac{\tau_g \sum_{n:\gamma_n = b}  t_n (y_{ng} - c_{gb})}{\tau_k +  \tau_g \sum_{n:\gamma_n = b}  t_n^2}\\
@@ -79,13 +73,11 @@ where
 \end{equation}
 
 \paragraph{Update for $c$}
-
 \begin{equation}
   c_{gb} | \bgamma, k_{gb}, \bY, \btau, \bt \sim \norm(\nu^c_{gb}, 1 / \lambda^c_{gb})
 \end{equation}
 
 where
-
 \begin{equation}
 \begin{aligned}
 \nu^c_{gb} & = \frac{\tau_g \sum_{n:\gamma_n = b} (y_{ng} - k_{gb} t_n)}{\tau_c + N_b \tau_g}\\
@@ -96,19 +88,16 @@ where
 and $N_b$ is the number of cells assigned to branch $b$ at that iteration.
 
 \paragraph{Update for $\omega$}
-
 \begin{equation}
   \bm \omega | \{N_b\}_{b=1}^B, B \sim \text{Dirichlet}(1/B + N_1, \ldots, 1/B + N_B)
 \end{equation}
 
 \paragraph{Update for $t$}
-
 \begin{equation}
   t_n | \bgamma, \{ \Lambda_b \}_{b=1}^B, \btau \sim \norm(\nu^t_n, 1 / \lambda^t_n)
 \end{equation}
 
 where
-
 \begin{equation}
 \begin{aligned}
 \nu^t_{n} & = \frac{\sum_g \tau_g k_{g\gamma_n} (y_{ng} - c_{g\gamma_n})}
@@ -118,7 +107,6 @@ where
 \end{equation}
 
 \paragraph{Update for $\btau$}
-
 \begin{equation}
 \tau_g |  \{ \Lambda_b \}_{b=1}^B, \bt, \bgamma \sim \text{Gamma}\left( \alpha + N / 2,
 \beta + \sum_{n=1}^N \frac{(y_{ng} - \mu_{ng})^2}{2}
@@ -128,14 +116,12 @@ where
 where $\mu_{ng} = c_{g\gamma_n} + k_{g\gamma_n} t_n$.
 
 \paragraph{Update for $\eta$}
-
 \begin{equation}
   \eta | \tau_c, \{\bc_b\}_{b=1}^B, \tau_\eta, \tilde{\eta}
   \sim \norm(\nu^\eta, 1 / \lambda^\eta)
 \end{equation}
 
 where
-
 \begin{equation}
   \begin{aligned}
     \nu^\eta & = \frac{\tau_c \sum_{b,g} c_{gb}  + \tau_\eta \tilde{\eta}}
@@ -145,14 +131,12 @@ where
 \end{equation}
 
 \paragraph{Update for $\theta$}
-
 \begin{equation}
   \theta_g | \bm \chi, \{\bk_b\}_{b=1}^B, \tau_\theta, \tilde{\theta}
   \sim \norm(\nu^\theta_g, 1 / \lambda^\eta_g)
 \end{equation}
 
 where
-
 \begin{equation}
   \begin{aligned}
     \nu^\theta_g & = \frac{\chi_g \sum_{b} k_{gb}  + \tau_\theta \tilde{\theta}}
@@ -162,7 +146,6 @@ where
 \end{equation}
 
 \paragraph{Update for $\chi$}
-
 \begin{equation}
   \chi_g | \{\bk_b\}_{b=1}^B, \theta_g, \alpha_\chi, \beta_\chi
   \sim \text{Gamma} \left(
@@ -174,7 +157,6 @@ where
 \section{Validation of updates}
 
 All Gibbs updates were checked numerically using the Gwecke test (see e.g. \cite{grosse2014testing}). This exploits the identity
-
 \begin{equation}
   \frac{p(\theta = x | \Theta, \mathcal{D})}{p(\theta = x' | \Theta, \mathcal{D})} =
   \frac{p(\theta = x, \Theta | \mathcal{D})}{p(\theta = x', \Theta | \mathcal{D})}

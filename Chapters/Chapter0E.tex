@@ -6,7 +6,6 @@
 For both Gibbs sampling and variational inference we require the conditional densities $p(\theta_i | \theta_{-i}, \bY)$.
 
 Recall we have data in the form of an $N \times G$ matrix $\bY$ and an $N \times P$ matrix $\bX$ for $N$ samples, $G$ features and $P$ covariates. Our model is
-
 \begin{equation}
 \begin{aligned}
 \alpha_{pg} & \sim \norm(0, \tau_\alpha^{-1}) \\
@@ -26,7 +25,6 @@ where $\tau_\alpha$, $\tau_\lambda$, $a$, $b$, $a_\beta$, $b_\beta$, $\tau_q$ ar
 
 
 The motivation to reintroduce $\mu_g$ even if the columns of $\bY$ are centred is as follows: if we consider (in a frequentist setting) the factor loadings to be fixed and $Y$, $X$ and $Z$ as random variables, then we have
-
 \begin{equation}
 E[Y_{ng}] \propto \lambda_g E[Z] + \sum_p \beta_{pg} E[X_{pg}Z_n]
 \end{equation}
@@ -49,7 +47,6 @@ z_n | \cdot \sim \norm \left( \frac{ \sum_g \tau_g k_{ng} (y_{ng} - \mu_{g} - \s
 where $k_{ng} = \lambda_g + \sum_p \beta_{pg} x_{np}$.
 
 \paragraph{Conditional distribution of $\alpha_{pg}$}
-
 \begin{equation}
 \alpha_{pg} | \cdot \sim \norm \left( \frac{
 \tau_g \sum_n (y_{ng} - \tilde{\mu}_{ng}^{\alpha_p})x_{np}
@@ -65,7 +62,6 @@ where
 in which $\sum_{p' \neq p}$ denotes the summation over 1 to $P$ excluding $p$.
 
 \paragraph{Conditional distribution of $\beta_{pg}$}
-
 \begin{equation}
 \beta_{pg} | \cdot \sim \norm \left( \frac{
 \tau_g \sum_n (y_{ng} - \tilde{\mu}_{ng}^{\beta_p})x_{np} z_n
@@ -80,7 +76,6 @@ where
 \end{equation}
 
 \paragraph{Conditional distribution of $\tau_g$}
-
 \begin{equation}
 \tau_g | \cdot \sim \text{Gamma}\left(
 a + \frac{N}{2}, b + \sum_n \frac{(y_{ng} - \tilde{\mu}^\tau_{ng})^2}{2}
@@ -88,19 +83,16 @@ a + \frac{N}{2}, b + \sum_n \frac{(y_{ng} - \tilde{\mu}^\tau_{ng})^2}{2}
 \end{equation}
 
 where
-
 \begin{equation}
 \tilde{\mu}^\tau_{ng} = \mu_g + \sum_p \alpha_{pg} x_{np} + \left( \lambda_g + \sum_p \beta_{pg} x_{np} \right) \lambda_n.
 \end{equation}
 
 \paragraph{Conditional distribution of $\chi_{pg}$}
-
 \begin{equation}
 \chi_{pg} | \cdot \sim \text{Gamma}\left( a_\beta + \frac{1}{2}, b_\beta + \frac{\beta_{pg}^2}{2}\right)
 \end{equation}
 
 \paragraph{Conditional distribution of $\lambda_g$}
-
 \begin{equation}
 \lambda_g | \cdot \sim \norm\left(
 \frac{\tau_g \sum_n z_n(y_{ng} - \tilde{\mu}^\lambda_{ng})}{\tau_g \sum_n z_n^2 + \tau_\lambda},
@@ -109,13 +101,11 @@ where
 \end{equation}
 
 where
-
 \begin{equation}
 \tilde{\mu}^\lambda_{ng} = \mu_g + \sum_p \alpha_{pg} x_{np} + \left( \sum_p \beta_{pg} x_{np} \right) z_n
 \end{equation}
 
 \paragraph{Conditional distribution of $\mu_g$}
-
 \begin{equation}
 \mu_g | \cdot \sim \norm\left(
 \frac{\tau_g \sum_n(y_{ng} - \nu_{ng})}{N \tau_g + \tau_\mu}, [N \tau_g + \tau_\mu]^{-1}
@@ -123,7 +113,6 @@ where
 \end{equation}
 
 where
-
 \begin{equation}
 \nu_{ng} = \sum_p \alpha_{pg} x_{np} + \left( \lambda_g + \sum_p \beta_{pg} x_{np} \right) z_n
 \end{equation}
@@ -136,7 +125,6 @@ where
 
 
 \paragraph{Conditional expectation of $\mbz$}
-
 \begin{equation}
 \begin{aligned}
 \Ex_{-z_n}[\mu_{z_n}\tau_{z_n}] & = \sum_g \Big[ \frac{a_{\tau_g}}{b_{\tau_g}}
@@ -152,7 +140,6 @@ where
 \end{equation}
 
 Where we have used the fact that
-
 \begin{equation}
   \begin{aligned}
 \Ex_{-z_n}[(\lambda_g + \sum_p \beta_{pg} x_{np})^2] & =  \Big(m_{\lambda_g}^2 + s_{\lambda_g}^2 + 2m_{\lambda_g} \sum_p m_{\beta_{pg}} x_{np} \\
@@ -166,7 +153,6 @@ Where we have used the fact that
 and for several variables that $\Ex_{-z_n}[\theta^2] = \text{Var}_{-z_n}[\theta] + \Ex_{-z_n}[\theta]^2$.
 
 \paragraph{Conditional expectation of $\alpha_{pg}$}
-
 \begin{equation}
 \begin{aligned}
 \Ex_{-\alpha_{pg}}[\mu_{pg} \tau_{pg}] & =
@@ -180,7 +166,6 @@ y_{ng} - m_{\mu_g} - m_{z_n}( m_{\lambda_g} + \sum_{p'} m_{\beta_{p'g}} x_{np} )
 \end{equation}
 
 \paragraph{Conditional expectation of $\beta_{pg}$}
-
 \begin{equation}
 \begin{aligned}
 \Ex_{-\beta_{pg}}[\mu_{\beta_{pg}} \tau_{\beta_{pg}}] & =
@@ -198,7 +183,6 @@ y_{ng} - m_{\mu_g} - \frac{m_{z_n}^2 + s_{z_n}^2}{m_{z_n}} m_{\lambda_g} \\
 Where in both cases we have used the fact that $\Ex_{-\beta_{pg}} [z_n^2] = \text{Var}_{-\beta_{pg}}[z_n] + \Ex_{-\beta_{pg}}[z_n]^2$.
 
 \paragraph{Conditional expectation of $\tau_g$}
-
 \begin{equation}
 \begin{aligned}
 \Ex_{-\tau_g}[a_{\tau_g}] & = a + \frac{N}{2} \\
@@ -207,7 +191,6 @@ Where in both cases we have used the fact that $\Ex_{-\beta_{pg}} [z_n^2] = \tex
 \end{equation}
 
 Where
-
 \begin{equation}
 \begin{aligned}
 f_{ng}  & =  \Ex_{-\tau_g} \left[ \left(y_{ng} - \mu_g - \sum_p \alpha_{pg} x_{np} - \left( \lambda_g + \sum_p \beta_{pg} x_{np} \right) z_n
@@ -233,7 +216,6 @@ f_{ng}  & =  \Ex_{-\tau_g} \left[ \left(y_{ng} - \mu_g - \sum_p \alpha_{pg} x_{n
 \end{equation}
 
 For this we require the identities
-
 \begin{equation}
 \begin{aligned}
 \Ex[\theta^2] & = \text{Var}[\theta] + \Ex[\theta]^2 \\
@@ -243,7 +225,6 @@ For this we require the identities
 \end{equation}
 
 This gives
-
 \begin{equation}
 \begin{aligned}
 f_{ng}  & =  
@@ -268,7 +249,6 @@ m_{\mu_g}^2 + s_{\mu_g}^2 + \\ % 1
 
 
 \paragraph{Conditional expectation of $\chi_{pg}$}
-
 \begin{equation}
 \begin{aligned}
 \Ex_{-\chi_{pg}}[a_{\chi_{pg}}] & = a_\beta + \frac{1}{2} \\
@@ -282,7 +262,6 @@ where again we have used the fact that $\Ex_{-\chi_{pg}}[\beta_{pg}^2] =
 \Ex_{-\chi_{pg}}[\beta_{pg}]^2$.
 
 \paragraph{Conditional expectation of $\lambda_g$}
-
 \begin{equation}
 \begin{aligned}
 \Ex_{-\lambda_g}[\mu_{\lambda_g} \tau_{\lambda_g}] & = \frac{a_{\tau_g}}{b_{\tau_g}}
@@ -296,7 +275,6 @@ y_{ng} - m_{\mu_g} \\
 \end{equation}
 
 \paragraph{Conditional expectation of $\mu_g$}
-
 \begin{equation}
 \begin{aligned}
 \Ex_{-\mu_g}[\mu_{\mu_g} \tau_{\mu_g}] & =  \frac{a_{\tau_g}}{b_{\tau_g} }
@@ -312,7 +290,6 @@ m_{\lambda_g} + \sum_{p'} m_{\beta_{p'g}} x_{np'})
 \subsection{Calculating the ELBO}
 
 To assess convergence of the CAVI algorithm we need to calculate the evidence lower bound (ELBO) at every iteration (or every $i^{th}$ iteration). The ELBO is given by
-
 \begin{equation}
 \text{ELBO} = \Ex[\log p(\bY | \Theta)] + \Ex[\log p(\Theta)] - \Ex[\log q(\Theta)]
 \end{equation}
@@ -322,13 +299,11 @@ where all expectations are taken with respect to the approximating distribution 
 \paragraph{Derivation of $\Ex[\log p(\bY | \Theta)]$}
 
 We have
-
 \begin{equation}
 \log p(\bY | \Theta) = \sum_n \sum_g \log \norm(y_{ng} | \mu_{ng}, \tau_g^{-1})
 \end{equation}
 
 where $\mu_{ng} = \mu_g + \sum_p \alpha_{pg} x_{np} + z_n \left( \lambda_g + \sum_p \beta_{pg} x_{np} \right)$. Then
-
 \begin{equation}
 \begin{aligned}
 \Ex[ \log p(\bY | \Theta) ] & \propto \sum_g \left[ \frac{N}{2} \Ex[\log \tau_g] -
@@ -344,7 +319,6 @@ where $f_{ng}$ is defined as above and we have dropped additive terms since we a
 \paragraph{Derivation of  $\Ex[\log p(\Theta)]$}
 
 We consider $\Ex[\log p (z_n)]$ which generalises to all parameters with Gaussian priors. We have
-
 \begin{equation}
 \begin{aligned}
 \Ex[\log p (z_n)] &= \Ex\left[ \frac{1}{2} \log \frac{\tau_q}{2 \pi} - \frac{\tau_q}{2} (z_n - q_n)^2 \right] \\
@@ -354,7 +328,6 @@ We consider $\Ex[\log p (z_n)]$ which generalises to all parameters with Gaussia
 \end{equation}
 
 Next consider $\Ex[\log p (\tau_g)]$ which generalises to all parameters with Gamma priors. We have
-
 \begin{equation}
 \begin{aligned}
 \Ex[\log p(\tau_g)] & \propto \Ex[\log(\tau_g^{a-1} e^{-\tau_g b})] \\
@@ -364,7 +337,6 @@ Next consider $\Ex[\log p (\tau_g)]$ which generalises to all parameters with Ga
 \end{equation}
 
 Thus the expression across all parameters up to a constant value is given by
-
 \begin{equation}
 \begin{aligned}
 \Ex[\log p(\Theta)] & \propto - \frac{\tau_q}{2}\sum_n (m_{z_n}^2 + s_{z_n}^2 - 2 m_{z_n} q_n) \\
@@ -378,7 +350,6 @@ Thus the expression across all parameters up to a constant value is given by
 \paragraph{Derivation of $\Ex[\log q(\Theta)]$}
 
 We consider $\Ex[\log q_z (z_n)]$ which naturally generalises to all parameters whose approximating distributions are Gaussian. We have
-
 \begin{equation}
 \begin{aligned}
 \Ex[\log q_z(z_n)] & \propto \Ex\left[ -\frac{1}{2} \log s_{z_n}^2 - \frac{1}{2 s_{z_n}^2} (z_n - m_{z_n})^2\right] \\
@@ -389,7 +360,6 @@ We consider $\Ex[\log q_z (z_n)]$ which naturally generalises to all parameters 
 \end{equation}
 
 Similarly we consider $\Ex[\log q_\tau(\tau_g)]$ which generalises to all parameters whose approximating distribution is Gamma. We have
-
 \begin{equation}
 \begin{aligned}
 \Ex[\log q_\tau(\tau_g)] & 
@@ -400,7 +370,6 @@ Similarly we consider $\Ex[\log q_\tau(\tau_g)]$ which generalises to all parame
 
 
 Summing this across all parameters gives
-
 \begin{equation}
 \begin{aligned}
 \Ex[\log q(\Theta)] &= -\frac{1}{2} \sum_n s_{z_n}^2 \\

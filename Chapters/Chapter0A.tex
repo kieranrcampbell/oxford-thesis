@@ -55,7 +55,6 @@ We next need to compute the gradients for all parameters. If we consider the fun
 \end{equation}
 
 To find the maximum likelihood estimate of $\Theta \equiv (\mu_0, k, t^{(0)})$ we wish to minimise the negative log-likelihood, given by
-
 \begin{equation}
 \begin{aligned}
 \mathcal{L}  = - \log L(\by, \bt; \Theta) & = -\sum_{n=1}^N \log \mathcal{N}\left(y_n | f(t_n; \Theta), \sigma^2 \right) \\
@@ -89,7 +88,6 @@ it follows that
 \section{Expectation-Maximisation for zero inflation} \label{app:switchdeem}
 
 Single-cell RNA-seq data is known to exhibit an over-representation of zeros known as ``dropouts''. To account for this we propose a model that incorporates dropouts in a similar style to \cite{pierson2015zifa}. Our model becomes
-
 \begin{equation}
 \begin{aligned}
 \mu(t_n, \theta) & = \frac{2 \mu_0}{1 + \exp\left(-k(t_n - t^{(0)})\right)} \\
@@ -106,7 +104,6 @@ h_{n} | x_{n} & \sim \mathrm{Bernoulli}(\exp(-\lambda x_{n}^2)) \\
 Where we have replaced $f \rightarrow \mu$ to avoid cluttering notation later. We essentially introduce a latent variable $x_n$ for each gene expression measurement but must now perform inference using the Expectation-Maximisation (EM) algorithm due to the intractability of directly maximising the log-likelihood. The secondary latent variable $h_n$ is a binary indicator for whether the expression measurement in cell $c$ is dropout or not. In the following we derive the EM algorithm which follows a similar derivation to \cite{pierson2015zifa} but with some differences, so it is provided in full below.
 
 In the following let $\Theta = \{\mu_0, k, t^{(0)}, \sigma^2\}$ and consider the complete-data likelihood:
-
 \begin{equation}
 	\begin{aligned}
 p(\by, \bx, \bh, \Theta) & = \prod_n p(y_n, x_n, h_n, \Theta), \\
@@ -121,7 +118,6 @@ p(\by, \bx, \bh, \Theta) & = \prod_n p(y_n, x_n, h_n, \Theta), \\
 
 
 We then use the same trick as \cite{pierson2015zifa}: if $y_n = 0$ then we know necessarily that $h_n = 1$ as $h_n = 0$ with zero probability. Similarly, if $y_n > 0$ then we observe $x_n = y_n$ and know that $h_n = 0$. We therefore split the product up into terms involving $y_n = 0$ and those involving $y_n > 0$, and now consider the log of the complete data likelihood with the shorthand notation $\mu_n \equiv \mu(t_n, \theta)$:
-
 \begin{equation} \label{eq:lcl}
 \begin{aligned}
 \mathcal{L}(\by, \bx, \bh, \Theta) & = \sum_\cz \left[ \log \norm(x_n | \mu_n, \sigma^2) - \lambda x_n^2 \right] + \sum_\cnz \left[ \log \norm(y_n | \mu_n, \sigma^2) + \log(1 - e^{-\lambda y_n^2}) \right] \\
@@ -136,19 +132,16 @@ We then use the same trick as \cite{pierson2015zifa}: if $y_n = 0$ then we know 
 \end{equation}
 
 In order to perform EM we need to calculate the expected value of this log likelihood, conditional on the data $\by$ and a previous estimate $\Thetat$:
-
 \begin{equation}
 Q(\Theta|\Thetat) = \Ex_{\bx | \by, \Thetat} [\mathcal{L}(\by, \bx, \bh, \Theta)]
 \end{equation}
 
 In order to calculate this it is obvious from equation \ref{eq:lcl} we must calculate $\Ex_{\bx | \by, \Thetat} [ x_n ]$ and $\Ex_{\bx | \by, \Thetat} [ x_n^2 ]$. Notice we only care about $\cz$ since for $\cnz$ we know $x_n$ exactly. Note that in all the following all the parameters are assumed fixed at the previous iteration, e.g. $\mu_n \equiv \mu_n^{(t)}$. If we consider a conditional density of the form
-
 \begin{equation}
 f(\bx | \by, \Thetat) = \prod_n f(x_n | y_n, \Thetat)
 \end{equation}
 
 then
-
 \begin{equation}
 \begin{aligned}
 f(x_n | y_n, \Thetat) & = \frac{f(y_n | x_n, \Thetat)f(x_n | \Thetat)}{\int dx_n f(y_n | x_n, \Thetat)f(x_n | \Thetat)} \\
@@ -158,13 +151,11 @@ f(x_n | y_n, \Thetat) & = \frac{f(y_n | x_n, \Thetat)f(x_n | \Thetat)}{\int dx_n
 
 
 Some algebra later and we arrive at
-
 \begin{equation}
 f(x_n | y_n, \Thetat) = \norm\left(x_n | \alpha(t_n, \Thetat), \beta(\Thetat) \right)
 \end{equation}
 
 where
-
 \begin{equation}
 \begin{aligned}
 \alpha(t_n, \Thetat) & = \frac{\mu_n}{2 \sigma^2 \lambda + 1} \\
@@ -173,7 +164,6 @@ where
 \end{equation}
 
 and so
-
 \begin{equation}
 \begin{aligned}
 \Ex_{\bx | \by, \Thetat} [ x_n ] &= \alpha(t_n, \Thetat)  \\
@@ -182,7 +172,6 @@ and so
 \end{equation}
 
 We need to maximise
-
 \begin{equation}
 \begin{aligned}
 Q(\Theta | \Thetat) &= \frac{-N}{2} \log(2 \pi \sigma^2) \\
@@ -194,7 +183,6 @@ Q(\Theta | \Thetat) &= \frac{-N}{2} \log(2 \pi \sigma^2) \\
 \end{equation}
 
 with respect to $\theta = \{\mu_0, k, t_0\}$, $\sigma^2$ and $\lambda$, recalling $\mu_n \equiv \mu_n(\theta, t_n)$. We wish to use gradient-based optimisation and so require the gradients. Note that
-
 \begin{equation}
 \begin{aligned}
 \frac{dQ}{d\theta} &= \sum_n \frac{\partial Q}{\partial \mu_n} \frac{d \mu_n}{d \theta} \\
@@ -204,14 +192,12 @@ with respect to $\theta = \{\mu_0, k, t_0\}$, $\sigma^2$ and $\lambda$, recallin
 \end{equation}
 
 where the derivatives $\frac{d \mu_n}{d \theta}$ are the same as those given in equation \ref{eq:derivatives}. Finally we require the partial derivatives with respect to $\lambda$ and $\sigma^2$ which are given by
-
 \begin{equation}
 \frac{dQ}{d \lambda} = -\sum_\cz  \Ex_{\bx | \by, \Thetat} [ x_n ] +
 \sum_\cnz \frac{y_n^2 e^{-\lambda y_n^2}}{1 - e^{-\lambda y_n^2}}
 \end{equation}
 
 and
-
 \begin{equation}
 \frac{dQ}{d\sigma^2} = \frac{-N}{2\sigma^2} +
 \frac{1}{2 \sigma^4} \left[ \sum_\cz \left( \Ex_{\bx | \by, \Thetat} [ x_n^2 ] - 2 \mu_n \Ex_{\bx | \by, \Thetat} [ x_n ] + \mu_n^2 \right) +

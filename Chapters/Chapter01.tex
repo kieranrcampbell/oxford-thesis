@@ -6,7 +6,8 @@
 
 \subsection{Introduction}
 
-It is hard to overstate the impact of single-cell whole-transcriptome expression quantification on recent scientific research. The first single-cell RNA-sequencing (scRNA-seq) method was introduced in 2009 \cite{Tang2009-th}, and gained widespread interest around three years later with the introduction of methods such as Smart-seq \cite{Ramskold2012-wt} and Smart-seq2 \cite{Picelli2013-tm} that significantly reduced the cost of library preparation. It is quite incredible that in the space of a little over five years the technology has sufficiently advanced from profiling a few tens of cells to thousands and hundreds of thousands using technologies such as Drop-seq \cite{Macosko2015-ek} and the 10x platform \cite{Zheng2017-vj}.
+It is hard to overstate the impact of single-cell whole-transcriptome expression quantification on recent scientific research. The first single-cell RNA-sequencing (scRNA-seq) method was introduced in 2009 \cite{Tang2009-th}, and gained widespread interest around three years later with the introduction of methods such as % Smart-seq \cite{Ramskold2012-wt} and 
+Smart-seq2 \cite{Picelli2013-tm} that significantly reduced the cost of library preparation. It is quite incredible that in the space of a little over five years the technology has sufficiently advanced from profiling a few tens of cells to thousands and hundreds of thousands using technologies such as Drop-seq \cite{Macosko2015-ek} and the 10x platform \cite{Zheng2017-vj}.
 
 This mass-production of single-cell data has led to an explosion of methods development for downstream analysis by both computational biologists and statisticians. There are now a wide range of methods specific to single-cell data for common analyses such as normalisation \cite{Lun2016-oj,Bacher2017-ga}, differential expression \cite{Kharchenko2014,Delmans2016-po,Korthauer2016-iz}, dimensionality reduction \cite{pierson2015zifa,Wang2017-dl}, and ``pseudotime'' analyses (see section \ref{sec:pseudotime}). Indeed, there are now over 100 dedicated tools for analysing single-cell data, 
 the majority of which have been produced since 2015.
@@ -44,7 +45,7 @@ To overcome these issues researchers began direct sequencing of the cDNA fragmen
 Single-cell library preparation - the process of converting each cell's mRNA to barcoded cDNAs ready for sequencing - has come a long way since the manual isolation of Tang et al. in 2009 \cite{Tang2009-th}. The most popular methods - such as 
 STRT-seq \cite{islam2011characterization}, 
 Smart-seq \cite{Ramskold2012-wt}, 
-Smart-seq2 \cite{Picelli2013-tm} and 
+Smart-seq2 \cite{Picelli2013-tm}, and 
 CEL-Seq \cite{hashimshony2012cel},
 all follow similar principles. Cells are (typically FACS) sorted into 96 (and more recently 384) well plates. In each well cells are lysed to release the RNA, which is then reverse transcribed to cDNA. There is then typically some amount of amplification to increase the overall quantity of cDNA for more reliable sequencing. Next, each cell is uniquely barcoded by appending a known sequence of nucleic acid to each cDNA molecule. This step greatly increased the throughput of single-cell RNA-seq by allowing multiplexed sequencing of all cells at once. Finally, the individual libraries are ready for sequencing.
 
@@ -97,7 +98,7 @@ The characteristic pattern of proportion of cells in which a gene is expressed c
 
 Several methods have attempted to correct for dropout through statistical modelling. An early example was SCDE \cite{Kharchenko2014} that uses a mixture model of a point pass at zero (the dropout component) and an ``amplified'' component. Noting that whether a gene is dropout is not a constant probability but dependent on the latent expression, they used a mixture-of-experts model where the probability of being amplified was logistic on the latent expression, i.e. $p_{\text{dropout}} = \text{Logistic}(\beta_0 + \beta_1 \mu)$ where $\mu$ is the latent expression and $\beta_0$ and $\beta_1$ are free parameters. An example of the logistic regression fit can be seen in figure \ref{fig:intro_dropout}B.
 
-A different dropout model was implemented in the dimensionality reduction model ZIFA (Zero Inflated Factor Analysis, \cite{pierson2015zifa}). ZIFA models the probability of a dropout as $p_{\text{dropout}} = \exp(-\lambda x)$ for a ``dropout rate'' $\lambda$ and latent (true) expression $x$. A factor analysis model then operates on $x$ (see section \ref{sec:intr:fa}) to find a reduced dimension representation of the data accounting for dropout. A further model called M3Drop \cite{Andrews2016-ij} models dropout using Michaelis-Menten enzyme kinetics to select highly-variable, though the authors admit that their model is a specific case of SCDE.
+A different dropout model was implemented in the dimensionality reduction model ZIFA (Zero Inflated Factor Analysis, \cite{pierson2015zifa}). ZIFA models the probability of a dropout as $p_{\text{dropout}} = \exp(-\lambda x^2)$ for a ``dropout rate'' $\lambda$ and latent (true) expression $x$. A factor analysis model then operates on $x$ (see section \ref{sec:intr:fa}) to find a reduced dimension representation of the data accounting for dropout. A further model called M3Drop \cite{Andrews2016-ij} models dropout using Michaelis-Menten enzyme kinetics to select highly-variable, though the authors admit that their model is a specific case of SCDE.
 
 Some methods take a different approach to dropout and treat it as a missing data problem that requires imputation. MAGIC \cite{Van_Dijk2017-wn} uses a diffusion-based approach (similar to diffusion maps, see section \ref{sec:diffusion_maps}) that computes a low-dimensional graph embedding before ``imputing'' each cell's expression by a weighted sum of its neighbours. A similar method SAVER \cite{SAVER} models expression using a Poisson likelihood with a latent true expression that is dependent on similar genes in the same cell (rather than the same gene in similar cells as per MAGIC).
 
@@ -159,15 +160,15 @@ A useful spreadsheet of single-cell software is maintained at \url{https://tinyu
 \hline
 Algorithm & Reference & Dimensionality reduction & Cell ordering & Probabilistic & Branching \\
 \hline
-Monocle & \cite{Trapnell2014-xi} & ICA &
-MST & No & Yes \\
+Monocle & \cite{Trapnell2014-xi} & ICA\footnote{Independent component analysis} &
+MST\footnote{Minimum spanning tree (cells are projected onto the longest path through the MST).} & No & Yes \\
 Wanderlust & \cite{Bendall2014-rc} & N/A & KNN-graph\footnote{$k$-nearest neighbour graph. Trajectory inferred by an ensembl of random walks.} & No & No \\
 Monocle 2 & \cite{Qiu2017-eu} & DDR-tree & Distance from root cell & No & Yes \\
-Scuba & \cite{Marco2014-ug} & t-SNE & Principal curves & No & Yes \\
+Scuba & \cite{Marco2014-ug} & t-SNE\footnote{See section \ref{sec:tsne}} & Principal curves & No & Yes \\
 Diffusion pseudotime & \cite{haghverdi2016diffusion} & N/A & Diffusion distance from root cell &
 Interpretation\footnote{DPT has an interpretation in terms of the probability of one cell state transitioning into the other. However, it does not define a generative probabilistic model.} & Yes \\
 SLICER & \cite{welch2016slicer} & LLE\footnote{See section \ref{sec:lle}} & Principal curves & No & Yes \\
-DeLorean & \cite{Reid2016-yo} & N/A & GPLVM & Yes & No \\
+DeLorean & \cite{Reid2016-yo} & N/A & GPLVM\footnote{See section \ref{sec:gplvm}} & Yes & No \\
 TSCAN & \cite{Ji2016-gx} & PCA & Cluster-based MST & No & Yes \\
 Waterfall & \cite{Shin2015} & PCA & Cluster-based distances & No & No \\
 \rowcolor{Gray}
@@ -183,7 +184,7 @@ This renaissance was largely spurred by the development of \texttt{Monocle} \cit
 
 \subsubsection{Monocle} \label{tbl:monocle}
 
-Monocle was designed to understand the gene expression dynamics that accompany the differentiation of stem cells into human skeletal muscle myoblasts (HSMM). There experimental design was to take stem cells and engineer a serum switch to induce differentiation, then perform single-cell RNA-sequencing at 0h, 24h, 48h and 72h afterwards. The authors noted that the expression patterns of key marker genes over time (such as switch-like inactivation of \emph{ID1}) was absent, and suggested asynchronicity of cellular development could be the underlying cause and thus a pseudotemporal ordering of cells was required.
+Monocle was designed to understand the gene expression dynamics that accompany the differentiation of stem cells into human skeletal muscle myoblasts (HSMM). The experimental design was to take stem cells and engineer a serum switch to induce differentiation, then perform single-cell RNA-sequencing at 0h, 24h, 48h and 72h afterwards. The authors noted that the expression patterns of key marker genes over time (such as switch-like inactivation of \emph{ID1}) was absent, and suggested asynchronicity of cellular development could be the underlying cause and thus a pseudotemporal ordering of cells was required.
 
 Monocle begins with a gene selection step to identify which should be retained for ordering the cells. In the original publication the authors used those genes differentially expressed\footnote{
 Using a Tobit likelihood model; see chapter 2 for further discussions on differential expression over pseudotime.
@@ -213,7 +214,7 @@ ICA finds a projection that maximises the kurtosis in the latent space, compared
 
 \subsubsection{Wanderlust}
 
-Published just a month after Monocle was Wanderlust \cite{Bendall2014-rc}, an algorithm developed to uncover human B cell lymphopoiesis using single-cell mass cytometry data. Compared to transcriptome wide RNA sequencing, mass cytometry measures a smaller number of markers. In this study, a custom panel of 44 makers designed to characterise B-cells were measured, including ``phenotypic proteins, transcription factors, regulatory enzymes, cell-state indicators, and activation of regulatory signalling molecules''.
+Published just a month after Monocle was Wanderlust \cite{Bendall2014-rc}, an algorithm developed to uncover human B cell lymphopoiesis using single-cell mass cytometry data. Compared to transcriptome-wide RNA sequencing, mass cytometry measures a smaller number of markers. In this study, a custom panel of 44 makers designed to characterise B-cells were measured, including ``phenotypic proteins, transcription factors, regulatory enzymes, cell-state indicators, and activation of regulatory signalling molecules''.
 
 Wanderlust begins by constructing a $k$-nearest neighbour graph between all cells using euclidean distance and selects a small random subset of cells as ``waypoints''. It then creates a random ensemble of graphs by subsampling cells to mitigate the impact of ``short circuits'' on the trajectory construction\footnote{
 Short circuits are defined as ``spurious edges between distant cells'' - two cells distant in pseudotime are connected due to random fluctuations in their gene expression. In theory such a problem will be worse in the ~40 dimensional mass cytometry data than 1000+ dimensional single-cell RNA-seq.
@@ -227,7 +228,7 @@ The GPLVM learns a probabilistic mapping from the one dimensional latent pseudot
 This is essentially a continuity assumption - that cells close in pseudotime will have expression profiles ``close'' in expression space. This assumption was discussed in \cite{Gupta2008-fd} (see section \ref{sec:int:early}) who showed the change in expression over (pseudo-)time must be correlated for it to be true. This logic underlies many if not all pseudotime inference methods, such as DPT \cite{haghverdi2016diffusion}.
 }. Inference in the DeLorean model proceeds using the Stan probabilistic programming language, which performs automatic Bayesian inference using either Hamiltonian Monte Carlo (HMC) or Automatic-Differentiation Variational Inference (ADVI).
 
-DeLorean notes several drawbacks, some of which  we also grapple with in chapter 2. It may only be used on time-series single-cell expression profiles, and thus in a sense is used to refine time series rather than a strict pseudotime algorithm. If $k_n$ is the capture time of cell $n$, then the prior on $n$'s pseudotime $t_n$ takes the form $t_n \sim \Norm(k_n, \sigma_n^2)$, so the confidence in the capture time $\sigma_n$ must also be set by the user. Furthermore, the characteristic length scale of the GPLVM kernel (see section \ref{sec:gplvm}) must be manually set by the user, and even so the posterior distribution of pseudotimes is multi-modal. Finally, GPLVM requires parameters for each output (gene) which can scale poorly, so in practice pseudotime fitting is limited to a small number of genes chosen \emph{a priori}.
+The DeLorean paper notes several drawbacks, some of which  we also grapple with in chapter 2. It may only be used on time-series single-cell expression profiles, and thus in a sense is used to refine time series rather than a strict pseudotime algorithm. If $k_n$ is the capture time of cell $n$, then the prior on $n$'s pseudotime $t_n$ takes the form $t_n \sim \Norm(k_n, \sigma_n^2)$, so the confidence in the capture time $\sigma_n$ must also be set by the user. Furthermore, the characteristic length scale of the GPLVM kernel (see section \ref{sec:gplvm}) must be manually set by the user, and even so the posterior distribution of pseudotimes is multi-modal. Finally, GPLVM requires parameters for each output (gene) which can scale poorly, so in practice pseudotime fitting is limited to a small number of genes chosen \emph{a priori}.
 
 However, a strength of DeLorean is the ability to discuss these drawbacks because of its formulation as a probabilistic model. Given the underlying continuity assumption common to all pseudotime algorithms we would expect they are all multimodal to some extent, or at least have multiple solutions that are dependent on algorithm parameters or initial values. However, their ad-hoc algorithmic nature precludes any assessment of this, while in the DeLorean model these can be recognised as a multimodal posterior distribution and steps taken to mitigate this such as the systematically incorporating prior information in the form of capture times to constrain the latent space.
 
