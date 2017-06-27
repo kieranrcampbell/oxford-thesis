@@ -41,7 +41,6 @@ This chapter includes a minor change in notation - latent variables are now $z_n
 \end{figure}
 
 We begin as usual with an $N \times G$ matrix of gene expression $\mbY$ with row vectors $\mby_n$ for $N$ samples and $G$ genes. A standard factor analysis model would infer a $Q$-dimensional embedding $\mbz_n$ for each sample $n = 1, \ldots, N$ where $Q \ll G$ via a model of the form
-
 \begin{equation}
   \begin{aligned}
 \mbz_n & \sim \Norm(0, \mbI) \\
@@ -54,7 +53,6 @@ where $\mbLambda$ is a $G \times Q$ factor loading matrix with column vectors $\
 We now consider the case mentioned in the introduction that we have an $N \times P$ matrix $\mbX$ that represents $P$ covariates for each of the $N$ samples. In a population wide study such covariates might represent phenotypic variables such as age or sex, while in a single-cell setting such covariates might represent genetic background or cell stimulus.
 
 We would like these covariates to perturb the change in expression of each gene along the trajectory. To do this we introduce an additional $G \times P$ matrix $\mbB$ whose entries $\beta_{pg}$ represent the effect of covariate $p$ on the change of gene $g$ along the trajectory. Thus the factor loading for gene $g$ becomes
-
 \begin{equation}
   \lambda_g \rightarrow \lambda_{ng}' = \lambda_g + \sum_{p=1}^P \beta_{pg} x_{np}
 \end{equation}
@@ -62,7 +60,6 @@ We would like these covariates to perturb the change in expression of each gene 
 or in vector notation  $\mblambda \rightarrow \mblambda'_n = \mblambda + \mbB \mbx_n$. In other words, each sample has a unique loading for each gene that depends on a common loading vector $\mblambda$ and modulation by the sample-specific covariates.
 
 In factor analysis models it is typical to standardize the data so that the marginal mean is 0 which simultaneously enforces the constraint $y=0$ when $z=0$. However in this case that constrains the data to ``swing'' around the origin based on the covariate which is overly restrictive. To solve this we introduce an additional $N \times P$ matrix $\mbA$ whose entries $\alpha_{pg}$ account for the global shift in expression of gene $g$ in response to covariate $p$. Therefore, the generative \emph{covariate-adjusted latent variable model} takes the form
-
 \begin{equation}
   \begin{aligned}
 \mbz_n & \sim \Norm(0, \mbI) \\
@@ -75,7 +72,6 @@ In a genomics context $\alpha_{pg}$ can be thought of as mediating differential 
 In practice we restrict ourselves to $Q=1$ dimensional latent spaces (that roughly correspond to ``pseudotimes'' or ``trajectories''). However, this can be readily extended to the $Q>1$ case by making $\mbB$ a $Q \times P \times G$ factor loading tensor\footnote{
 Technically an array rather than a tensor in the true sense.
 } whose entries $\beta_{qpg}$ quantify the interaction between covariate $p$ and gene $g$ in latent dimension $q$. The mean $\mu_{ng}$ for observation $y_{ng}$ is then given by
-
 \begin{equation}
   \mu_{ng} = \sum_{q=1}^Q \left(
   \lambda_{qg} z_{nq} + \sum_{p=1}^P (\alpha_{qpg} x_{np} + \beta_{qpg} x_{np} z_{nq})
@@ -84,7 +80,6 @@ Technically an array rather than a tensor in the true sense.
 
 In general we expect trajectory-covariate interactions to be rare we place an automatic relevance determination (ARD) prior on them (previously discussed in chapter 4).
 In the $Q=1$ dimensional case this takes the form $\beta_{g} \sim \Norm(0, \chi_g^{-1})$, $\chi_g \stackrel{iid}{\sim} \Gam(a_\beta, b_\beta)$. We set $a_\beta = b_\beta = 0.01$ which places the prior precision close to zero but has high variance. The overall generative model then takes the form
-
 \begin{equation}
 \begin{aligned}
 \alpha_{pg} & \sim \norm(0, \tau_\alpha^{-1}) \\
@@ -116,7 +111,6 @@ Instead we turn to variational inference which recasts Bayesian inference as an 
 In general Bayesian inference is concerned with inferring the posterior distribution $p(\mbtheta | \mbX) = \frac{p(\mbX | \mbtheta) p(\mbtheta)}{p(\mbX)}$ for some parameters $\mbTheta$ and data $\mbX$. This is difficult in general as the marginal likelihood $p(\mbX)$ is often intractable and hard to compute.
 
 Variational inference posits an approximating or \emph{variational} distribution $q(\mbtheta | \mblambda)$ with variational parameters $\mblambda$ and the objective of inference is to choose optimal $\mblambda$ so that $q(\mbtheta | \mblambda)$ is as ``close'' to $p(\mbtheta | \mbX)$ as possible. This closeness is normally defined with respect to some divergence measure such as the Kullback-Leibler (KL) divergence which is a measure of the non-symmetric difference between two probability distributions. Thus Bayesian inference is transformed into an optimisation procedure that attempts to minimise
-
 \begin{equation}
   \KL{q(\mbtheta | \mblambda)}{p(\mbtheta | \mbX)} =
   \int d\mbtheta q(\mbtheta | \mblambda) \log\left[ \frac{q(\mbtheta | \mblambda)}{p(\mbtheta | \mbX)}\right].
@@ -124,7 +118,6 @@ Variational inference posits an approximating or \emph{variational} distribution
 \end{equation}
 
 A little algebra shows that minimising the $KL$-divergence in equation \ref{eq:kl_min} is equivalent to maximising the evidence lower-bound (ELBO), defined as
-
 \begin{equation}
   \text{ELBO}(\mblambda; \mbX, \mbtheta) = \mbE_{q(\mbtheta | \mblambda)} \left[
 \log q(\mbtheta | \mblambda) - \log p(\mbX, \mbtheta)
@@ -134,7 +127,6 @@ A little algebra shows that minimising the $KL$-divergence in equation \ref{eq:k
 Interestingly, because $\KL{q}{p} \geq 0$ for any $q$ and $p$ it is easy to show that the ELBO acts as a lower bound on the log marginal likelihood, i.e. $\log p(\mbX) \geq \text{ELBO}(\mblambda; \mbX, \mbtheta)$. Therefore, variational inference can be viewed either as choosing $\mblambda$ so that $q$ is as similar to $p$ as possible, or as choosing $\mblambda$ so that a lower bound on the marginal likelihood is maximised.
 
 For our model in equation \ref{eq:clvm_model} we make what is known as a mean-field variational approximation where the variational approximation factorises across all the parameters so $q(\mbtheta | \mblambda) = \prod_i q(\theta_i | \lambda_i)$. For co-ordinate ascent variational inference the approximating distributions should be of the family as each conditional distribution. The variational distribution for our model is therefore given by
-
 \begin{equation}
 \begin{aligned}
 & q\left(
@@ -155,7 +147,6 @@ For our model in equation \ref{eq:clvm_model} we make what is known as a mean-fi
 \end{equation}
 
 For conditionally conjugate models it is possible to derive updates that maximise the ELBO for each parameter, conditioned on all other parameters being held constant. For a general model let $\theta_j$ denote the $j^{\text{th}}$ parameter and  $\mbtheta_{-j}$ the vector of all parameters other than $j$. The update that provides the distribution for $\theta_j$ that maximises the ELBO is given by
-
 \begin{equation}
 q^*_j(\theta_j) \propto \exp \left\{  \mbE_{-j} \left[ \log p(\theta_j | \mbtheta_{-j}, \mbY) \right]
  \right\},
@@ -164,7 +155,6 @@ q^*_j(\theta_j) \propto \exp \left\{  \mbE_{-j} \left[ \log p(\theta_j | \mbthet
 where the expectation is taken with respect to the approximating distributions for all parameters other than $j$. Successively computing updates for each variable until the change in the ELBO falls below some pre-set threshold is known as co-ordinate ascent variational inference (CAVI). In our model all parameters have conditional distributions that are either normally distributed or gamma distributed. We can derive general updates for these two cases and the specific updates may be found in appendix \ref{app:clvm_vi}.
 
 Suppose $p(\theta_j | \theta_{-j}, \mbX) \sim \norm(\mu_{\theta_j}, \tau_{\theta_j}^{-1})$ where both the mean and precision  are dependent on the conditioning variables $\mbtheta_{-j}$ and the data $\mbX$. It follows that
-
 \begin{equation}
 q(\theta_j) = \norm\left(
 \theta_j |
@@ -176,7 +166,6 @@ s_{\theta_j}^2 = \text{E}_{-j}[\tau_{\theta_j}]^{-1}
 where the expectations are computed with respect to the variational distributions in \ref{eq:variational}.
 
 If instead $p(\theta_j | \theta_{-j}, \mbX) = \text{Gamma}(\theta_j | a_{\theta_j}, b_{\theta_j})$ where again $a_{\theta_j}$ and $b_{\theta_j}$ are functions of the data $\mbX$ and all parameters other than $\theta_j$, then the CAVI update 	is given by
-
 \begin{equation}
 q(\theta_j) = \text{Gamma}\left(
 \theta_j |
@@ -191,7 +180,6 @@ Variational inference for non-conditionally conjugate models is considered in \r
 
 It is possible to construct a Bayesian significance test for the existence of covariate-pathway interactions (in other words, whether $\beta_g$ is ``significant'' under some criterion) using posterior credible intervals and a region of practical interest. The variational approximation for each $\beta_g$ is given by $q(\beta_g) \sim \Norm(m_{\beta_g}, s^2_{\beta_g})$. Therefore, if $\hat{m}_{\beta_g}$ and $\hat{s}_{\beta_g}$ are the estimates of $m_{\beta_g}$ and $s_{\beta_g}$ respectively after a sufficient number of iterations that we consider the ELBO to be converged, then we define $g$ to have a \emph{significant interaction}
 if
-
 \begin{equation}
   | \hat{m}_{\beta_g} - k \hat{s}_{\beta_g} | > 0
 \end{equation}
@@ -205,13 +193,11 @@ In PhenoPath we model gene expression evolving along the trajectories separately
 Inference of this point would allow us to identify sections of the trajectory not affected by the covariate and consequently sections of the trajectory that are. This is important as if the crossover point occurs towards the beginning of the trajectory, it would mean gene expression is similar at the beginning but diverges as we move along the trajectory. Similarly, if the crossover points occur towards the end of the trajectory, it would imply the expression profiles for the two phenotypes are different at the beginning of the trajectory, but converge as the trajectory progresses. An interpretation of this would be that the effect on expression from the trajectory slowly dominates over the effect of phenotypes on the trajectory.
 
 It is important to note that the latent trajectory values loosely follow a $\text{N}(0, 1)$ distribution. This means the `middle' of the trajectory is any value around zero, values of -1 or less could be thought of as the `beginning' while values greater than 1 may be thought of as the `end'. Crucially, we can derive an analytical expression from the PhenoPath parameters for the crossover point $z^*$. The condition for the crossover point is that the predicted expression for each phenotype is identical. Therefore if we have phenotypes $+$ and $-$ we require
-
 \begin{equation}
   y_g^{+}(z_g^*) = y_g^{-}(z_g^*)
 \end{equation}
 
 which leads to the condition
-
 \begin{equation}
   \alpha_g x_{+} + \left( c_g + \beta_g x_{+}\right) z^*_g =
   \alpha_g x_{-} + \left( c_g + \beta_g x_{-}\right) z^*_g
@@ -451,7 +437,6 @@ This suggests that while there exists low levels of angiogenesis pathway activat
 
 We now suppose that $\mbx_n$ are not fully observed but represent partially observed survival times. In particular for each sample we observe the tuple $(o_n, \delta_n), \; n = 1, \ldots, N$ where $o_n$ is a survival time and $\delta_n$ is the censoring status, where $\delta_n = 1$ if $o_n$ is observed and $\delta_n = 0$ if $o_n$ is censored. We also introduce the true survival times $t_n, \; n = 1, \ldots, N$
 where $t_n = o_n$ if $\delta_n = 1$ and $t_n > o_n$ if $\delta_n = 0$. In this $P = 1$ form let $\mbalpha \equiv \mbA_{:,1}$ and $\mbbeta \equiv \mbB_{:,1}$ be $G$-length vectors. The survival-adjusted latent variable model then takes the form
-
 \begin{equation}
   \begin{aligned}
 %\mbz_n & \sim \Norm(0, \mbI) \\
@@ -464,13 +449,11 @@ where $h(t)$ is any desirable mapping function such as one that induces a varian
 If all the survival times $t_n$ were uncensored then such a model reduces to the form in equation \ref{eq:clvm} and inference can proceed as before. However, in many biomedical settings the majority of observations are censored, rendering such a problem intractable. We therefore turn our attention to creating a generative model of the censored true survival times that makes use of both the observed survival times and censoring times. % KC: This is a weird sentence
 
 A classic choice for modelling survival times is the Weibull distribution parametrised by $\mbtheta_W = (k,p)$ with probability density function
-
 \begin{equation}
   f_{\text{Weibull}}(t; k,p) = pkt^{k-1} \exp(-pt^k)
 \end{equation}
 
 and survival function $S_{\text{Weibull}}(t; k, p) = \int_t^\infty f(t'; k, p) dt' = \exp(-pt^k)$. We can then write the probability density of the true survival times as
-
 \begin{equation}
   f(t_n; o_n, k, p) =
   \begin{cases}
@@ -497,7 +480,6 @@ The overall generative model is represented in figure \ref{fig:model}. We place 
 Our goal is Bayesian inference of the posterior $p(\mbz, \mbt^{cens}, \mbA, \mbB, \mblambda, \theta_W | \mbY, \mbo, \mbt^{obs}, \Psi)$ where $\Psi$ is the complete set of fixed hyperparameters. If we have $N_{\text{obs}} = \sum_{n = 1}^N \delta_n$ observed survival times and $N_{\text{cens}} = N - N_{\text{obs}}$ censored observations, we may reorder $\mbt$, $\mbo$,
 $\mbdelta$, $\mbz$ and the rows of $\mbY$ so that the first $N_{\text{obs}}$ entries of $\mbdelta$ are 1 and the remaining $N_{\text{cens}}$ are 0. Then define $\mbt^{\text{cens}}$ and $\mbo^{\text{cens}}$ as the vector made of the first $N_{\text{cens}}$ entries of $\mbt$ and $\mbo$ respectively, and define $\mbt^{\text{obs}}$
 as the vector of the final $N_{\text{obs}}$ entries of $\mbt$. Then the posterior factorises in the form
-
 \begin{equation}
   \begin{aligned}
     p(\mbz, \mbt^{\text{cens}}, \mbalpha, \mbbeta, \mblambda, \theta_W, \mbsigma^2, \mbchi| \mbY, \mbo, \mbt^{\text{obs}}, \Psi)
@@ -513,7 +495,6 @@ where we have omitted any dependency on hyperparameters.
 \subsubsection{Black-box variational inference}
 
 To infer posterior distributions over the entire set of latent variables 
-
 \begin{equation}
 \mbTheta = \{\mbz, \mbt^{\text{cens}}, \mbalpha, \mbbeta, \mblambda, \theta_W, \mbsigma^2, \mbchi\} 
 \end{equation}
@@ -525,7 +506,6 @@ we posit a set of approximating distributions $q(\mbTheta | \mbPhi)$ with variat
 which is equivalent to maximising the Evidence Lower Bound (ELBO) defined as $\text{ELBO}(\mbTheta) = \mbE_{q(\mbTheta)} \left[ p(\mbTheta, \mbY, \mbo^{\text{cens}}, \mbt^{\text{obs}}) - q(\mbTheta | \mbPhi))\right]$,
 with respect to the variational parameters $\mbPhi$ for which we make a fully factorised mean-field approximation $q(\mbTheta | \mbPhi) = \prod_i q_i(\theta_i | \phi_i)$.
 Inference of this model was implemented using the probabilistic programming language \texttt{Edward} \citep{Tran2016-ml} that allows for black-box variational inference of non-conditionally-conjugate models. The approximating distributions have reparameterizations (section \ref{sec:approx}), allowing us to sample from them via  $\epsilon \sim q(\epsilon), \; \theta_i = g_i(\epsilon, \phi_i)$ where $q(\epsilon)$ is a distribution independent of the variational parameters and $g_i$ is a deterministic transform. This allows us to use the reparametrization trick \citep{Kingma2013-wo} to compute noisy estimates of the gradient via
-
 \begin{equation}
   \nabla_{\mbPhi} \text{ELBO}(\mbPhi) = \mbE_{q(\mbepsilon)}
   \left[
@@ -540,7 +520,6 @@ where the expectation is computed via Monte-Carlo sampling.
 For $\mbalpha, \mbbeta, \mbz$, and $\mblambda$ we posit variational approximations of the form $q(\theta_i) \sim \Norm(\mu_i, \sigma_i^2)$ which admits reparameterization via $\epsilon \sim \Norm(0, 1), \; \theta_i = \mu_i + \sigma_i \epsilon$. The variables $\mbchi$, $\mbsigma^2$, and $p$ are constrained to be positive, so we choose log-normal approximating distributions which is equivalent to the reparametrization $\epsilon \sim \Norm(0, 1), \; \theta_i = \exp(\mu_i + \sigma_i \epsilon)$.
 
 The censored true survival times $\mbt^{\text{cens}}$ are bounded from below by the observed survival times, ie $t_n^{\text{cens}} > o_n$. However, in practice they are also upper bounded by the patient's maximum possible months remaining alive $r_n$. We can estimate $r_n$ for each patient by calculating the time from their date of diagnosis to the maximum possible human lifespan,  which we take to be 115 years. We subsequently construct a reparametrised variational approximation with variational parameters ($\mu_{t_n}, \sigma_{t_n}$):
-
 \begin{equation} \label{eq:ttran}
   \begin{aligned}
   \epsilon & \sim \Norm(0, 1) \\
@@ -550,7 +529,6 @@ The censored true survival times $\mbt^{\text{cens}}$ are bounded from below by 
 
 where $g_t(\epsilon) \in [o_n, r_n)$. 
 Evaluation of $q(t_n | \mu_{t_n}, \sigma_{t_n}, o_n, r_n)$ is then made via 
-
 \begin{equation}
 q(t_n | \mu_{t_n}, \sigma_{t_n}, o_n, r_n) = \Norm(\epsilon | 0, 1) \left| \frac{\partial g^{-1}_t(\epsilon | \mu_{t_n}, \sigma_{t_n})}{\partial \epsilon} \right|.
 \end{equation}
@@ -627,7 +605,6 @@ $\beta_g \sim \Norm(0, \sigma^2_{\beta,g})$,
 $\lambda_g \sim \Norm(0, \sigma^2_{\lambda,g})$.
 This leads to a multivariate normal likelihood for each $\mby_g$  (where $\mby_g$ is the $g^{\text{th}}$
 column vector of $\mbY$) given by
-
 \begin{equation}
   \mby_g | \cdot \sim
   \Norm\left(\mbzero, \sigma_{\alpha,g}^2 \mbx \mbx^T + \sigma_{\lambda,g}^2 \mbz \mbz^T +
@@ -638,7 +615,6 @@ column vector of $\mbY$) given by
 where $\odot$ denotes element-wise multiplication ($[\mbx \odot \mby]_i = x_i y_i$), $\mbI_N$ is the $N \times N$ identity matrix and $\sigma_g$ is the residual (measurement) variance not explained by the model.
 
 The trick to derive a Gaussian Process Latent Variable-like model from here is two-fold. Firstly, Lawrence (2005) \cite{Lawrence2005-cu} noted that entries in the low-rank covariance structure $\mbx \mbx^T$ loosely represent ``similarity'' between samples and can thus be replaced by any kernel $K(x,x')$. Secondly, the sum of kernels is also a valid kernel so if $K_1(x,x')$ and $K_2(x,x')$ are two kernels then  $\alpha K_1(x,x') + \beta K_1(x,x')$ also represents a valid kernel for some scalars $\alpha, \beta > 0$. We therefore introduce the concept of \emph{Covariate-adjusted Gaussian Process Latent Variable Models} (CGPLVMs) that have kernels of the form
-
 \begin{equation} \label{eq:clvm_kernel}
 K\left( \{\mbx, \mbz\}, \{\mbx', \mbz'\} \right) \propto K(\mbx, \mbx') + K(\mbz, \mbz') +
 K(\mbx \odot \mbz,\mbx' \odot \mbz')
@@ -652,7 +628,6 @@ K(\mbx \odot \mbz,\mbx' \odot \mbz')
 
 
 for some choice of kernel function $K$ such as the squared exponential kernel $k_{\text{SQE}}(x, x') = \sigma_f^2 \exp\left(-\frac{1}{2l^2}(x - x')^2\right)$. In this case the kernel for the $g^{\text{th}}$ output dimension (typically genes in a biological context) is given by
-
 \begin{equation}
   \begin{aligned}
   K_g(x, z; x', z') & =
@@ -702,7 +677,6 @@ The results can be seen in figure \ref{fig:cgplvm_results}. Figure \ref{fig:cgpl
 One weakness of our CAVI implementation of PhenoPath is the requirement of a full sweep through the data for every iteration (and indeed for every local parameter). While in practice it is unlikely for the number of features to increase\footnote{The transciptome is naturally fixed at around 20,000 genes, of which typically 5,000 to 10,000 will exhibit ``interesting'' behaviour in a dataset, typically defined as being high-variance.} the reducing cost of genomics means the number of samples - particularly in the single cell case - could easily exceed one million. In order to make this scalable, CAVI can be replaced with stochastic variational inference (SVI) \cite{hoffman2013stochastic} where the data is subsampled at each iteration. Given the conditionally conjugate nature of the model it is relatively easy to derive an SVI algorithm from CAVI.
 
 A further issue is that the number of interaction parameters grows as $PG$ for $P$ covariates and $G$ featues. Given $G$ is typically $\mathcal{O}(10^3)$, the introduction of many covariates leads to large model complexity and potentially cumbersome inference. Under the assumption that the covariates $P$ are in some way correlated, we may reduce the number of parameters in the model by introducing an intermediate factor analysis step with an additional $R \times P$ matrix $\mbxi$ for $R \ll P$ where the interaction term involved in the mean becomes
-
 \begin{equation}
 y_{ng} \propto \sum_{p=1}^{P} \sum_{r=1}^R \beta_{rg} \xi_{rp} x_{np}
 \end{equation}

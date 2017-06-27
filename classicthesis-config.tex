@@ -129,7 +129,7 @@
 % [REMOVED DUE TO OTHER PROBLEMS, SEE ISSUE #82]
 %\DeclareCaptionLabelFormat{smallcaps}{\bothIfFirst{#1}{~}\MakeTextLowercase{\textsc{#2}}}
 %\captionsetup{font=small,labelformat=smallcaps} % format=hang,
-\captionsetup{font=small} % format=hang,
+\captionsetup{font={small,stretch=1.4}} % format=hang,
 \usepackage{subfig}
 % ****************************************************************************************************
 
@@ -258,7 +258,7 @@
 % ********************************************************************
 % Changing the text area
 % ********************************************************************
-\linespread{1.5} % a bit more for Palatino
+\linespread{1.75} % a bit more for Palatino
 %\areaset[current]{312pt}{761pt} % 686 (factor 2.2) + 33 head + 42 head \the\footskip
 %\setlength{\marginparwidth}{7em}%
 %\setlength{\marginparsep}{2em}%
@@ -288,7 +288,7 @@
 
 % Packages
 \usepackage{lmodern}
-\usepackage[left=4cm,right=2.8cm,top=1in,bottom=1.5in]{geometry}
+\usepackage[left=3.3cm,right=2cm,top=1in,bottom=1.2in]{geometry}
 % \usepackage{eulermath}
 %\usepackage[euler-digits]{eulervm}
 
@@ -301,6 +301,7 @@
 \usepackage{csquotes}
 \usepackage{lstBUGS}
 \usepackage{subfig}
+\usepackage{setspace}
 % \usepackage{floatrow}
 % \usepackage{ccaption}
 

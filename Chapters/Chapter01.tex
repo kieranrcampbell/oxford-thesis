@@ -63,7 +63,6 @@ Typically with some offset $c$ via $\log(x+c)$ to avoid divergence issues when $
 } the (normalised) counts and model using a Gaussian likelihood, such as Limma Voom and Sleuth \cite{Law2014-tu,Pimentel2016-xz}.
 
 In the case of the count-based methods, RNA-seq data are  be well-approximated by negative binomial distributions \cite{Anders2010,Robinson2010-rj,Risso2017-qk} which relates the variance $\sigma^2$ to the mean $\mu$ of the counts for a given gene by
-
 \begin{equation}
   \sigma^2 = \mu + \alpha \mu^2
 \end{equation}
@@ -160,15 +159,15 @@ A useful spreadsheet of single-cell software is maintained at \url{https://tinyu
 \hline
 Algorithm & Reference & Dimensionality reduction & Cell ordering & Probabilistic & Branching \\
 \hline
-Monocle & \cite{Trapnell2014-xi} & ICA\footnote{Independent component analysis} &
-MST\footnote{Minimum spanning tree (cells are projected onto the longest path through the MST).} & No & Yes \\
+Monocle & \cite{Trapnell2014-xi} & ICA &
+MST & No & Yes \\
 Wanderlust & \cite{Bendall2014-rc} & N/A & KNN-graph\footnote{$k$-nearest neighbour graph. Trajectory inferred by an ensembl of random walks.} & No & No \\
 Monocle 2 & \cite{Qiu2017-eu} & DDR-tree & Distance from root cell & No & Yes \\
-Scuba & \cite{Marco2014-ug} & t-SNE\footnote{See section \ref{sec:tsne}} & Principal curves & No & Yes \\
+Scuba & \cite{Marco2014-ug} & t-SNE & Principal curves & No & Yes \\
 Diffusion pseudotime & \cite{haghverdi2016diffusion} & N/A & Diffusion distance from root cell &
 Interpretation\footnote{DPT has an interpretation in terms of the probability of one cell state transitioning into the other. However, it does not define a generative probabilistic model.} & Yes \\
 SLICER & \cite{welch2016slicer} & LLE\footnote{See section \ref{sec:lle}} & Principal curves & No & Yes \\
-DeLorean & \cite{Reid2016-yo} & N/A & GPLVM\footnote{See section \ref{sec:gplvm}} & Yes & No \\
+DeLorean & \cite{Reid2016-yo} & N/A & GPLVM & Yes & No \\
 TSCAN & \cite{Ji2016-gx} & PCA & Cluster-based MST & No & Yes \\
 Waterfall & \cite{Shin2015} & PCA & Cluster-based distances & No & No \\
 \rowcolor{Gray}
@@ -243,7 +242,6 @@ Principal component analysis (PCA, \cite{jolliffe2002principal}) is a ubiquitous
 the data.
 
 Mathematically, we start with $G$-dimensional data points $\{\mby_n\}, \; n = 1, \ldots, N$ and wish to find the $Q$ principal axes $\mblambda_q, \; q = 1, \ldots, Q$ that act as a mapping from the observed to latent space such that the variance of the input points projected to the latent space is maximal. To find $\mblambda_q$ the eigenvectors of the sample covariance matrix
-
 \begin{equation}
   \mbS = \frac{1}{N}\sum_{n = 1}^N (\mby_n - \bar{\mby}) (\mby_n - \bar{\mby})^T
 \end{equation}
@@ -262,7 +260,6 @@ PCA also forms an initial step in many pseudotime algorithms such as in TSCAN \c
 One weakness of standard PCA is the absence of any probabilistic framework or interpretation. In a landmark paper \cite{tipping1999probabilistic} Tipping \& Bishop derived\footnote{By first considering a factor analysis model that we discuss in section \ref{sec:intr:fa}.} probabilistic PCA (PPCA) that provides an explicit generative model for PCA and relates the maximum likelihood estimates of parameters to the algorithmic estimation we discussed previously.
 
 The generative model for PPCA is given by
-
 \begin{equation}
   \begin{aligned}
     \mbz_n & \sim \Norm(\mbzero, \mbI) \\
@@ -271,7 +268,6 @@ The generative model for PPCA is given by
 \end{equation}
 
 where $\mbmu$ is the expectation of $\mby$ and $\sigma^2$ is the isotropic measurement variance. In other words, if we centre $\mby$ so that $\text{E}[\mby] = \mbzero$ then PPCA corresponds to a Gaussian noise model with a mean given by standard PCA and isotropic covariance. Tipping and Bishop further derived closed form expressions for the maximum likelihood estimates (MLEs) of $\mbLambda$ and $\sigma^2$ along with the conditional distribution of the latent variables $p(\mbz_n | \mbLambda, \mby_n)$. They demonstrated that in the limit $\sigma^2 \rightarrow 0$ the MLE estimate of $\mbLambda$ is identical (up to arbitrary rotation) to that of standard PCA. Furthermore, the MLE estimate of $\sigma^2$ is given by
-
 \begin{equation}
   \sigma^2_{\text{MLE}} = \frac{1}{G-Q} \sum_{j = Q + 1}^G \zeta_j
 \end{equation}
@@ -281,7 +277,6 @@ where $\zeta_j$ are the eigenvalues of the sample covariance matrix ordered by d
 \subsection{Factor analysis} \label{sec:intr:fa}
 
 Factor analysis (FA) precedes both PCA and PPCA, dating back to Spearman's work on ``general intelligence'' \cite{spearman1904general} (see section \ref{intr:fa_hist}). The overall model is very similar to that of PPCA with the only difference being the measurement (co-)variance is diagonal rather than isotropic. This gives a generative factor analysis model of the form
-
 \begin{equation} \label{eq:fa}
   \begin{aligned}
     \mbz_n & \sim \Norm(\mbzero, \mbI) \\
@@ -330,7 +325,6 @@ way to the gene expression of key markers during differentiation (b).} \label{tb
 \end{table}
 
 Factor analysis was first introduced by Spearman in 1904 \cite{spearman1904general} by considering children's test scores in subjects such as that in table \ref{tbl:fa}(a). He noticed that the scores are correlated - for example, if a child has a high score in physics they are more likely to have a high score in maths, and vice versa. Spearman's insight was that rather than the scores being correlated with each other, they were correlated with an underlying (one-dimensional) hidden factor he termed \emph{general intelligence}. Mathematically this can be expressed as
-
 \begin{equation}
 \mby_n = \mblambda z_n + \epsilon_n
 \end{equation}
@@ -355,7 +349,6 @@ While not strictly a class of statistical latent variable model, manifold learni
 \subsubsection{Laplacian eigenmaps}
 
 Laplacian eigenmaps \cite{Belkin2003} are part of a larger class of \emph{spectral methods} including diffusion maps (section \ref{sec:diffusion_maps}). Starting with the $N \times G$ matrix $\mbY$, laplacian eigenmaps seeks a $N \times Q$-dimensional embedding $\mbZ$ with row vectors $\mbz_n$ for each cell through minimisation of the quantity
-
 \begin{equation}
   \sum_{n,n'} W_{n,n'}\lvert \lvert \mbz_n - \mbz_{n'}\rvert \rvert^2
 \end{equation}
@@ -369,7 +362,6 @@ Laplacian eigenmaps were used for pseudotime inference in the \texttt{embeddr} p
 \subsubsection{Diffusion maps} \label{sec:diffusion_maps}
 
 Diffusion maps are closely related to laplacian eigenmaps and have been successfully applied to single-cell RNA-seq data both in the context of visualisation \cite{Haghverdi2015} and pseudotime inference \cite{haghverdi2016diffusion}. The basic idea is to consider points on the manifold in terms of a diffusion process, with a sample more likely to diffuse to one closer to it than further away. It begins by constructing a transition matrix
-
 \begin{equation}
   P_{n',n} = \frac{1}{Z(\mby_{n'})} \exp\left( - \frac{\lvert \lvert \mby_n - \mby_{n'} \rvert \rvert^2}{2 \sigma^2}\right)
 \end{equation}
@@ -381,7 +373,6 @@ implying that retaining eigenvectors for the first $k$ ordered eigenvalues captu
 \subsubsection{Multidimensional scaling}
 
 Multidimensional scaling (MDS) has previously been used for the visualisation of large genomic datasets \cite{tzeng2008multidimensional} and more recently was used as the initial dimensionality reduction step for the pseudotime algorithm \texttt{SCORPIUS} \cite{cannoodt2016scorpius}. It is motivated by the problem of trying to place cities on points on a map if we are given the distances between them. Given an $N \times N$ distance matrix $\mbD$ MDS attempts to minimise the quantity
-
 \begin{equation}
   \text{Stress}(\mbZ) = \left(
   \sum_{n \neq n' = 1}^N (d_{nn'} - \lvert \lvert \mbz_n - \mbz_{n'} \rvert \rvert)^2
@@ -393,13 +384,11 @@ where $\mbz_n$ is the low dimensional embedding of sample $n$. The intuition is 
 \subsubsection{Locally linear embedding} \label{sec:lle}
 
 Locally linear embedding (LLE) was used successfully by \texttt{SLICER} \cite{welch2016slicer} as a nonlinear dimensionality step after highly-variable gene selection. LLE begins by defining an $N \times N$ weight matrix $\mbW$ where $W_{nn'}$ represents how useful sample $n'$ is for reconstructing $n$. An optimal $\mbW$ is found by minimising
-
 \begin{equation}
   \sum_{n} \lvert \lvert \mby_n - \sum_{n'} W_{nn'} \mby_{n'} \rvert \rvert^2
 \end{equation}
 
 where $\mbW$ is sparsely constrained so that each point is only reconstructed by its $k$ nearest neighbours and so that the row sums of $\mbW$ are 1. The $Q$ (reduced) dimensional reconstructions $\mbz_n, \; n = 1, \ldots, N$ are then found via minimising
-
 \begin{equation}
   C(\mbZ) = \sum_{n} \lvert \lvert \mbz_n - \sum_{n'} W_{nn'} \mbz_{n'} \rvert \rvert^2
 \end{equation}
@@ -411,7 +400,6 @@ where $\mbW$ is kept fixed in the second optimisation step. In other words, we s
 t-distributed stochastic neighbour embedding (t-SNE) \cite{maaten2008visualizing} has become incredibly popular for the visualisation of single-cell RNA-seq data and as the initial dimensionality step for several pseudotime algorithms. Similarly to diffusion maps\footnote{
 Note that t-SNE differs in defining a different kernel width for each data point.
 }, it begins by defining a conditional transition matrix
-
 \begin{equation}
   P_{n'|n} = \frac{1}{Z(\mby_{n'})} \exp\left( - \frac{\lvert \lvert \mby_n - \mby_{n'} \rvert \rvert^2}{2 \sigma_n^2}\right)
 \end{equation}
@@ -419,7 +407,6 @@ Note that t-SNE differs in defining a different kernel width for each data point
 which can be interpreted as the probability under a Gaussian likelihood of $n$ choosing $n'$ as its neighbour. This is then symmetrised to form $P_{n'n} = \frac{1}{2N}(  P_{n'|n} +   P_{n|n'})$.
 
 It then defines similarities in the latent space as
-
 \begin{equation}
   Q_{nn'} = \frac{
   (1 + \lvert \lvert \mbz_n - \mbz_{n'} \rvert \rvert^2)^{-1}
@@ -439,7 +426,6 @@ It is hard to overstate how popular t-SNE has been for visualising single-cell g
 
 Gaussian Process Latent Variable Models (GPLVM) are the subject of chapter 2 but are mentioned here for completeness. Technically GPLVM is a form of probabilistic manifold learning that learns an explicit map from the latent space to the observed space but may also be seen as a form of nonlinear factor analysis. In the factor analysis model of equation \ref{eq:fa} typical estimation proceeds by marginalising over $\mbz_n$ to give a marginal likelihood $\mby_n \sim(\mbmu, \mbLambda \mbLambda^T + \mbSigma)$ followed by direct optimisation. However, Lawrence \cite{lawrence2004gaussian} instead marginalised over the mapping $\mbLambda$ through a prior of the form $p(\mbLambda) = \prod_{q=1}^Q \Norm(\mblambda_q | \mbzero, \alpha^{-1} \mbI)$. This introduces a coupling between different samples $\mby_n$. Let $\mbY$ be the full $N \times G$ data matrix with row vectors $\mby_n$ and column vectors $\mby_g$ and $\mbZ$ the $N \times Q$
 matrix of latent values with row vectors $\mbz_n$. The likelihood marginalised over the mapping is then
-
 \begin{equation}
   p(\mbY) = \prod_{g = 1}^G \norm(\mby_g | \mbzero, \alpha^{-1} \mbZ \mbZ^T + \mbSigma)
 \end{equation}
@@ -447,13 +433,11 @@ matrix of latent values with row vectors $\mbz_n$. The likelihood marginalised o
 where $\mbSigma$ is the diagonal noise covariance matrix as before.
 
 Lawrence's key insight was that the term $\alpha^{-1} \mbZ \mbZ^T$ in the covariance matrix represents similarity between difference samples, since the covariance between samples $n$ and $n'$ is $\alpha^{-1} \mbz_n \cdot \mbz_{n'}$. Therefore, it can be replaced with any positive definite \emph{kernel} $k(\mbz_n, \mbz_{n'})$ representing similarity between $\mbz_n$ and $\mbz_{n'}$. Popular examples include the squared exponential kernel
-
 \begin{equation}
 k_{\text{SQE}}(\mbz_n, \mbz_{n'}) = \sigma_f^2 \exp\left(-\frac{1}{2l^2} \lvert \lvert \mbz_n - \mbz_{n'} \rvert\rvert^2\right)
 \end{equation}
 
 as used in \cite{campbell2016order} or the Matern family such as the $\text{Matern}_{3/2}$ kernel used in \cite{Reid2016-yo}:
-
 \begin{equation}
   k_{\text{Matern}_{3/2}}(\mbz_n, \mbz_{n'}) =
   \left(

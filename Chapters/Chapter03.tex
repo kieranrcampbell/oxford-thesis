@@ -76,7 +76,6 @@ If we wish to build a generative statistical latent variable model of pseudotime
 However, both the linearly-restricted case and the entirely nonparametric cases are unrealistic for different reasons. The linear case assumes that the mean function must change across the entire trajectory (i.e. there can be no parts where the mean value is stationary), making modelling of complex processes where different genes are responsible for different parts of the trajectory impossible. Furthermore, it assumes that as the trajectory progresses the expression values will tend to $\pm \infty$ (which has the additional issue of negative expression values). While the linear case is too restrictive, the non-parametric case is overly-flexible, allowing biologically unrealistic expression patterns such as cubic polynomials or genes with multiple modes over a relatively short trajectory.
 
 Instead we opt for a `goldilocks' mean function, where we assume genes are off, undergo a period of near-linear increase and settle at a constant value (or conversely begin on then turn off)\footnote{In practice this restricts us to the class of monotonically increasing and decreasing gene expression signatures}. A good approximation to this is the sigmoid function (considered previously in chapter 2) which parametrises the mean as
-
 \begin{equation}
 f(t; \mu_0, k, t_0) = \frac{2 \mu_0}{1 + \exp\left( -k (t - t_0) \right)}
 \end{equation}
@@ -102,7 +101,6 @@ The approach we adopt is therefore a form of latent variable model implemented a
 RNA-seq counts are commonly assumed to follow the negative binomial distribution 
 \cite{Anders2010,Love2014-lx,Robinson2010-rj}
 which for gene $g$ in sample $n$ implies a mean-variance relationship of the form
-
 \begin{equation} \label{eq:overd}
 \sigma_{ng}^2 = \mu_{ng}(1 + \phi_g \mu_{ng})
 \end{equation}
@@ -140,7 +138,6 @@ We examined the mean-variance relationship of the logged data for the three data
 As previously discussed in section \ref{sec:intro_dropout} single-cell RNA-seq data is known to exhibit substantial dropout, whereby a failure to reverse transcribe lowly expressed transcripts results in zeros in the count matrix. Note that this is distinct from \emph{true zeros} where no mRNA transcripts are truly present, due to either bursty or non-expression.
 
 To account for this we assume that the probability of a dropout is logistic on the latent gene expression mean in a similar approach to Kharchenko et al. \cite{Kharchenko2014}. The difference to previous approaches is that (1) we are working in $\log_2(\text{TPM} + 1)$ space and (2) we assume a unique mean $\mu_{cg}$ for every gene in every cell, giving a per-gene per-cell dropout probability $p(\mu_{cg})$ of
-
 \begin{equation}
 \log\left[ \frac{p(\mu_{cg})}{1 - p(\mu_{cg})} \right] = \beta_0 + \beta_1 \mu_{cg}.
 \end{equation}
@@ -159,24 +156,13 @@ The dropout parameters $\beta_0$ and $\beta_1$ are constant across all cells as 
 
 %  \subsubsection*{Model Specification}
 
-We now detail the overall specification of our nonlinear factor analysis pseudotime model. As usual we index $N$ cells by $n \in 1, \ldots, N$ and $G$ genes by $g \in 1, \ldots, G$ and let $y_{ng} = [\bY]_{ng}$ denote the (log-transformed and suitably normalised) observed cell-by-gene expression matrix. In order to make the strength parameters comparable between genes we normalise the gene expression so the approximate half-peak expression is 1 through the transformation
-
-\begin{equation}
-\mby_g \rightarrow \mby_g / s_g.
-\end{equation}
-
-Here we define $s_g$ as a gene-specific size factor that approximates the half-peak expression of gene $g$:
-
+We now detail the overall specification of our nonlinear factor analysis pseudotime model. As usual we index $N$ cells by $n \in 1, \ldots, N$ and $G$ genes by $g \in 1, \ldots, G$ and let $y_{ng} = [\bY]_{ng}$ denote the (log-transformed and suitably normalised) observed cell-by-gene expression matrix. In order to make the strength parameters comparable between genes we normalise the gene expression so the approximate half-peak expression is 1 through the transformation 
+$\mby_g \rightarrow \mby_g / s_g$,
+in which we define $s_g$ as a gene-specific size factor that approximates the half-peak expression of gene $g$:
 \begin{equation}
 s_g = \frac{1}{|\mathcal{Y}_g^*|} \sum_{y_{ng}^* \in \mathcal{Y}_g^*} y_{ng}^*
 \end{equation}
-
-where
-
-\begin{equation}
-\mathcal{Y}_g^* = \{ y_{ng} : y_{ng} > 0 \}.
-\end{equation}
-
+where $\mathcal{Y}_g^* = \{ y_{ng} : y_{ng} > 0 \}$
 is the set of non-zero measurements for $g$
 
 Our statistical model can be specified as a Bayesian hierarchical model where the likelihood is given by a bimodal distribution formed from a mixture of zero-component (dropout) and an non-zero expressing cell population. Let $\mbt$ be an $N$-length pseudotime vector (one for each cell), then:
@@ -189,13 +175,12 @@ Our statistical model can be specified as a Bayesian hierarchical model where th
 		\mbbeta & \sim \norm(0, 0.1) .
 \end{align}
 
-The relationship between dropout rate and expression level is expressed as a logistic regression model \cite{Kharchenko2014}. Furthermore, we impose a mean-variance relationship of the form:
+The relationship between dropout rate and expression level is expressed as a logistic regression model \cite{Kharchenko2014}. Furthermore, we impose a mean-variance relationship of the form
 \begin{equation}
 \sigma^2_{ng}  = (1 + \phi) \mu_{ng} + \epsilon
 \end{equation}
 
 with the hierarchical prior structure
-
 \begin{align}
 	t_n &\sim \norm(0.5, 1), \\
 	\mu_{ng} & =  \mO_g f(t_n, k_g, \tO), \\
@@ -319,7 +304,6 @@ We sought to simulated switch-like behaviour from three link functions commonly 
 \paragraph{Sigmoidal}
 
 The sigmoidal mean function corresponds to that used by Ouija. Given the pseudotime $t_n$ the mean is calculated via
-
 \begin{equation}
     \mu_{ng} = \frac{2 \mu^{(0)}_g}{1 + \exp(-k_g (t_n - t^{(0)}_g))}
 \end{equation}
@@ -329,7 +313,6 @@ for which we draw $\mu^{(0)}_g \sim \text{Unif}(3,4)$, $t^{(0)}_g \sim \text{Uni
 \paragraph{Complementary log-log}
 
 The complementary log-log (\emph{cloglog}) acts as a link function in logistic regression, modelling the probability of success $\pi$ in terms of regressors $\mbx$ and coefficients $\mbbeta$ via $\log(-\log(1 - \pi_n)) = \mbx_n^T \mbbeta$. Therefore, we use it to generate a mean via
-
 \begin{equation}
     \mu_{ng} = 2 \mu^{(0)}_g \left(1 - \exp(-e^{k_g (t_n - t^{(0)}_{g})}) \right)
 \end{equation}
@@ -339,7 +322,6 @@ for which we draw the parameters identically to the sigmoidal case.
 \paragraph{Probit}
 
 The probit link models the probability of success as $\pi_n = \Phi(\mbx_n^T \mbbeta)$, where $\Phi$ is the cumulative distribution function of the standard normal distribution. Thus we use
-
 \begin{equation}
     \mu_{ng} = 2 \mu_g^{(0)} \Phi\left(k_g (t_n - t^{(0)}_{g})\right).
 \end{equation}
@@ -350,7 +332,6 @@ $ \mu_g^{(0)}$ and $t^{(0)}_{g}$ are drawn as before, while $k_g \sim \text{Unif
 \paragraph{Threshold}
 
 We sought to create a further switch-like mean function that would be maximally mis-specified with respect to Ouija. This follows a two part process and requires a sign variable $|k_g|$ that describes whether the gene is up or down regulated along pseudotime. Firstly, a probit variable is generated by drawing $m_g \sim |k_g| \times \text{Unif}(1,2)$ and $c_g = -m_g t^{(0)}_g$. Then draw $\mu^*_{ng} \sim \Norm(m_g t_n + c_g, 0.1)$. The mean function is given by
-
 \begin{equation}
     \mu_{ng} = 
     \begin{cases}
